@@ -1,4 +1,6 @@
 Crédits:
+
+
 Auteur et responsable du projet
 Mohamed-Razine Zerdoum
 J’ai lancé WaveShare Glycémie pour répondre à un besoin familial : mon père souhaitait consulter rapidement les données de glycémie Dexcom sur un écran dédié, sans avoir à sortir systématiquement son téléphone.
