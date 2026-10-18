@@ -45,12 +45,13 @@ class AppareilSimule(object):
     essai_*      : valeurs en cours d'essai, perdues si elles ne sont pas confirmees.
     """
 
-    def __init__(self, essais=None, muet=False, deja=None):
+    def __init__(self, essais=None, muet=False, deja=None, effacement_echoue=False):
         self.recu = []
         self.sortie = b''
         self.tampon = b''
         self.essais = list(essais or [])    # etats successifs renvoyes par ident_etat
         self.muet = muet
+        self.effacement_echoue = effacement_echoue
         self.ferme = False
         self.enregistre_wifi = deja[0] if deja else ('', '')
         self.enregistre_dexcom = deja[1] if deja else ('', '', '')
@@ -136,9 +137,9 @@ class AppareilSimule(object):
         elif cmd.startswith('ident_enregistrer'):
             if not self.essai_actif:
                 self._repondre('IDENT enregistrer : aucun essai en cours')
-            elif self.dernier_etat[0] != ac.ETAT_REUSSI and 'force' not in cmd:
+            elif self.dernier_etat[0] != ac.ETAT_REUSSI:
                 self._repondre('IDENT enregistrer refuse : essai non reussi (%s). '
-                               'Lancez ident_test, ou ident_enregistrer force.' % self.dernier_etat[1])
+                               'Lancez ident_test.' % self.dernier_etat[1])
             else:
                 if self.essai_wifi is not None:
                     self.enregistre_wifi = self.essai_wifi
@@ -150,9 +151,12 @@ class AppareilSimule(object):
             self.essai_wifi = self.essai_dexcom = None
             self._repondre('IDENT annule (acces precedents conserves)')
         elif cmd == 'ident_effacer':
-            self.enregistre_wifi, self.enregistre_dexcom = ('', ''), ('', '', '')
-            self.essai_wifi = self.essai_dexcom = None
-            self._repondre("IDENT efface (redemarrer pour revenir a l'assistant)")
+            if self.effacement_echoue:
+                self._repondre("IDENT efface ESP_FAIL")
+            else:
+                self.enregistre_wifi, self.enregistre_dexcom = ('', ''), ('', '', '')
+                self.essai_wifi = self.essai_dexcom = None
+                self._repondre("IDENT efface ok (redemarrer pour appliquer)")
 
 
 class Journal(object):
@@ -335,6 +339,16 @@ def main():
           code == 0 and 'ident_effacer' in simule.recu and simule.enregistre_wifi == ('', ''))
     check('apres effacement : le redemarrage est explique', 'edemarrez' in j.contenu)
     check('apres effacement : le mode demonstration est rappele', 'emonstration' in j.contenu)
+
+    simule = AppareilSimule(deja=((SSID, MDP_WIFI), (USER, MDP_DEX, 'ous')),
+                            effacement_echoue=True)
+    app = ac.Appareil(simule)
+    with Journal() as j:
+        code = ac.effacer(app, demande=reponses('oui'))
+    check('echec NVS : le refus renvoie un code non nul', code != 0)
+    check('echec NVS : anciens acces conserves', anciens_intacts(simule))
+    check('echec NVS : aucune instruction de redemarrage trompeuse',
+          'Redemarrez l\'appareil' not in j.contenu and 'PAS' in j.contenu)
 
     # --- 9. Hygiene du script ------------------------------------------------------------------
     source = io.open(SOURCE, encoding='utf-8').read()
