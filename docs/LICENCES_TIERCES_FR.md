@@ -1,10 +1,12 @@
 # Licences — code du projet et composants tiers
 
-Le code écrit pour ce projet est sous licence **MIT** (voir [../LICENSE](../LICENSE)).
-Cette licence ne couvre **que** ce code : `main/`, `tests/`, `tools/` et `docs/`.
+Les **contributions originales** du projet sont diffusées sous licence **MIT**
+(voir [../LICENSE](../LICENSE)). Elles se trouvent notamment dans `main/`,
+`tests/`, `tools/` et `docs/` ; certains de ces dossiers contiennent aussi
+ou adaptent du code tiers, soumis à **sa propre licence**.
 
-Tout le reste appartient à ses auteurs et conserve sa propre licence. Ce document les
-recense. **Aucun composant tiers n'est réattribué au projet.**
+Ce document recense ces composants et mentions obligatoires.
+**Aucun code tiers n'est réattribué au projet.**
 
 ---
 
