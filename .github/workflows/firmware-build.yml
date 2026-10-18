@@ -17,11 +17,11 @@ jobs:
     steps:
       - name: Récupérer le code
         uses: actions/checkout@v4
-      - name: Version ESP-IDF
-        run: idf.py --version
-      - name: Cible matérielle
-        run: idf.py set-target esp32p4
-      - name: Compiler le programme public
-        run: idf.py build
-      - name: Vérifier le programme compilé
-        run: python tools/verif_avant_flash.py
+      - name: Activer ESP-IDF et compiler (sans identifiants)
+        shell: bash
+        run: |
+          source "$IDF_PATH/export.sh"
+          idf.py --version
+          idf.py set-target esp32p4
+          idf.py build
+          python tools/verif_avant_flash.py
