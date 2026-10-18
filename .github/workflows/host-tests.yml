@@ -1,0 +1,38 @@
+name: Tests hors matériel
+
+on:
+  push:
+    branches:
+      - main
+      - "audit/**"
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  host-tests:
+    name: Tests C et Python (sans écran)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Récupérer les sources
+        uses: actions/checkout@v4
+      - name: Préparer Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Tests C compilés avec GCC
+        run: python tests/run_tests.py
+      - name: Cohérence du dépôt
+        run: python tests/test_depot.py
+      - name: Traductions et banques vocales
+        run: python tests/test_langues_voix.py
+      - name: Assistant USB (simulation)
+        run: python tests/test_assistant_config.py
+      - name: Application Windows (simulation)
+        run: python tests/test_pc_app.py
+      - name: Sauvegarde microSD (simulation)
+        run: python tests/test_recuperation_microsd.py
+      - name: Transfert des annonces (simulation)
+        run: python tests/test_sd_voice_upload.py
