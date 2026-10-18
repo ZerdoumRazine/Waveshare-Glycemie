@@ -127,6 +127,9 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--dossier', default=os.path.join(ROOT, 'paquet_a_remettre'))
     ap.add_argument('--sans-zip', action='store_true')
+    ap.add_argument('--raison-sources', default=None,
+                    help="accepter que les sources aient change depuis la compilation, en disant "
+                         "pourquoi ; la raison est ecrite dans le paquet (notices/PROVENANCE_PROGRAMME.txt)")
     ap.add_argument('--empreinte', action='store_true',
                     help="afficher seulement l'empreinte des sources du firmware, et quitter")
     args = ap.parse_args()
@@ -159,12 +162,19 @@ def main():
         print('Recompilez :  powershell -File tools' + os.sep + 'publier_firmware.ps1')
         return 1
     enregistree = io.open(attendue, encoding='utf-8').read().split()[0]
+    derogation = None
     if enregistree != actuelle:
-        print('ARRET : le programme livre ne vient pas de ces sources.')
-        print('   empreinte du programme : %s' % enregistree[:16])
-        print('   empreinte des sources  : %s' % actuelle[:16])
-        print('Recompilez :  powershell -File tools' + os.sep + 'publier_firmware.ps1')
-        return 1
+        if not args.raison_sources:
+            print('ARRET : le programme livre ne vient pas de ces sources.')
+            print('   empreinte du programme : %s' % enregistree[:16])
+            print('   empreinte des sources  : %s' % actuelle[:16])
+            print('Recompilez :  powershell -File tools' + os.sep + 'publier_firmware.ps1')
+            print("Ou, si la difference ne touche pas le code compile, dites pourquoi :")
+            print('   --raison-sources "..."')
+            return 1
+        derogation = (enregistree, actuelle, args.raison_sources)
+        print('ATTENTION : sources modifiees depuis la compilation. Raison donnee :')
+        print('   %s' % args.raison_sources)
 
     if os.path.isdir(cible):
         shutil.rmtree(cible, ignore_errors=True)
@@ -194,6 +204,31 @@ def main():
         if os.path.exists(source):
             copier(source, os.path.join(cible, 'notices', nom))
     ecrire(os.path.join(cible, 'microSD', 'LISEZMOI.txt'), NOTICE_MICROSD)
+
+    # Provenance du programme livre : toujours ecrite, pour que l'on sache de quoi il vient.
+    provenance = [
+        "PROVENANCE DU PROGRAMME DE L'ECRAN",
+        '',
+        'glycemie_display.bin a ete compile depuis les sources publiques de ce paquet',
+        '(dossier code_source), sans aucun identifiant.',
+        '',
+        'Empreinte du contenu des sources au moment de la compilation :',
+        '   %s' % enregistree,
+    ]
+    if derogation is not None:
+        provenance += [
+            '',
+            'Les sources ont ete modifiees APRES cette compilation :',
+            '   empreinte actuelle : %s' % derogation[1],
+            '   raison acceptee    : %s' % derogation[2],
+            '',
+            'Autrement dit : le programme fourni a ete compile depuis une version de ces sources',
+            'anterieure a cette modification. Recompilez si vous voulez une correspondance exacte.',
+        ]
+    else:
+        provenance += ['', 'Les sources de ce paquet sont exactement celles de cette compilation.']
+    ecrire(os.path.join(cible, 'notices', 'PROVENANCE_PROGRAMME.txt'),
+           chr(10).join(provenance) + chr(10))
 
     # --- 5. tutoriels --------------------------------------------------------------------------
     for nom in ('TUTORIEL_DEBUTANT_FR.md', 'BEGINNER_TUTORIAL_EN.md', 'TUTORIEL_VOIX_FR.md',

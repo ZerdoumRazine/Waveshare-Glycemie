@@ -1,5 +1,13 @@
 #include "wifi_manager.h"
 
+/*
+ * La mise en route du Wi-Fi (enregistrement des gestionnaires d'evenements, attente par groupe
+ * d'evenements) suit le squelette de l'exemple station d'Espressif, repris tel quel par Waveshare
+ * (examples/esp-idf/05_wifistation, SPDX-License-Identifier: Apache-2.0). Tout le reste - liaison
+ * par ESP-Hosted, reconnexion, recherche des reseaux, application a chaud des identifiants - est
+ * propre a ce projet.
+ */
+
 #include <inttypes.h>
 #include <stdio.h>
 #include <string.h>

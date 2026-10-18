@@ -627,7 +627,9 @@ void app_main(void)
     /* Pas de trace HTTP detaillee : les URL Dexcom contiennent l'identifiant de session */
     esp_log_level_set("HTTP_CLIENT", ESP_LOG_WARN);
 
-    /* Ecran, tactile et LVGL : configuration de l'exemple officiel Waveshare 09_lvgl_demo_v9, sauf le tactile.
+    /* Ecran, tactile et LVGL : bloc repris de l'exemple officiel Waveshare 09_lvgl_demo_v9
+     * (examples/esp-idf/09_lvgl_demo_v9/main/main.c, SPDX-FileCopyrightText: 2025 Espressif
+     * Systems (Shanghai) CO LTD, SPDX-License-Identifier: Apache-2.0), sauf le tactile.
      * L'adaptateur tourne l'image de 180 degres, mais le GT911 de cette carte donne deja des coordonnees dans
      * l'orientation affichee : les miroirs X/Y de l'exemple inversaient le toucher (constat physique 2026-09-14). */
     bsp_display_cfg_t cfg = {

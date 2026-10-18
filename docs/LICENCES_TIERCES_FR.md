@@ -73,13 +73,27 @@ le rend **facultatif** :
 
 Le projet ne revendique aucun droit sur cet audio.
 
-### Banque vocale microSD — **non distribuée**
+### Banques vocales microSD — hors dépôt, distribuées à part
 
-Les 396 fichiers WAV de la banque principale (≈ 23 Mo) ont été générés **une seule fois**
-avec **Google Cloud Text-to-Speech**, voix `fr-FR-Chirp3-HD-Aoede`. Ils ne sont **pas**
-dans le dépôt : taille, et conditions d'utilisation propres à Google Cloud.
+Les 396 fichiers WAV par langue (six langues, ≈ 20 à 25 Mo chacune) ont été générés **une seule
+fois sur un PC** avec **Google Cloud Text-to-Speech** (voix `*-Chirp3-HD-Aoede`), à partir des
+textes du projet. L'appareil ne contacte jamais Google : il lit ces fichiers sur sa microSD.
 
-Ce qui est fourni à la place :
+Ils ne sont **pas dans le dépôt** (taille), mais ils sont **distribués séparément**, en pièces
+jointes de Release et dans le dossier à remettre. Chaque paquet contient sa propre notice de
+provenance (`PROVENANCE.md`, français et anglais), son manifeste et ses empreintes. Cette notice
+indique notamment :
+
+- le projet n'est ni affilié à Google ni approuvé par Google ; Google Cloud, Chirp et les voix
+  citées appartiennent à Google ;
+- les sons sont distribués comme ressources de ce projet, dans le cadre de l'utilisation autorisée
+  des fichiers audio produits par le service ; le projet ne revendique aucun droit sur le modèle
+  ni sur la voix ;
+- **la licence MIT du code ne couvre pas ces enregistrements** ;
+- qui préfère les refaire avec son propre compte Google trouve la marche à suivre dans
+  [TUTORIEL_VOIX_FR.md](TUTORIEL_VOIX_FR.md), parcours B.
+
+Ce qui est fourni dans le dépôt pour les reconstruire :
 
 - `assets/banque_vocale_manifeste.csv` — la liste des phrases (nom de fichier, texte,
   durée, taille, CRC32) ; ce texte est celui du projet ;
@@ -93,29 +107,46 @@ au tarif Chirp 3 HD, dans la gratuité mensuelle.
 
 Sans banque vocale, l'appareil fonctionne : les annonces sont remplacées par un bip.
 
-## 4. Sources d'inspiration (aucun code copié)
+## 4. Code tiers repris dans ce projet
 
-Le client Dexcom Share a été écrit en C à partir du **comportement documenté** du protocole,
-en s'appuyant sur la lecture de projets libres :
+Deux passages d'exemples officiels et un jeu de constantes de protocole proviennent de projets
+tiers. Leur origine et leur licence sont écrites **dans les fichiers concernés** ; ce tableau les
+récapitule.
 
-| Projet | Licence | Usage |
-|---|---|---|
-| [pydexcom](https://github.com/gagebenne/pydexcom) | MIT | référence du protocole Share, identifiants d'application, codes de tendance |
-| Gluco-Monitor, Dexcom_Follow, ESP32_Dex | MIT | comportements et séquences d'appels |
-| Exemples Waveshare ESP32-P4 | Apache-2.0 / CC0 | initialisation matérielle (écran, tactile, Wi-Fi hébergé) |
+| Origine | Licence | Ce qui est repris | Où c'est cité |
+|---|---|---|---|
+| Exemple Waveshare `09_lvgl_demo_v9` (© Espressif) | Apache-2.0 | le bloc d'initialisation de l'écran (`bsp_display_cfg_t`, `bsp_display_start_with_config`) | `main/app_main.c` |
+| Exemple Waveshare / Espressif `05_wifistation` | Apache-2.0 | le squelette de mise en route du Wi-Fi (gestionnaires d'événements, attente par groupe d'événements) | `main/wifi_manager.c` |
+| [pydexcom](https://github.com/gagebenne/pydexcom) — © Gage Benne | MIT | les constantes du protocole Dexcom Share : adresses du service, identifiants d'application, chemins d'API | `main/dexcom_share.c` |
+| `components/esp_driver_ppa/` (© Espressif, ESP-IDF 5.5.5) | Apache-2.0 | composant recopié, une fonction modifiée | en-têtes SPDX des fichiers + `CORRECTIF.txt` |
 
-**Aucun code n'a été repris** de ForgeUI-P4 ni de dexcom-esp32-monitor.
-L'interface graphique est originale : aucune reprise visuelle d'un autre produit.
+Les noms de tendance renvoyés par l'API Dexcom (`Flat`, `DoubleUp`…) sont des **valeurs du
+protocole** : tout client doit employer les mêmes chaînes.
+
+Le reste du code — interface, alertes, suivi des consommables, mode nuit, voix, assistants de
+connexion, stockage microSD, tests — a été écrit pour ce projet et est publié sous licence MIT
+(voir `LICENSE`). D'autres clients Dexcom libres ont été consultés pendant la conception ; une
+comparaison automatique du code n'y a trouvé **aucun fichier ni aucune fonction repris**, et ils
+ne sont donc pas cités ici. L'interface graphique est originale.
+
+### Si vous redistribuez
+
+Apache-2.0 demande de conserver les mentions de copyright et de licence, et de signaler les
+modifications : c'est fait dans les fichiers eux-mêmes et dans
+`components/esp_driver_ppa/CORRECTIF.txt`. MIT demande de conserver la mention de copyright :
+elle est dans `main/dexcom_share.c` pour pydexcom, et dans `LICENSE` pour le code du projet.
 
 ## 5. Ce qui n'est pas publié
 
 Par choix, et pour protéger des données personnelles de santé :
 
 - les identifiants Wi-Fi et Dexcom (`private/device_secrets.h`) ;
-- les sauvegardes de la flash (32 Mo) ;
-- les firmwares compilés (`.bin`, `.elf`) — les identifiants y sont inclus ;
+- les sauvegardes de la flash et de la microSD de l'appareil personnel ;
+- les firmwares compilés **depuis le dossier personnel** — les identifiants y sont inclus ;
+  le programme publié, lui, est compilé depuis ces sources-ci, sans aucun identifiant ;
 - les journaux de mise au point et l'historique glycémique réel ;
-- la banque vocale générée.
+- les banques vocales : trop volumineuses pour un dépôt, elles sont fournies **à part**
+  (voir la section 3).
 
 Voir [PUBLICATION_GITHUB_FR.md](PUBLICATION_GITHUB_FR.md).
 

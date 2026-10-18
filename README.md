@@ -15,7 +15,7 @@ The device never talks to the sensor directly.
 
 ![Home page](screenshots/01_accueil.png)
 
-**A project by Mohamed-Razine Zerdoum.** Hardware: **Waveshare ESP32-P4-WIFI6-Touch-LCD-7B**
+**Initiated and directed by Mohamed-Razine Zerdoum.** Hardware: **Waveshare ESP32-P4-WIFI6-Touch-LCD-7B**
 (7″ touch display, 1024 × 600), microSD card, speaker. Code under the MIT licence; third-party
 components keep their own authors and licences.
 
@@ -145,9 +145,11 @@ languages:
 
 ## Licence
 
-Project code: **MIT** (see [LICENSE](LICENSE)), by **Mohamed-Razine Zerdoum**, who initiated,
-designed and built it for real family use. Third‑party components keep their own authors and
-licences — see [CREDITS.md](CREDITS.md) and [docs/LICENCES_TIERCES_FR.md](docs/LICENCES_TIERCES_FR.md).
+Project code: **MIT** (see [LICENSE](LICENSE)). Initiated, designed and directed by
+**Mohamed-Razine Zerdoum** for real family use; a large part of the code was produced with
+automated assistance under his direction — see [CREDITS.md](CREDITS.md) (French). Third‑party
+components keep their own authors and licences — see
+[docs/LICENCES_TIERCES_FR.md](docs/LICENCES_TIERCES_FR.md).
 
 Supplementary family display, not certified, provided without warranty. Treatment decisions
 and safety alarms belong to the official devices and applications, and to medical follow‑up.

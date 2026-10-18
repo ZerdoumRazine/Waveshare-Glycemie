@@ -16,7 +16,7 @@ L'appareil ne communique **jamais** directement avec le capteur.
 
 *Capture réelle de la carte, en mode démonstration (données fictives).*
 
-**Projet de Mohamed-Razine Zerdoum.** Matériel : **Waveshare ESP32-P4-WIFI6-Touch-LCD-7B**
+**Projet initié et dirigé par Mohamed-Razine Zerdoum.** Matériel : **Waveshare ESP32-P4-WIFI6-Touch-LCD-7B**
 (écran tactile 7″, 1024 × 600), microSD, haut-parleur. Code sous licence MIT ; les composants
 tiers gardent leurs auteurs et leurs licences.
 
@@ -253,9 +253,11 @@ Liste complète et honnête : [docs/LIMITATIONS_FR.md](docs/LIMITATIONS_FR.md).
 Code du projet sous licence **MIT** (voir [LICENSE](LICENSE)). Les composants tiers
 conservent leur propre licence : voir [docs/LICENCES_TIERCES_FR.md](docs/LICENCES_TIERCES_FR.md).
 
-**Crédits** — ce projet a été initié, conçu et développé pour un usage familial réel par
-**Mohamed-Razine Zerdoum**. Les composants tiers gardent leurs auteurs et leurs licences :
-voir [CREDITS.md](CREDITS.md) et [docs/LICENCES_TIERCES_FR.md](docs/LICENCES_TIERCES_FR.md).
+**Crédits** — projet initié, conçu et dirigé par **Mohamed-Razine Zerdoum**, pour un usage
+familial réel. Une grande partie du code a été produite avec l'aide d'outils d'assistance
+automatisée, sous sa direction : c'est expliqué dans [CREDITS.md](CREDITS.md). Les composants
+tiers gardent leurs auteurs et leurs licences : voir
+[docs/LICENCES_TIERCES_FR.md](docs/LICENCES_TIERCES_FR.md).
 
 **Rappel** : afficheur familial complémentaire, non certifié, sans garantie. Les décisions
 thérapeutiques et les alarmes de sécurité relèvent du matériel et des applications

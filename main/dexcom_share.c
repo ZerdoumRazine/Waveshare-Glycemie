@@ -14,7 +14,9 @@
 
 static const char *TAG = "dexcom";
 
-/* Constantes reprises de pydexcom/const.py (MIT) */
+/* Constantes du protocole Dexcom Share, reprises de pydexcom/const.py
+ * (https://github.com/gagebenne/pydexcom, Copyright (c) Gage Benne, licence MIT).
+ * Ce sont des valeurs imposees par le service : tout client doit employer les memes. */
 #define DEX_BASE_URL_US        "https://share2.dexcom.com/ShareWebServices/Services/"
 #define DEX_BASE_URL_OUS       "https://shareous1.dexcom.com/ShareWebServices/Services/"
 #define DEX_BASE_URL_JP        "https://share.dexcom.jp/ShareWebServices/Services/"
@@ -43,6 +45,8 @@ typedef struct {
     bool headers_sent;
 } resp_buf_t;
 
+/* Vocabulaire de tendance defini par l'API Dexcom Share : ce sont les chaines que le service
+ * renvoie. Tout client emploie donc la meme liste, a l'identique. */
 static const char *const k_trend_names[TREND_COUNT] = {
     "None", "DoubleUp", "SingleUp", "FortyFiveUp", "Flat",
     "FortyFiveDown", "SingleDown", "DoubleDown", "NotComputable", "RateOutOfRange",

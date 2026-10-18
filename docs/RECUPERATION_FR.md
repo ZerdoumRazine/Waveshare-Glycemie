@@ -42,10 +42,9 @@ Vérifications d'intégrité faites :
 - le dernier journal est le n° 366 (`366_K19_etat_final.log`) : **aucun développement n'a eu
   lieu après K19**.
 
-En complément, l'historique local de Claude Code
-(dossier `.claude\projects` du profil utilisateur, 10 sessions, ≈ 89 Mo, plus
-15 notes de mémoire allant jusqu'à K19) a servi à **recouper** l'historique des versions,
-les décisions et les mesures. Il n'a pas été nécessaire d'y reconstruire du code : les
+En complément, l'historique local des sessions d'assistance au développement conservé sur le PC
+(10 sessions, ≈ 89 Mo, plus 15 notes allant jusqu'à K19) a servi à **recouper** l'historique des
+versions, les décisions et les mesures. Il n'a pas été nécessaire d'y reconstruire du code : les
 sources d'origine étaient disponibles.
 
 ---
