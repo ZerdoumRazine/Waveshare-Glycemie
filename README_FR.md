@@ -1,6 +1,6 @@
 # Afficheur familial de glycémie Dexcom G7 — Waveshare ESP32‑P4 7″
 
-> ⚠️ **Projet personnel expérimental. Ce n'est pas un dispositif médical.**
+> ⚠️ **Projet personnel expérimental, non certifié pour un usage médical.**
 > Il ne doit servir à aucune décision thérapeutique et ne remplace **ni** l'application
 > Dexcom officielle, **ni** ses alarmes, **ni** aucun système de surveillance certifié.
 > Les alarmes de référence restent celles du téléphone et du capteur.
@@ -238,7 +238,7 @@ réseau sont remplacés par des bouchons. Ce qui est couvert et ce qui ne l'est 
 ## Limites connues
 
 - Affichage **mg/dL uniquement** : la conversion en mmol/L n'est pas implémentée.
-- Les **commandes** vocales restent en français dans toutes les langues (le moteur de reconnaissance n'existe qu'avec un modèle anglais, et les phrases ont été réglées en français).
+- Les **commandes vocales et l'écoute du microphone sont désactivées dans la version publique**. Les annonces parlées et alertes sonores restent disponibles dans six langues grâce aux fichiers sur la microSD.
 - Dexcom Share **OUS (Europe)** validé ; la région « us » existe dans le code mais n'a pas été essayée.
 - Dexcom Share n'est pas une API publique : un changement côté Dexcom peut interrompre le service.
 - Pas de configuration Wi‑Fi à l'écran : le réseau est compilé dans le firmware.
@@ -253,11 +253,7 @@ Liste complète et honnête : [docs/LIMITATIONS_FR.md](docs/LIMITATIONS_FR.md).
 Code du projet sous licence **MIT** (voir [LICENSE](LICENSE)). Les composants tiers
 conservent leur propre licence : voir [docs/LICENCES_TIERCES_FR.md](docs/LICENCES_TIERCES_FR.md).
 
-**Crédits** — projet initié, conçu et dirigé par **Mohamed-Razine Zerdoum**, pour un usage
-familial réel. Une grande partie du code a été produite avec l'aide d'outils d'assistance
-automatisée, sous sa direction : c'est expliqué dans [CREDITS.md](CREDITS.md). Les composants
-tiers gardent leurs auteurs et leurs licences : voir
-[docs/LICENCES_TIERCES_FR.md](docs/LICENCES_TIERCES_FR.md).
+**Crédits** — projet initié et dirigé par **Mohamed-Razine Zerdoum**, pour un usage familial. Lire les [crédits en français](CREDITS.md) ou [en anglais](CREDITS_EN.md). Les composants tiers conservent leurs auteurs et leurs licences : voir [Licences tierces](docs/LICENCES_TIERCES_FR.md).
 
 **Rappel** : afficheur familial complémentaire, non certifié, sans garantie. Les décisions
 thérapeutiques et les alarmes de sécurité relèvent du matériel et des applications
