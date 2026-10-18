@@ -1,0 +1,27 @@
+name: Compilation ESP-IDF
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  esp32p4-build:
+    name: Firmware ESP32-P4 (sans identifiants)
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    container:
+      image: espressif/idf:v5.5.5
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+      - name: Version ESP-IDF
+        run: idf.py --version
+      - name: Cible matérielle
+        run: idf.py set-target esp32p4
+      - name: Compiler le programme public
+        run: idf.py build
+      - name: Vérifier le programme compilé
+        run: python tools/verif_avant_flash.py
