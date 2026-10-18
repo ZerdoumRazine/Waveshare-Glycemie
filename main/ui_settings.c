@@ -118,9 +118,16 @@ static void on_effacer_annuler(lv_event_t *e)
 static void on_effacer_confirmer(lv_event_t *e)
 {
     (void)e;
+    const esp_err_t err = credentials_clear();
     fermer_modal();
-    credentials_clear();
-    esp_restart(); /* l'assistant reprend au demarrage suivant */
+    if (err != ESP_OK) {
+        /* Ne pas redemarrer ni annoncer un effacement qui n'a pas ete
+         * confirme en memoire permanente. Les acces existants restent actifs. */
+        ESP_LOGE(TAG, "Effacement des acces impossible : %s", esp_err_to_name(err));
+        lv_label_set_text(s_conn_aide, tr(S_SETUP_FAIL_OTHER));
+        return;
+    }
+    esp_restart(); /* la configuration vide est enregistree : ouvrir l'assistant */
 }
 
 /* Confirmation avant d'effacer : rien n'est efface sans ce deuxieme appui */
