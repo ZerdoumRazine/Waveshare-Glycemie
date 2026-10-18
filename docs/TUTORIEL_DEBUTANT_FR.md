@@ -4,8 +4,8 @@
 annonces parlées en six langues.** Posé dans la cuisine, dans une chambre, au bureau.
 
 > ### ⚠️ À lire avant tout
-> Cet appareil est un **affichage complémentaire expérimental**, réalisé par un parent, **pas un
-> dispositif médical**. Il peut se tromper, afficher une valeur en retard, s'interrompre, perdre le
+> Cet appareil est un **affichage complémentaire expérimental**, réalisé pour un usage
+> familial et **non certifié pour un usage médical**. Il peut se tromper, afficher une valeur en retard, s'interrompre, perdre le
 > Wi-Fi ou rester muet. **Il ne remplace ni le récepteur ni l'application Dexcom officiels**, et
 > **aucune décision de traitement ne doit se fonder sur ce qu'il affiche** : vérifiez toujours sur
 > l'application ou le récepteur officiel, et suivez les consignes de votre équipe soignante.
