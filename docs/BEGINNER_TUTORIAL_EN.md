@@ -4,8 +4,8 @@
 announcements in six languages.** For the kitchen, a bedroom, a desk.
 
 > ### ⚠️ Read this first
-> This device is an **experimental secondary display**, built by a parent — **not a medical
-> device**. It can be wrong, show a late value, stop, lose Wi-Fi or stay silent. **It does not
+> This device is an **experimental supplementary display** developed for family use,
+> **not certified for medical use**. It can be wrong, show a late value, stop, lose Wi-Fi or stay silent. **It does not
 > replace the official Dexcom receiver or app**, and **no treatment decision should be based on what
 > it shows**: always check the official app or receiver, and follow your care team's instructions.
 > No medical certification or validation is claimed: there is none.
