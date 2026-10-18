@@ -30,7 +30,7 @@ automatiquement par GitHub (« Source code »).
 Les banques WAV en six langues sont optionnelles ; sans elles, les alarmes
 sonores de secours restent disponibles. Les scripts et instructions pour
 produire et transférer les banques sont dans
-[le tutoriel voix](docs/TUTORIEL_VOIX_FR.md).
+[le tutoriel voix](https://github.com/ZerdoumRazine/Waveshare-Glycemie/blob/main/docs/TUTORIEL_VOIX_FR.md).
 
 **Les enregistrements générés par Google ne sont pas redistribués à nouveau
 dans cette livraison automatique.** Vérifier les conditions de diffusion
@@ -62,7 +62,7 @@ GitHub also automatically provides a source-code archive.
 
 The six-language WAV voice banks are optional. Sound-generation and
 microSD instructions remain in
-[VOICE_TUTORIAL_EN.md](docs/VOICE_TUTORIAL_EN.md).
+[VOICE_TUTORIAL_EN.md](https://github.com/ZerdoumRazine/Waveshare-Glycemie/blob/main/docs/VOICE_TUTORIAL_EN.md).
 Generated Google audio is **not repackaged in this automated release**;
 rights to redistribute prior voice archives should be checked before
 public distribution.
