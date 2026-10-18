@@ -110,25 +110,11 @@ Détails et brochage : [docs/HARDWARE_FR.md](docs/HARDWARE_FR.md).
 
 ## Installation rapide
 
-```bash
-git clone <url-du-depot> waveshare-glycemie
-cd waveshare-glycemie
-copy main\device_secrets.example.h private\device_secrets.h
-```
+**Pour installer sans programmer :** suivez le [tutoriel illustré pour débutants](docs/TUTORIEL_DEBUTANT_FR.md). Il explique comment installer le programme, saisir ses propres accès Wi-Fi et Dexcom grâce à l'assistant tactile (ou l'application Windows), puis copier les sons sur microSD. Vous **n'avez pas besoin de modifier le code ni de recompiler pour renseigner vos accès**.
 
-Complétez `private\device_secrets.h` (Wi‑Fi + compte Dexcom), puis :
+**Pour compiler depuis les sources :** suivez le [guide technique ESP-IDF](docs/INSTALLATION_FR.md). L'ancienne méthode permettant d'intégrer des identifiants au moment de la compilation y est documentée séparément ; elle ne doit jamais servir à produire des fichiers de distribution contenant des accès personnels.
 
-```bash
-idf.py set-target esp32p4
-idf.py build
-idf.py -p COM7 flash monitor
-```
-
-> ⚠️ **Le chemin du projet ne doit contenir ni accent ni caractère non ASCII.** La chaîne
-> ESP‑IDF (ccache, `ldgen`, l'éditeur de liens) échoue sinon. Les espaces sont acceptés.
-
-Procédure complète (ESP‑IDF 5.5.5 sur Windows 10/11, pilote CH343, première mise en
-service) : [docs/INSTALLATION_FR.md](docs/INSTALLATION_FR.md).
+> ⚠️ Le chemin utilisé pour compiler doit rester en caractères ASCII (sans accent).
 
 ---
 
@@ -250,11 +236,8 @@ Liste complète et honnête : [docs/LIMITATIONS_FR.md](docs/LIMITATIONS_FR.md).
 
 ## Licence et crédits
 
-Code du projet sous licence **MIT** (voir [LICENSE](LICENSE)). Les composants tiers
-conservent leur propre licence : voir [docs/LICENCES_TIERCES_FR.md](docs/LICENCES_TIERCES_FR.md).
+Contributions originales du projet sous [licence MIT](LICENSE). Projet initié et dirigé par **Mohamed-Razine Zerdoum** : [Crédits français](CREDITS.md) · [English credits](CREDITS_EN.md).
 
-**Crédits** — projet initié et dirigé par **Mohamed-Razine Zerdoum**, pour un usage familial. Lire les [crédits en français](CREDITS.md) ou [en anglais](CREDITS_EN.md). Les composants tiers conservent leurs auteurs et leurs licences : voir [Licences tierces](docs/LICENCES_TIERCES_FR.md).
+Les composants tiers conservent leurs auteurs et leurs licences : [Licences tierces](docs/LICENCES_TIERCES_FR.md).
 
-**Rappel** : afficheur familial complémentaire, non certifié, sans garantie. Les décisions
-thérapeutiques et les alarmes de sécurité relèvent du matériel et des applications
-officiels, et du suivi médical.
+Affichage complémentaire expérimental, non certifié pour un usage médical. Les données et alertes peuvent être erronées ou retardées ; les décisions de traitement et la surveillance de sécurité reposent sur les dispositifs officiels.
