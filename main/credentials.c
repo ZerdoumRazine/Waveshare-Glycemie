@@ -283,28 +283,70 @@ void credentials_trial_cancel(void)
 
 esp_err_t credentials_clear(void)
 {
+    /* Effacer d'abord le verrou lie au compte. Si la NVS est inaccessible,
+     * conserver la configuration existante et signaler l'erreur au demandeur. */
+    nvs_handle_t h;
+    esp_err_t err = nvs_open("dexguard", NVS_READWRITE, &h);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "Effacement refuse : verrou Dexcom inaccessible (%s)", esp_err_to_name(err));
+        return err;
+    }
+    err = nvs_erase_all(h);
+    if (err == ESP_OK) {
+        err = nvs_commit(h);
+    }
+    nvs_close(h);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "Effacement refuse : verrou Dexcom non confirme (%s)", esp_err_to_name(err));
+        return err;
+    }
+
+    /* Conserver l'ancien etat en RAM tant que l'ecriture de la configuration
+     * vide n'a pas ete confirmee. Un effacement de cle NVS serait insuffisant :
+     * sur un ancien firmware personnalise, les identifiants compiles seraient
+     * repris automatiquement au prochain demarrage. */
+    credentials_t precedent, essai_precedent;
+    bool origine_precedente, demo_precedent, essai_actif_precedent, origine_essai_precedente;
     xSemaphoreTake(s_mutex, portMAX_DELAY);
+    precedent = s_cred;
+    essai_precedent = s_avant;
+    origine_precedente = s_from_build;
+    demo_precedent = s_demo;
+    essai_actif_precedent = s_essai;
+    origine_essai_precedente = s_avant_from_build;
     memset(&s_cred, 0, sizeof(s_cred));
     strlcpy(s_cred.dexcom_region, "ous", sizeof(s_cred.dexcom_region));
     s_from_build = false;
     s_demo = false;
-    memset(&s_avant, 0, sizeof(s_avant)); /* un effacement demande annule l'essai en cours */
-    s_essai = false;
     xSemaphoreGive(s_mutex);
 
-    nvs_handle_t h;
-    if (nvs_open(NVS_NS, NVS_READWRITE, &h) == ESP_OK) {
-        nvs_erase_all(h);
-        nvs_commit(h);
-        nvs_close(h);
+    /* Inscrire explicitement un bloc vide en NVS afin d'empecher tout retour
+     * implicite aux identifiants integres par une ancienne compilation. */
+    err = persist();
+    if (err != ESP_OK) {
+        xSemaphoreTake(s_mutex, portMAX_DELAY);
+        s_cred = precedent;
+        s_avant = essai_precedent;
+        s_from_build = origine_precedente;
+        s_demo = demo_precedent;
+        s_essai = essai_actif_precedent;
+        s_avant_from_build = origine_essai_precedente;
+        xSemaphoreGive(s_mutex);
+        memset(&precedent, 0, sizeof(precedent));
+        memset(&essai_precedent, 0, sizeof(essai_precedent));
+        ESP_LOGE(TAG, "Identifiants non effaces : enregistrement NVS impossible (%s)", esp_err_to_name(err));
+        return err;
     }
-    /* Le verrou d'authentification Dexcom est lie au compte : il repart de zero avec lui. */
-    if (nvs_open("dexguard", NVS_READWRITE, &h) == ESP_OK) {
-        nvs_erase_all(h);
-        nvs_commit(h);
-        nvs_close(h);
-    }
-    ESP_LOGW(TAG, "Identifiants effaces (Wi-Fi, compte Dexcom, verrou d'authentification)");
+
+    xSemaphoreTake(s_mutex, portMAX_DELAY);
+    memset(&s_avant, 0, sizeof(s_avant));
+    s_avant_from_build = false;
+    s_essai = false;
+    xSemaphoreGive(s_mutex);
+    memset(&precedent, 0, sizeof(precedent));
+    memset(&essai_precedent, 0, sizeof(essai_precedent));
+
+    ESP_LOGI(TAG, "Identifiants retires de la configuration active et NVS vide enregistree");
     return ESP_OK;
 }
 
