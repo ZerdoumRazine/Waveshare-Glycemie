@@ -49,7 +49,7 @@ jobs:
         run: py -3 -m pip install pyinstaller
       - name: Construire l'executable Windows
         shell: pwsh
-        run: .\\tools\\pc_app\\construire_exe.ps1
+        run: powershell -ExecutionPolicy Bypass -File tools/pc_app/construire_exe.ps1
       - name: Conserver l'executable verifie (depot prive)
         uses: actions/upload-artifact@v4
         with:
