@@ -48,30 +48,27 @@ card, the device **falls back to French**; with nothing at all, only a beep is l
 
 ## 2. Path A — install a ready-made bank
 
-### 2.1 Get the package for your language
+### 2.1 Download all six languages in a single ZIP
 
-The packages are **intended to be supplied as GitHub Release attachments**, separate from the source code. Check [Releases](../../releases) for availability; until a Release is published, these downloads are not yet available.
+From [Release v0.2.0](https://github.com/ZerdoumRazine/Waveshare-Glycemie/releases/tag/v0.2.0),
+download **`glycemie-microSD-v0.2.0.zip`** (optional audio resource).
+The archive contains **six complete banks**, 396 WAV files per language:
+French, English, Spanish, German, Italian, and Brazilian Portuguese.
 
-| Package | Contents | ZIP size |
-|---|---|---|
-| `glycemie-voix-fr-k21.zip` | French | 19.4 MB |
-| `glycemie-voix-en-k21.zip` | US English | 20.2 MB |
-| `glycemie-voix-es-k21.zip` | Spanish | 21.2 MB |
-| `glycemie-voix-de-k21.zip` | German | 21.4 MB |
-| `glycemie-voix-it-k21.zip` | Italian | 22.3 MB |
-| `glycemie-voix-pt-k21.zip` | Portuguese (Brazil) | 24.9 MB |
-
-Each package holds the tree to copy, `manifest.csv` (text, duration, size and CRC32 of every file),
-`SHA256SUMS.txt`, `PROVENANCE.md` and a short FR/EN how-to.
-
-**Check the ZIP hash before opening it** (PowerShell):
+Also download **`SHA256SUMS-voix.txt`** and check the ZIP hash:
 
 ```powershell
-Get-FileHash .\glycemie-voix-en-k21.zip -Algorithm SHA256
+Get-FileHash .\glycemie-microSD-v0.2.0.zip -Algorithm SHA256
 ```
 
-It must match the matching line of `SHA256SUMS-paquets.txt` published next to the packages. If it
-differs, do not use the file: the download is incomplete or altered.
+Compare the result with `SHA256SUMS-voix.txt`. Never use an archive whose
+checksum does not match.
+
+**Extract the ZIP completely** to a folder on your computer. It contains
+`glycemie/audio/voice/` ready to copy to the microSD card and a
+`PROVENANCE_VOIX.txt` notice. The audio was generated with Google Cloud
+Text-to-Speech and is not licensed under the project's MIT code licence:
+[credits and third-party rights](LICENCES_TIERCES_FR.md).
 
 ### 2.2 Back the card up BEFORE changing anything
 
@@ -105,8 +102,8 @@ Three common mistakes:
 
 - do **not** create an `fr/` folder: French lives directly in `voice/`;
 - do **not** create `en/voice/`: just `en/`;
-- do **not** copy `manifest.csv`, `PROVENANCE.md` or `LISEZMOI_README.txt` onto the card: they are
-  only used to verify the package on the PC.
+- do **not** copy `PROVENANCE_VOIX.txt` onto the card: keep this legal notice
+  on the computer next to the ZIP.
 
 ### 2.4 Test
 
@@ -123,15 +120,16 @@ The display can receive the files over the USB-serial cable, card in place. You 
 `pyserial`, the display powered on, and the right COM port. Close any serial monitor first.
 
 ```powershell
-$Py = 'tools\voice\.venv_tts\Scripts\python.exe'   # or your own Python
-& $Py -B tools\voice\sd_voice_upload.py --port COM7 --lang en --log tools\logs\copy_voice_en.log
+$Py = 'tools\voice\.venv_tts\Scripts\python.exe'   # or your Python with pyserial
+& $Py -B tools\voice\sd_voice_upload.py --port COM7 --lang en --sd-root "C:\WaveshareVoices" --log copy_voice_en.log
 ```
 
+Replace `C:\WaveshareVoices` with the folder where you extracted the ZIP.
 A transfer takes about 7 minutes per language and ends with `CONFORME`. To **check** a card without
 writing anything:
 
 ```powershell
-& $Py -B tools\voice\sd_voice_upload.py --port COM7 --lang en --verify-only --log tools\logs\check_en.log
+& $Py -B tools\voice\sd_voice_upload.py --port COM7 --lang en --sd-root "C:\WaveshareVoices" --verify-only --log check_en.log
 ```
 
 > `--verify-only` sends read commands only: **no file is written and no folder is created**, even if
