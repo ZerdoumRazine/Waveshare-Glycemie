@@ -22,14 +22,17 @@ Internet → Wi-Fi → écran.
 > Le firmware s'authentifie avec le compte **qui partage** (le *publisher*), c'est-à-dire
 > celui de la personne portant le capteur — **pas** un compte d'abonné.
 
-```c
-#define GLY_DEXCOM_USERNAME  "..."   /* identifiant du compte qui partage */
-#define GLY_DEXCOM_PASSWORD  "..."
-#define GLY_DEXCOM_REGION    "ous"   /* Europe */
-```
+**Méthode recommandée (K22) :** sur l'écran, ouvrir **RÉGLAGES → CONNEXION**
+ou suivre l'assistant qui s'affiche au premier démarrage. Saisir son propre
+compte Dexcom Share et choisir la région. La connexion est essayée avant
+confirmation ; les identifiants n'ont pas à être intégrés au code.
 
-Ces trois lignes vont dans `private/device_secrets.h` (modèle :
-`main/device_secrets.example.h`). Le dossier `private/` est ignoré par Git.
+Une application Windows `GlycemieConnexion.exe` permet également cette
+configuration par le câble USB.
+
+**Ancienne méthode pour développeurs uniquement :** un firmware personnalisé
+peut intégrer des valeurs dans `private/device_secrets.h`, hors dépôt.
+**Ne jamais distribuer le binaire** d'un tel firmware.
 
 ## 3. Région
 
@@ -61,8 +64,13 @@ identifiants (jamais les identifiants eux-mêmes) :
 | **REFUSE** | identifiants refusés ou compte bloqué : plus aucune tentative, même après redémarrage |
 | **NON CONCLUANT** | identifiants envoyés sans verdict (réseau ou serveur) : plus de tentative automatique |
 
-Conséquence pratique : **au tout premier démarrage, l'appareil ne se connecte pas tout
-seul.** Il faut autoriser explicitement la tentative depuis la console série :
+**Avec l'assistant K22**, l'utilisateur déclenche lui-même une tentative de
+connexion et peut confirmer l'enregistrement lorsque le test réussit :
+la console n'est **pas nécessaire** à l'installation normale.
+
+**Sur l'ancienne méthode de compilation**, le verrou d'authentification
+peut imposer une autorisation manuelle. La commande console de
+diagnostic historique est :
 
 ```powershell
 python tools\serial_capture.py --port COM7 --duration 60 --send "3:dexcom_status" --send "6:dexcom_auth" --log dexcom.log
