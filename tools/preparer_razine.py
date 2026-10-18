@@ -47,11 +47,12 @@ def main():
     parseur.add_argument('--dossier', default=os.path.join(RACINE, 'Razine'))
     parseur.add_argument('--accepter-modifications', action='store_true')
     parseur.add_argument('--depot-neuf', action='store_true',
-                         help="repartir d'un historique de publication vide (un seul commit)")
-    parseur.add_argument('--auteur', default='Mohamed-Razine Zerdoum')
-    parseur.add_argument('--courriel', default='127933260+razine2004@users.noreply.github.com',
-                         help='adresse des commits publies (une adresse GitHub masquee de preference)')
+                         help="ancienne option dangereuse, desactivee depuis la publication")
     args = parseur.parse_args()
+    if args.depot_neuf:
+        print('REFUS : un depot GitHub existe deja. Ne supprimez pas son historique ; '
+              'utilisez une branche et GitHub Desktop pour les mises a jour.')
+        return 2
 
     etat = git('status', '--porcelain')
     if etat.returncode != 0:
@@ -68,8 +69,12 @@ def main():
 
     commit = git('rev-parse', '--short', 'HEAD').stdout.strip()
     cible = os.path.abspath(args.dossier)
-    if os.path.commonpath([cible, RACINE]) == cible and cible != os.path.join(RACINE, 'Razine'):
-        print('Refus : %s contiendrait le projet lui-meme.' % cible)
+    if os.path.commonpath([cible, RACINE]) == cible:
+        print('Refus : la destination contiendrait le projet lui-meme.')
+        return 1
+    if os.path.exists(cible):
+        print('REFUS : le dossier de destination existe deja. '
+              'Choisissez un NOUVEAU dossier pour ne rien ecraser : %s' % cible)
         return 1
 
     # --- 1. Contenu : exactement ce que Git suit, a l'etat enregistre --------------------------
@@ -107,8 +112,8 @@ def main():
     for nom, genre, detail in trouvailles:
         problemes.append('contenu de %s : %s (%s)' % (nom, genre, detail))
     if not secrets:
-        problemes.append("private\\device_secrets.h est absent : impossible de verifier que vos "
-                         'identifiants ne sont pas dans la copie')
+        print('NOTE : aucun secret prive local pour une comparaison exacte. '
+              'Les controles de contenu restent heuristiques ; revue humaine necessaire.')
 
     if problemes:
         print('\n'.join('INTERDIT : %s' % p for p in problemes))
@@ -116,43 +121,9 @@ def main():
         shutil.rmtree(temporaire, ignore_errors=True)
         return 1
 
-    # --- 3. Remplacement de la copie publique -------------------------------------------------
-    # Le depot de publication (Razine\.git) est CONSERVE par defaut : il porte l'historique deja
-    # pret a envoyer. Seuls les fichiers du projet sont remplaces.
-    # Avec --depot-neuf, il repart de zero : un seul commit, sans aucun fichier des versions
-    # precedentes. C'est ce qu'il faut pour publier, car l'historique PART AVEC le depot : un
-    # fichier retire depuis (l'ancienne voix Windows, un chemin personnel) y figurerait encore.
-    garde = None
-    depot_publication = os.path.join(cible, '.git')
-    if args.depot_neuf and os.path.isdir(depot_publication):
-        shutil.rmtree(depot_publication, onexc=enlever_lecture_seule)
-    if os.path.isdir(depot_publication):
-        # mis de cote SUR LE MEME DISQUE : un simple renommage, sans recopier des milliers
-        # d'objets en lecture seule
-        garde = cible + '.git-garde'
-        if os.path.isdir(garde):
-            shutil.rmtree(garde, onexc=enlever_lecture_seule)
-        os.rename(depot_publication, garde)
-    if os.path.isdir(cible):
-        shutil.rmtree(cible, onexc=enlever_lecture_seule)
+    # --- 3. Copie SANS remplacement de dossier existant ni modification d'historique --------
     shutil.copytree(extrait, cible)
-    if garde is not None:
-        os.rename(garde, depot_publication)
-        print('Depot de publication conserve (Razine\\.git) : son historique est intact.')
     shutil.rmtree(temporaire, ignore_errors=True)
-
-    if args.depot_neuf:
-        # un seul commit, propre : aucune version anterieure, aucune adresse personnelle
-        env = dict(os.environ, GIT_AUTHOR_NAME=args.auteur, GIT_AUTHOR_EMAIL=args.courriel,
-                   GIT_COMMITTER_NAME=args.auteur, GIT_COMMITTER_EMAIL=args.courriel)
-        for commande in (['init', '-q', '-b', 'main'], ['add', '-A'],
-                         ['commit', '-q', '-m', 'Version publique 0.1.0']):
-            fait = subprocess.run(['git', '-C', cible] + commande, capture_output=True, text=True,
-                                  env=env, timeout=300)
-            if fait.returncode != 0:
-                print('git %s : %s' % (commande[0], (fait.stderr or '').strip()))
-                return 1
-        print('Historique de publication neuf : 1 commit, auteur %s <%s>' % (args.auteur, args.courriel))
 
     total = sum(os.path.getsize(os.path.join(b, f))
                 for b, _, fs in os.walk(cible) for f in fs)
@@ -163,7 +134,7 @@ def main():
     print('   1. regarder les images de screenshots\\ une par une (le controle lit les fichiers,')
     print('      pas les images) ;')
     print('   2. preparer les fichiers a telecharger : tools\\publier_firmware.ps1 ;')
-    print('   3. suivre docs\\COMMENT_PUBLIER_FR.md.')
+    print('   3. consulter docs\\PUBLICATION_GITHUB_FR.md pour entretenir le depot prive.')
     return 0
 
 
