@@ -69,6 +69,7 @@ static volatile bool s_scan_en_cours;
 static volatile bool s_scan_fini;
 
 static void afficher_etape(etape_t etape);
+static void bouton_bas(lv_obj_t *btn, const char *texte_btn, bool visible);
 
 /* ------------------------------------------------------------------------- */
 
