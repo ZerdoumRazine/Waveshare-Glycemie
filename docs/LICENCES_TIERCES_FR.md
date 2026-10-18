@@ -75,28 +75,39 @@ le rend **facultatif** :
 
 Le projet ne revendique aucun droit sur cet audio.
 
-### Banques vocales microSD — hors dépôt, redistribution à vérifier avant ouverture publique
+### Banques vocales microSD — fichiers audio Google Cloud Text-to-Speech
 
-Les 396 fichiers WAV par langue (six langues, ≈ 20 à 25 Mo chacune) ont été générés **une seule
-fois sur un PC** avec **Google Cloud Text-to-Speech** (voix `*-Chirp3-HD-Aoede`), à partir des
-textes du projet. L'appareil ne contacte jamais Google : il lit ces fichiers sur sa microSD.
+Les **2 376 annonces WAV** du projet (396 dans chacune des six langues) ont été
+produites avec **Google Cloud Text-to-Speech**, voix `Chirp3-HD-Aoede`, à partir
+des phrases propres à WaveShare Glycémie. Le moteur Google n'est **pas** inclus :
+l'appareil lit uniquement les fichiers audio présents sur sa microSD.
 
-Les sons ne sont **pas dans le dépôt Git**. Une archive microSD a été préparée et
-placée dans la préversion privée v0.1.0. **Cette distribution antérieure ne suffit pas à
-établir les droits de redistribution au public** : une vérification des conditions contractuelles
-applicables au service et au compte de génération reste nécessaire. La v0.2.0 ne regénère
-ni ne recopie les WAV dans ses nouveaux téléchargements. Chaque ancienne archive contient
-une notice de provenance (`PROVENANCE.md`), un manifeste et des empreintes. Cette notice
-indique notamment :
+**Utilisation prévue et conditions :** Google indique officiellement que les
+fichiers audio créés avec Cloud Text-to-Speech peuvent être utilisés dans
+des **applications ou des médias**, dans le respect des conditions Google Cloud
+et des lois applicables :
 
-- le projet n'est ni affilié à Google ni approuvé par Google ; Google Cloud, Chirp et les voix
-  citées appartiennent à Google ;
-- les sons proviennent de fichiers générés avec un service tiers. La **diffusion publique**
-  doit être évaluée au regard des conditions Google Cloud applicables ; aucune licence
-  autonome sur les modèles vocaux ni permission générale de redistribution n'est présumée ;
-- **la licence MIT du code ne couvre pas ces enregistrements** ;
-- qui préfère les refaire avec son propre compte Google trouve la marche à suivre dans
-  [TUTORIEL_VOIX_FR.md](TUTORIEL_VOIX_FR.md), parcours B.
+- [Google Cloud — Text-to-Speech, notions de base](https://docs.cloud.google.com/text-to-speech/docs/basics)
+- [Google Cloud — limites et usage des fichiers audio](https://docs.cloud.google.com/text-to-speech/quotas)
+- [Conditions générales Google Cloud](https://cloud.google.com/terms)
+
+Le paquet vocal est distribué **comme ressource des annonces de cet afficheur**,
+et non comme une bibliothèque indépendante de synthèse vocale. Distribuer
+ces WAV avec le projet ne transfère aucun droit sur les modèles, services,
+marques ou voix de Google ; le projet ne propose ni clonage de voix,
+ni entraînement ni système concurrent.
+
+**La licence MIT du code NE couvre PAS les fichiers WAV produits par Google
+Cloud Text-to-Speech.** Les utilisateurs restent responsables du respect
+des conditions applicables au service et des lois de leur juridiction.
+Le projet est indépendant de Google, sans affiliation ni approbation.
+
+La version `v0.2.0` comprend en ressource de Release séparée du code
+`glycemie-microSD-v0.2.0.zip`, contenant uniquement les WAV nécessaires,
+leur arborescence et une notice de provenance FR/EN.
+Elle n'inclut ni journaux de glycémie, ni identifiants, ni caches bruts de
+génération. Chaque utilisateur peut aussi recréer ses propres annonces
+avec le générateur et son compte Google.
 
 Ce qui est fourni dans le dépôt pour les reconstruire :
 
@@ -138,7 +149,9 @@ ne sont donc pas cités ici. L'interface graphique est originale.
 
 Apache-2.0 demande de conserver les mentions de copyright et de licence, et de signaler les
 modifications : c'est fait dans les fichiers eux-mêmes et dans
-`components/esp_driver_ppa/CORRECTIF.txt`. MIT demande de conserver la mention de copyright :
+`components/esp_driver_ppa/CORRECTIF.txt`. Le texte intégral de la licence Apache-2.0
+est dans [`components/esp_driver_ppa/LICENSE`](../components/esp_driver_ppa/LICENSE).
+MIT demande de conserver la mention de copyright :
 elle est dans `main/dexcom_share.c` pour pydexcom, et dans `LICENSE` pour le code du projet.
 
 ## 5. Ce qui n'est pas publié
@@ -158,6 +171,6 @@ Voir [PUBLICATION_GITHUB_FR.md](PUBLICATION_GITHUB_FR.md).
 ## 6. Si vous redistribuez ce projet
 
 1. Conservez `LICENSE` et `main/fonts/OFL.txt`.
-2. Conservez les en-têtes de licence Espressif dans `components/esp_driver_ppa/`.
+2. Conservez les en-têtes Espressif et le fichier `components/esp_driver_ppa/LICENSE`.
 3. Ne redistribuez pas de firmware compilé contenant des identifiants.
 4. Vérifiez vous-même les conditions applicables à tout audio généré que vous ajouteriez.
