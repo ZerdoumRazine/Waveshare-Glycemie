@@ -7,7 +7,7 @@
 
 Afficheur mural permanent qui montre, lisible à plusieurs mètres, la glycémie d'un
 capteur Dexcom G7 : valeur, flèche de tendance, variation, âge de la donnée, courbe,
-statistiques du jour, suivi des consommables et alertes sonores en français.
+statistiques du jour, suivi des consommables et annonces parlées en six langues.
 
 La chaîne est : capteur G7 → téléphone → serveurs **Dexcom Share** → Internet → écran.
 L'appareil ne communique **jamais** directement avec le capteur.
@@ -59,7 +59,7 @@ tiers gardent leurs auteurs et leurs licences.
 | **Glycémie** | Lecture Dexcom Share (compte européen « OUS »), une mesure toutes les 5 min, valeur en mg/dL en 320 px, flèche de tendance, variation depuis la mesure précédente, âge de la donnée (À JOUR < 6 min, RETARD 6–10 min, DONNÉES ANCIENNES ≥ 10 min) |
 | **Historique** | 288 mesures en mémoire (24 h), courbe 3 h / 6 h / 12 h / 24 h, exploration tactile point par point, enregistrement CSV quotidien sur microSD, rattrapage des mesures publiées en retard, reprise après coupure réseau sans doublon |
 | **Statistiques** | Page AUJOURD'HUI depuis minuit : temps dans la cible, moyenne, minimum, maximum, couverture, temps bas / haut, épisodes bas / hauts, frise de la journée |
-| **Consommables** | Capteur G7 : échéance = pose + 10 jours exactement, rappels 24 h et 2 h avant. Cathéter : intervalle 48 h ou 72 h, rappel unique 2 h avant. Dates et rappels conservés en NVS : **un redémarrage ou une recompilation ne les efface pas**. Stock local par consommable, jamais négatif, décrémenté une seule fois par changement |
+| **Consommables** | Capteur G7 : échéance = pose + 10 jours exactement, rappels 24 h et 2 h avant. Cathéter : intervalle 48 h ou 72 h, rappel unique 2 h avant. Dates et rappels conservés en NVS lors des redémarrages et mises à jour normales ; une défaillance de mémoire peut nécessiter une restauration depuis sauvegarde. Stock local par consommable, jamais négatif, décrémenté une seule fois par changement |
 | **Alertes** | Seuils très basse / basse / haute / très haute (55 / 70 / 250 / 300 mg/dL par défaut, réglables), alerte « aucune donnée », volume croissant si une alerte critique n'est pas acquittée, alerte très basse audible même en sourdine, panneau à l'écran, anti‑répétition |
 | **Voix** | Annonces lues depuis la microSD (banque de fichiers WAV par langue), repli sur la banque française si la langue manque, puis sur un bip. Installation pas à pas : [docs/TUTORIEL_VOIX_FR.md](docs/TUTORIEL_VOIX_FR.md). Les **alertes sonores** fonctionnent toujours, même sans banque vocale |
 | **Mode nuit** | Écran nuit simplifié selon un horaire (22:00–07:00 par défaut), luminosité réduite, un toucher rend l'interface normale 30 s, les alertes restent prioritaires |
