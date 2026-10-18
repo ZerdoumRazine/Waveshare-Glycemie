@@ -117,7 +117,7 @@ jobs:
       - name: Vérifier et préparer le ZIP d'installation
         run: |
           python tools/pack_release.py --build _firmware --exe _windows/GlycemieConnexion.exe --out _release
-          sha256sum -c _release/SHA256SUMS.txt --ignore-missing || (cd _release && sha256sum -c SHA256SUMS.txt)
+          (cd _release && sha256sum -c SHA256SUMS.txt)
       - name: Créer la version v0.2.0 en brouillon (jamais publique)
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
