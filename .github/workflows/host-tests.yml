@@ -30,9 +30,21 @@ jobs:
         run: python tests/test_langues_voix.py
       - name: Assistant USB (simulation)
         run: python tests/test_assistant_config.py
-      - name: Application Windows (simulation)
-        run: python tests/test_pc_app.py
       - name: Sauvegarde microSD (simulation)
         run: python tests/test_recuperation_microsd.py
       - name: Transfert des annonces (simulation)
         run: python tests/test_sd_voice_upload.py
+
+  windows-app:
+    name: Application de configuration Windows (sans écran)
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - name: Récupérer les sources
+        uses: actions/checkout@v4
+      - name: Préparer Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Tests de l'application Windows
+        run: python tests/test_pc_app.py
