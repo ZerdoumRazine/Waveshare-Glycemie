@@ -554,15 +554,14 @@ static void console_task(void *arg)
                     memset(line, 0, sizeof(line));
                     printf("IDENT dexcom %s\n", e == ESP_OK ? "a l'essai" : esp_err_to_name(e));
                 }
-            } else if (strncmp(line, "ident_enregistrer", 17) == 0) {
-                /* Enregistrement SEULEMENT apres un essai reussi ("force" pour passer outre) */
+            } else if (strcmp(line, "ident_enregistrer") == 0) {
+                /* Enregistrement uniquement apres un test de connexion reussi : aucun contournement console. */
                 char msg[96];
-                const bool force = strstr(line, "force") != NULL;
                 if (!credentials_trial_active()) {
                     printf("IDENT enregistrer : aucun essai en cours\n");
-                } else if (glucose_service_test_state(msg, sizeof(msg)) != GLY_TEST_REUSSI && !force) {
+                } else if (glucose_service_test_state(msg, sizeof(msg)) != GLY_TEST_REUSSI) {
                     printf("IDENT enregistrer refuse : essai non reussi (%s). "
-                           "Lancez ident_test, ou ident_enregistrer force.\n", msg);
+                           "Lancez ident_test.\n", msg);
                 } else {
                     const esp_err_t e = credentials_trial_commit();
                     printf("IDENT enregistrer %s\n", e == ESP_OK ? "ok (redemarrer pour appliquer)"
@@ -578,8 +577,9 @@ static void console_task(void *arg)
                 char msg[96];
                 printf("IDENT essai=%d detail=%s\n", (int)glucose_service_test_state(msg, sizeof(msg)), msg);
             } else if (strcmp(line, "ident_effacer") == 0) {
-                credentials_clear();
-                printf("IDENT efface (redemarrer pour revenir a l'assistant)\n");
+                const esp_err_t e = credentials_clear();
+                printf("IDENT efface %s\n", e == ESP_OK ? "ok (redemarrer pour appliquer)"
+                                                       : esp_err_to_name(e));
             } else if (strncmp(line, "ident_demo ", 11) == 0) {
                 credentials_set_demo(atoi(line + 11) != 0);
                 credentials_print();
@@ -612,9 +612,11 @@ void app_main(void)
 
     esp_err_t err = nvs_flash_init();
     if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND) {
-        ESP_LOGW(TAG, "NVS : reinitialisation de la partition (%s)", esp_err_to_name(err));
-        ESP_ERROR_CHECK(nvs_flash_erase());
-        err = nvs_flash_init();
+        /* Ne jamais effacer automatiquement NVS : cette partition contient les
+         * acces, les dates de pose et les reglages de l'utilisateur. Une
+         * restauration/maintenance doit etre decidee a partir d'une sauvegarde. */
+        ESP_LOGE(TAG, "NVS incompatible ou pleine (%s) : donnees conservees ; intervention necessaire",
+                 esp_err_to_name(err));
     }
     ESP_ERROR_CHECK(err);
 

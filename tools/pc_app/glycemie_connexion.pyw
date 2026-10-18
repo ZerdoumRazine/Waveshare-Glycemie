@@ -407,11 +407,14 @@ class Fenetre(object):
 
         def travail(app, dire):
             app.envoyer('ident_effacer')
-            reponse = [l for l in app.lire(3, 'IDENT efface') if l.startswith('IDENT')]
+            reponse = [l for l in app.lire(3, 'IDENT efface') if l.startswith('IDENT efface')]
             dire(reponse[0] if reponse else "Pas de réponse de l'appareil.")
-            if reponse:
+            if reponse and reponse[0].startswith('IDENT efface ok'):
                 dire("Redémarrez l'écran : l'assistant tactile reprendra. Le mode démonstration "
                      'reste disponible sans compte.')
+            else:
+                dire("Effacement non confirmé : les accès actuels ne doivent pas être considérés "
+                     "comme effacés. Ne redémarrez pas pour le moment.")
         self.lancer(travail, 'Effacement des accès')
 
 

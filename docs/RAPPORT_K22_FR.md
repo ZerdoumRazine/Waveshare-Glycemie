@@ -1,11 +1,15 @@
-# Rapport technique — K22 : configuration par l'utilisateur, application Windows, version publique
+# Rapport historique — préparation de K22 (17 octobre 2026)
 
-État au **17 octobre 2026**, dépôt de travail local, branche `main`.
-Ce rapport est le détail technique ; le résumé lisible est dans la conversation et dans
-[TUTORIEL_DEBUTANT_FR.md](TUTORIEL_DEBUTANT_FR.md).
+**Document d'archive, non représentatif de l'état actuel.** Il décrit les étapes
+de préparation sur ordinateur avant les essais matériels et la publication privée.
 
-**Rien n'a été installé sur l'appareil, rien n'a été publié.** Tout ce qui suit a été vérifié sur le
-PC : compilation, tests automatiques, essais simulés. Les essais sur l'écran restent à faire.
+Depuis ce rapport, le firmware K22 a été installé et vérifié sur l'appareil familial
+pour les opérations décrites dans [les limites](LIMITATIONS_FR.md).
+Le dépôt GitHub privé et sa préversion v0.1.0 ont également été créés.
+La première installation sur une carte neuve n'a pas encore été validée de bout en bout.
+
+Pour commencer l'installation, utilisez le [tutoriel débutant](TUTORIEL_DEBUTANT_FR.md).
+Les résultats historiques ci-dessous ne sont pas des tests récents de la version actuelle.
 
 ---
 

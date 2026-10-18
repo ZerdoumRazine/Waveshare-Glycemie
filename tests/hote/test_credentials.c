@@ -222,7 +222,13 @@ int main(void)
     CHECK_EQ_I(credentials_clear(), ESP_OK, "effacement");
     CHECK(!credentials_has_wifi() && !credentials_has_dexcom(), "plus rien en memoire vive");
     CHECK(!credentials_configured(), "l'assistant s'ouvrira au prochain demarrage");
-    CHECK(fake_nvs_blob("ident", "v1", &taille) == NULL, "le bloc enregistre a disparu de la flash");
+    /* Une configuration NVS explicitement vide empeche la reprise d'anciens
+     * identifiants qui seraient integres dans un firmware personnel. */
+    brut = fake_nvs_blob("ident", "v1", &taille);
+    CHECK(brut != NULL && taille == sizeof(credentials_t),
+          "un bloc NVS vide est conserve comme marqueur, meme apres effacement");
+    CHECK(!contient(brut, taille, MDP_WIFI), "mot de passe Wi-Fi ancien absent du marqueur");
+    CHECK(!contient(brut, taille, MDP_DEXCOM), "mot de passe Dexcom ancien absent du marqueur");
     credentials_get(&c);
     CHECK(strcmp(c.dexcom_region, "ous") == 0, "region revenue au defaut");
     CHECK_EQ_I(credentials_init(), ESP_OK, "redemarrage apres effacement");
@@ -231,6 +237,25 @@ int main(void)
     CHECK(strcmp(buf, "-") == 0, "plus de nom de reseau a afficher");
     credentials_masked_password(buf, sizeof(buf), true);
     CHECK(strcmp(buf, "-") == 0, "plus de mot de passe a afficher");
+
+    section("Une erreur NVS ne doit jamais etre annoncee comme un effacement reussi");
+    fake_nvs_reset();
+    CHECK_EQ_I(credentials_init(), ESP_OK, "memoire vierge pour les pannes");
+    CHECK_EQ_I(credentials_set_wifi(SSID_TEST, MDP_WIFI), ESP_OK, "Wi-Fi pour le test de panne");
+    CHECK_EQ_I(credentials_set_dexcom(USER_TEST, MDP_DEXCOM, "ous"), ESP_OK,
+               "Dexcom pour le test de panne");
+    fake_nvs_fail_next_open("dexguard");
+    CHECK_EQ_I(credentials_clear(), ESP_FAIL, "NVS dexguard inaccessible : erreur signalee");
+    CHECK(credentials_configured(), "config active preservee si dexguard refuse l'effacement");
+    fake_nvs_fail_next_open("ident");
+    CHECK_EQ_I(credentials_clear(), ESP_FAIL, "NVS ident inaccessible : erreur signalee");
+    CHECK(credentials_configured(), "config active preservee si la sauvegarde vide echoue");
+    CHECK_EQ_I(credentials_init(), ESP_OK, "redemarrage apres refus NVS");
+    CHECK(credentials_configured(), "anciens acces toujours utilisables apres echec");
+    CHECK_EQ_I(credentials_clear(), ESP_OK, "nouvel essai d'effacement, sans panne injectee");
+    CHECK(!credentials_configured(), "configuration vide en memoire");
+    CHECK_EQ_I(credentials_init(), ESP_OK, "redemarrage apres effacement confirme");
+    CHECK(!credentials_configured(), "aucun retour implicite des anciens comptes");
 
     return test_report("test_credentials");
 }

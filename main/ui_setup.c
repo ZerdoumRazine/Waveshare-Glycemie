@@ -69,6 +69,7 @@ static volatile bool s_scan_en_cours;
 static volatile bool s_scan_fini;
 
 static void afficher_etape(etape_t etape);
+static void bouton_bas(lv_obj_t *btn, const char *texte_btn, bool visible);
 
 /* ------------------------------------------------------------------------- */
 
@@ -169,11 +170,28 @@ static void on_afficher_mdp(lv_event_t *e)
 /* Actions */
 
 /* Les acces saisis sont ESSAYES : les precedents restent enregistres jusqu'a la confirmation. */
+static bool s_saisie_refusee; /* ne jamais afficher un ancien test comme reussi */
+
 static void essayer(void)
 {
-    credentials_trial_set_wifi(s_ssid, s_mdp_wifi);
-    credentials_trial_set_dexcom(s_user, s_mdp_dex, credentials_region_code(s_region));
+    s_saisie_refusee = false;
     s_confirmation = false;
+    esp_err_t err = credentials_trial_set_wifi(s_ssid, s_mdp_wifi);
+    if (err == ESP_OK) {
+        err = credentials_trial_set_dexcom(s_user, s_mdp_dex, credentials_region_code(s_region));
+    }
+    if (err != ESP_OK) {
+        /* Les valeurs saisies ne doivent pas etre acceptees implicitement si un
+         * setter les a refusees. Annuler l'essai conserve les acces precedents. */
+        credentials_trial_cancel();
+        s_saisie_refusee = true;
+        ui_set_text(s_verif_txt, tr(S_SETUP_FAIL_OTHER));
+        ui_set_text_color(s_verif_txt, UI_G_CRIT);
+        ui_set_text(s_verif_detail, s_premier ? "" : tr(S_SETUP_KEPT_OLD));
+        bouton_bas(s_btn_suivant, tr(S_SETUP_RETRY), true);
+        ESP_LOGW("assistant", "Nouvelle configuration refusee (%s)", esp_err_to_name(err));
+        return;
+    }
     glucose_service_test_request();
 }
 
@@ -499,6 +517,7 @@ void ui_setup_open(bool premier_demarrage)
 {
     s_premier = premier_demarrage;
     s_confirmation = false;
+    s_saisie_refusee = false;
     credentials_trial_begin(); /* les acces actuels sont mis de cote : ils ne seront pas perdus */
     s_region = credentials_region_index("ous");
     s_ssid[0] = s_mdp_wifi[0] = s_user[0] = s_mdp_dex[0] = '\0';
@@ -550,7 +569,7 @@ void ui_setup_tick(void)
         afficher_etape(ETAPE_WIFI);
         return;
     }
-    if (s_etape != ETAPE_VERIF || s_verif_txt == NULL) {
+    if (s_etape != ETAPE_VERIF || s_verif_txt == NULL || s_saisie_refusee) {
         return;
     }
     char detail[96];

@@ -10,7 +10,9 @@ Document volontairement franc. Il distingue ce qui est **vérifié**, ce qui est
 
 Ce projet est un **afficheur familial complémentaire**, personnel et expérimental.
 
-- **Ce n'est pas un dispositif médical.** Il n'est ni certifié, ni validé cliniquement.
+- **Ce dispositif expérimental n'est ni certifié pour un usage médical ni validé cliniquement.**
+  Son classement réglementaire n'a pas été déterminé ; une analyse spécialisée serait
+  nécessaire avant toute revendication de conformité ou distribution à grande échelle.
 - Il ne doit servir à **aucune décision thérapeutique**.
 - Il ne remplace **ni** l'application Dexcom officielle, **ni** ses alarmes, **ni** aucun
   système de surveillance certifié. Les alarmes de sécurité restent celles du capteur et
@@ -51,7 +53,24 @@ Ce projet est un **afficheur familial complémentaire**, personnel et expérimen
   supplémentaire** : ces idées ont pu être évoquées, elles n'ont jamais été implémentées.
 - Pas de mise à jour par le réseau (OTA) : le flash se fait par USB.
 
-## 4. Contraintes de compilation
+## 4. Confidentialité et mémoire interne
+
+- Les identifiants sont stockés dans l'espace NVS de l'appareil avec un
+  **brouillage réversible, pas un chiffrement cryptographique**. Un accès
+  physique à la flash ou à la console USB peut exposer des données.
+- « Effacer les identifiants » retire les accès de la configuration active
+  et conserve un marqueur vide pour éviter leur réapparition depuis un
+  ancien programme personnalisé. Il ne garantit pas l'effacement
+  médico-légal des anciennes pages flash (mémoire à journalisation).
+- Si la NVS est pleine ou incompatible, le programme ne doit pas
+  effacer automatiquement dates, stocks et paramètres : une récupération
+  manuelle depuis une sauvegarde peut être nécessaire. Dans cette situation,
+  l'affichage complémentaire peut devenir indisponible.
+- L'export des historiques sur la microSD via USB ne demande pas
+  d'authentification locale. Conserver l'appareil et sa carte dans un
+  environnement de confiance.
+
+## 5. Contraintes de compilation
 
 - **Le chemin du projet doit être purement ASCII.** Avec un accent, la compilation échoue
   dans `ccache`, dans `ldgen.py` et à l'édition de liens. Les espaces sont acceptés.
@@ -61,7 +80,7 @@ Ce projet est un **afficheur familial complémentaire**, personnel et expérimen
   révision demanderait une adaptation réfléchie du profil.
 - La compilation est en `-Werror` : un avertissement arrête la construction.
 
-## 5. Matériel
+## 6. Matériel
 
 - **Audio** : la limite analogique est atteinte à 100 % de volume (saturation mesurée,
   3ᵉ harmonique à −11 dB pour +1,3 dB utile). **85 % est le maximum propre.** Pour un vrai
@@ -77,12 +96,12 @@ Ce projet est un **afficheur familial complémentaire**, personnel et expérimen
 - Le firmware de l'ESP32-C6 n'est jamais modifié ; sa version reste « inconnue » car il ne
   répond pas à la requête de version.
 
-## 6. Commandes vocales — variante expérimentale non distribuée
+## 7. Commandes vocales — variante expérimentale non distribuée
 
 La **version publique ne propose pas de reconnaissance de commandes vocales** et n'ouvre pas le microphone pour ce service. La variante historique, fondée sur ESP-SR, a été écartée en raison de sa fiabilité insuffisante et de ses besoins matériels. Les annonces et alertes sonores restent indépendantes et disponibles avec les banques microSD dans les six langues.
 
 
-## 7. Ce qui est couvert par des tests automatiques
+## 8. Ce qui est couvert par des tests automatiques
 
 Exécutés et passés le **2026-10-15** sur cette machine :
 
@@ -94,7 +113,7 @@ Exécutés et passés le **2026-10-15** sur cette machine :
 | `tests/hote/test_consommables.c` | échéances capteur et cathéter, rappels, anti-répétition, persistance NVS après redémarrage, stock | 65 / 65 |
 | `tests/test_depot.py` | structure, chemins, secrets, partitions, dépendances, captures | voir la sortie du script |
 
-## 8. Ce qui n'est **pas** couvert par des tests automatiques
+## 9. Ce qui n'est **pas** couvert par des tests automatiques
 
 - **Dexcom Share** : pas de test automatique, ni hors ligne ni en ligne. Le client HTTPS
   n'est pas isolable sans ESP-IDF, et il n'existe pas de serveur Share de test.
@@ -111,7 +130,7 @@ Exécutés et passés le **2026-10-15** sur cette machine :
   la partie « rappels des consommables et anti-répétition » est couverte en test hôte.
 - **Audio et voix** : validés à l'oreille et par mesure au micro de la carte.
 
-## 9. Mesures rapportées, non refaites
+## 10. Mesures rapportées, non refaites
 
 Les chiffres de performance et de mémoire cités dans la documentation (112 ms de
 rafraîchissement de l'accueil, 94–104 Ko de RAM interne, ≈ 22 Mo de PSRAM, endurances de
@@ -119,7 +138,7 @@ rafraîchissement de l'accueil, 94–104 Ko de RAM interne, ≈ 22 Mo de PSRAM, 
 sont rapportés tels quels, à titre de référence historique : **ils n'ont pas été refaits**
 lors de la constitution de ce dépôt.
 
-## 10. Opérations volontairement non effectuées
+## 11. Opérations volontairement non effectuées
 
 Lors de la constitution de ce dépôt, aucune opération modifiant la carte n'a été faite :
 pas de flash, pas d'effacement, pas d'écriture NVS, pas de formatage de la microSD, pas de

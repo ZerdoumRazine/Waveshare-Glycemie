@@ -23,5 +23,6 @@ esp_err_t nvs_set_blob(nvs_handle_t h, const char *key, const void *value, size_
 
 /* Utilitaires reserves aux tests */
 void fake_nvs_reset(void);        /* efface tout : carte neuve */
+void fake_nvs_fail_next_open(const char *namespace_name); /* injection de panne, une seule fois */
 int  fake_nvs_write_count(void);  /* nombre d'ecritures effectives */
 const void *fake_nvs_blob(const char *ns, const char *key, size_t *len); /* octets bruts, tels qu'en flash */

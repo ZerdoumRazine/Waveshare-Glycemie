@@ -1,0 +1,37 @@
+name: Compilation ESP-IDF
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  esp32p4-build:
+    name: Firmware ESP32-P4 (sans identifiants)
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    container:
+      image: espressif/idf:v5.5.5
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+      - name: Activer ESP-IDF et compiler (sans identifiants)
+        shell: bash
+        run: |
+          source "$IDF_PATH/export.sh"
+          idf.py --version
+          idf.py set-target esp32p4
+          idf.py build
+          python tools/verif_avant_flash.py
+      - name: Conserver les trois binaires verifies (depot prive)
+        uses: actions/upload-artifact@v4
+        with:
+          name: firmware-esp32p4-${{ github.sha }}
+          path: |
+            build/glycemie_display.bin
+            build/bootloader/bootloader.bin
+            build/partition_table/partition-table.bin
+          if-no-files-found: error
+          retention-days: 30

@@ -44,6 +44,9 @@ def main():
     check('le dialogue avec l\'appareil est celui de l\'assistant deja teste',
           'import assistant_config as ac' in source)
     check('aucun identifiant en dur', '@gmail' not in source and 'razine' not in source.lower())
+    check("effacement USB : afficher un redemarrage uniquement apres confirmation",
+          "startswith('IDENT efface ok')" in source and
+          "Effacement non confirmé" in source)
 
     try:
         import tkinter  # noqa: F401

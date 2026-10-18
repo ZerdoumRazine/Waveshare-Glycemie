@@ -357,9 +357,10 @@ def effacer(app, demande=demander):
         print('Rien efface.')
         return 1
     app.envoyer('ident_effacer')
-    reponse = [l for l in app.lire(3, 'IDENT efface') if l.startswith('IDENT')]
+    reponse = [l for l in app.lire(3, 'IDENT efface') if l.startswith('IDENT efface')]
     print(reponse[0] if reponse else "Pas de reponse de l'appareil.")
-    if not reponse:
+    if not reponse or not reponse[0].startswith('IDENT efface ok'):
+        print("L'effacement n'a PAS ete confirme : ne redemarrez pas pour le moment.")
         return 1
     print("Redemarrez l'appareil : l'assistant de l'ecran reprendra, et le mode demonstration")
     print('reste disponible sans compte.')

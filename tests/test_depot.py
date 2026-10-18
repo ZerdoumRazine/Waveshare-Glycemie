@@ -156,6 +156,21 @@ def main():
     check('la page STATS n\'est pas reintroduite',
           not os.path.exists(os.path.join(ROOT, 'main', 'ui_stats.c')) and 'UI_PAGE_STATS' not in pages)
 
+    # Invariants de surete qui doivent rester vrais apres une refactorisation
+    main_src = textes.get('main/app_main.c', '')
+    credentials_src = textes.get('main/credentials.c', '')
+    ui_src = textes.get('main/ui_setup.c', '')
+    check('aucun effacement automatique de NVS au demarrage',
+          'nvs_flash_erase(' not in main_src)
+    check('enregistrement serie uniquement apres test valide',
+          'ident_enregistrer force' not in main_src and
+          'glucose_service_test_state(msg, sizeof(msg)) != GLY_TEST_REUSSI' in main_src)
+    check('effacement de configuration : NVS vide explicite et erreur reportee',
+          'err = persist();' in credentials_src and 'return err;' in
+          credentials_src.split('esp_err_t credentials_clear(void)', 1)[-1].split('bool credentials_demo(void)', 1)[0])
+    check('assistant tactile : erreurs des identifiants controlees',
+          's_saisie_refusee' in ui_src and 'if (err != ESP_OK)' in ui_src)
+
     # 8. Versions de la pile logicielle historiquement validees
     comp = textes.get('main/idf_component.yml', '')
     for nom, motif in (('ESP-IDF >= 5.5.5', r'version:\s*">=5\.5\.5"'),

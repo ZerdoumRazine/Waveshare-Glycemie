@@ -19,27 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
--------------------------------------------------------------------------------
-
-This licence covers ONLY the source code written for this project (main/, tests/,
-tools/ and the documentation in docs/).
-
-It does NOT cover third-party components redistributed or fetched alongside it:
-ESP-IDF and Espressif managed components, the Waveshare BSP, LVGL, the Montserrat
-fonts, and the generated French speech files. Each keeps its own licence — see
-docs/LICENCES_TIERCES_FR.md.
-
-This project is an experimental personal project. It is NOT a medical device and
-must not be used to make treatment decisions, nor as a replacement for the official
-Dexcom alarms and monitoring applications.
-
----
-
-Portee / scope
-
-Cette licence couvre le code original de ce projet. Les fichiers portant un autre en-tete
-de copyright gardent leur propre licence : voir docs/LICENCES_TIERCES_FR.md.
-
-This licence covers this project's own code. Files carrying a different copyright header
-keep their own licence: see docs/LICENCES_TIERCES_FR.md.

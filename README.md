@@ -46,7 +46,7 @@ components keep their own authors and licences.
 - **Today** — time in range, average, min, max, coverage, time low/high, low/high episodes.
 - **Consumables** — G7 sensor: due = insertion + exactly 10 days, reminders 24 h and 2 h
   before. Infusion set: 48 h or 72 h, single reminder 2 h before. Dates and reminders are
-  stored in NVS, so **a reboot or a rebuild never silently resets them**. Local stock count
+  stored in NVS across normal reboots and rebuilds; a memory failure may require restoring a backup. Local stock count
   per item, never negative, decremented once per change.
 - **Alerts** — urgent‑low / low / high / urgent‑high thresholds (55 / 70 / 250 / 300 mg/dL by
   default, adjustable), “no data” alert, rising volume while a critical alert is unacknowledged,
