@@ -25,3 +25,13 @@ jobs:
           idf.py set-target esp32p4
           idf.py build
           python tools/verif_avant_flash.py
+      - name: Conserver les trois binaires verifies (depot prive)
+        uses: actions/upload-artifact@v4
+        with:
+          name: firmware-esp32p4-${{ github.sha }}
+          path: |
+            build/glycemie_display.bin
+            build/bootloader/bootloader.bin
+            build/partition_table/partition-table.bin
+          if-no-files-found: error
+          retention-days: 30
