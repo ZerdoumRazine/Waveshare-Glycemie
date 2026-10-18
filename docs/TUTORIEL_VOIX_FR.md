@@ -49,31 +49,27 @@ la carte, l'appareil **replie sur le français** ; s'il n'y a rien du tout, il n
 
 ## 2. Parcours A — installer une banque prête à l'emploi
 
-### 2.1 Récupérer le paquet de sa langue
+### 2.1 Télécharger les six langues (un seul ZIP)
 
-Les paquets sont **prévus pour les pièces jointes d'une version (Release) GitHub**, séparément du code. Vérifiez leur disponibilité dans [Releases](../../releases) : si aucune Release n'est publiée, ces téléchargements ne sont pas encore accessibles.
+Dans la [Release v0.2.0](https://github.com/ZerdoumRazine/Waveshare-Glycemie/releases/tag/v0.2.0),
+téléchargez **`glycemie-microSD-v0.2.0.zip`** (ressource audio optionnelle).
+Cette archive contient les **six banques complètes**, soit 396 WAV par langue :
+français, anglais, espagnol, allemand, italien et portugais brésilien.
 
-| Paquet | Contenu | Taille du ZIP |
-|---|---|---|
-| `glycemie-voix-fr-k21.zip` | français | 19,4 Mo |
-| `glycemie-voix-en-k21.zip` | anglais américain | 20,2 Mo |
-| `glycemie-voix-es-k21.zip` | espagnol | 21,2 Mo |
-| `glycemie-voix-de-k21.zip` | allemand | 21,4 Mo |
-| `glycemie-voix-it-k21.zip` | italien | 22,3 Mo |
-| `glycemie-voix-pt-k21.zip` | portugais (Brésil) | 24,9 Mo |
-
-Chaque paquet contient : l'arborescence à copier, `manifest.csv` (texte, durée, taille et CRC32 de
-chaque fichier), `SHA256SUMS.txt`, `PROVENANCE.md` et un mode d'emploi FR/EN.
-
-**Vérifier l'empreinte du ZIP avant de l'ouvrir** (PowerShell) :
+Téléchargez également **`SHA256SUMS-voix.txt`** pour vérifier l'intégrité :
 
 ```powershell
-Get-FileHash .\glycemie-voix-fr-k21.zip -Algorithm SHA256
+Get-FileHash .\glycemie-microSD-v0.2.0.zip -Algorithm SHA256
 ```
 
-Le résultat doit être identique à la ligne correspondante du fichier `SHA256SUMS-paquets.txt`
-publié avec les paquets. S'il diffère, ne pas utiliser le fichier : le téléchargement est incomplet
-ou altéré.
+Comparez la valeur affichée à l'empreinte du fichier `SHA256SUMS-voix.txt`.
+N'utilisez pas un ZIP dont l'empreinte ne correspond pas.
+
+**Décompressez complètement** le ZIP dans un dossier du PC : il contient
+`glycemie/audio/voice/` prêt à copier sur la carte mémoire, plus une notice
+`PROVENANCE_VOIX.txt`. Les fichiers audio proviennent de Google Cloud
+Text-to-Speech et ne sont pas soumis à la licence MIT du code :
+[licences et provenance](LICENCES_TIERCES_FR.md).
 
 ### 2.2 Sauvegarder la carte AVANT de la modifier
 
@@ -107,8 +103,8 @@ Trois pièges fréquents :
 
 - **ne pas** créer de dossier `fr/` : le français vit directement dans `voice/` ;
 - **ne pas** créer `en/voice/` : seulement `en/` ;
-- **ne pas** copier `manifest.csv`, `PROVENANCE.md` ni `LISEZMOI_README.txt` sur la carte : ils
-  servent uniquement à la vérification sur le PC.
+- **ne pas** copier `PROVENANCE_VOIX.txt` sur la carte : cette notice reste à côté du ZIP
+  sur le PC (le dossier `glycemie/` suffit).
 
 ### 2.4 Tester
 
@@ -125,15 +121,16 @@ L'écran peut recevoir les fichiers par le câble USB‑série, carte en place. 
 et `pyserial`, l'écran allumé, et le bon port COM. Fermer tout moniteur série avant.
 
 ```powershell
-$Py = 'tools\voice\.venv_tts\Scripts\python.exe'   # ou votre Python
-& $Py -B tools\voice\sd_voice_upload.py --port COM7 --lang fr --log tools\logs\copie_voix_fr.log
+$Py = 'tools\voice\.venv_tts\Scripts\python.exe'   # ou votre Python avec pyserial
+& $Py -B tools\voice\sd_voice_upload.py --port COM7 --lang fr --sd-root "C:\VoixWaveshare" --log copie_voix_fr.log
 ```
 
-Le transfert dure ≈ 7 minutes par langue et se termine par `CONFORME`. Pour **vérifier** une carte
+Remplacez `C:\VoixWaveshare` par le dossier où vous avez décompressé le ZIP.
+Le transfert dure environ 7 minutes par langue et se termine par `CONFORME`. Pour **vérifier** une carte
 sans rien écrire :
 
 ```powershell
-& $Py -B tools\voice\sd_voice_upload.py --port COM7 --lang en --verify-only --log tools\logs\verif_en.log
+& $Py -B tools\voice\sd_voice_upload.py --port COM7 --lang en --sd-root "C:\VoixWaveshare" --verify-only --log verif_en.log
 ```
 
 > `--verify-only` n'envoie que des commandes de lecture : **aucun fichier n'est écrit, aucun dossier
