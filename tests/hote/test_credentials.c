@@ -238,24 +238,47 @@ int main(void)
     credentials_masked_password(buf, sizeof(buf), true);
     CHECK(strcmp(buf, "-") == 0, "plus de mot de passe a afficher");
 
-    section("Une erreur NVS ne doit jamais etre annoncee comme un effacement reussi");
+    section("Effacement sur erreur NVS : aucun faux succes");
     fake_nvs_reset();
     CHECK_EQ_I(credentials_init(), ESP_OK, "memoire vierge pour les pannes");
-    CHECK_EQ_I(credentials_set_wifi(SSID_TEST, MDP_WIFI), ESP_OK, "Wi-Fi pour le test de panne");
+    CHECK_EQ_I(credentials_set_wifi(SSID_TEST, MDP_WIFI), ESP_OK, "Wi-Fi initial");
     CHECK_EQ_I(credentials_set_dexcom(USER_TEST, MDP_DEXCOM, "ous"), ESP_OK,
-               "Dexcom pour le test de panne");
-    fake_nvs_fail_next_open("dexguard");
-    CHECK_EQ_I(credentials_clear(), ESP_FAIL, "NVS dexguard inaccessible : erreur signalee");
-    CHECK(credentials_configured(), "config active preservee si dexguard refuse l'effacement");
+               "Dexcom initial");
+
     fake_nvs_fail_next_open("ident");
-    CHECK_EQ_I(credentials_clear(), ESP_FAIL, "NVS ident inaccessible : erreur signalee");
-    CHECK(credentials_configured(), "config active preservee si la sauvegarde vide echoue");
-    CHECK_EQ_I(credentials_init(), ESP_OK, "redemarrage apres refus NVS");
-    CHECK(credentials_configured(), "anciens acces toujours utilisables apres echec");
-    CHECK_EQ_I(credentials_clear(), ESP_OK, "nouvel essai d'effacement, sans panne injectee");
-    CHECK(!credentials_configured(), "configuration vide en memoire");
-    CHECK_EQ_I(credentials_init(), ESP_OK, "redemarrage apres effacement confirme");
-    CHECK(!credentials_configured(), "aucun retour implicite des anciens comptes");
+    CHECK_EQ_I(credentials_clear(), ESP_FAIL, "echec NVS ident : erreur signalee");
+    CHECK(credentials_configured(), "configuration active conservee apres refus NVS");
+    CHECK_EQ_I(credentials_init(), ESP_OK, "redemarrage apres echec NVS");
+    CHECK(credentials_configured(), "acces permanents conserves apres l'echec");
+
+    /* Une erreur dans l'espace auxiliaire dexcom ne doit pas masquer le fait
+     * que les secrets ont bien ete retires de NVS ident. */
+    fake_nvs_fail_next_open("dexcom");
+    CHECK_EQ_I(credentials_clear(), ESP_OK, "identifiants effaces meme si nettoyage du verrou refuse");
+    CHECK(!credentials_configured(), "aucun compte en memoire");
+    brut = fake_nvs_blob("ident", "v1", &taille);
+    CHECK(brut != NULL && taille == sizeof(credentials_t),
+          "bloc vide enregistre avant nettoyage du verrou");
+    CHECK_EQ_I(credentials_init(), ESP_OK, "redemarrage apres nettoyage partiel");
+    CHECK(!credentials_configured(), "aucun retour des identifiants retires");
+
+    section("Nettoyage du verrou dexcom apres effacement confirme");
+    CHECK_EQ_I(credentials_set_wifi(SSID_TEST, MDP_WIFI), ESP_OK, "nouveau reseau");
+    CHECK_EQ_I(credentials_set_dexcom(USER_TEST, MDP_DEXCOM, "ous"), ESP_OK, "nouveau compte");
+    nvs_handle_t guard_handle = 0;
+    CHECK_EQ_I(nvs_open("dexcom", NVS_READWRITE, &guard_handle), ESP_OK,
+               "espace du verrou dexcom accessible");
+    const uint8_t tag[8] = {1, 2, 3, 4, 5, 6, 7, 8};
+    CHECK_EQ_I(nvs_set_blob(guard_handle, "cred", tag, sizeof(tag)), ESP_OK,
+               "empreinte de test ecrite");
+    CHECK_EQ_I(nvs_commit(guard_handle), ESP_OK, "empreinte de test confirmee");
+    nvs_close(guard_handle);
+    CHECK(fake_nvs_blob("dexcom", "cred", &taille) != NULL, "empreinte de test presente");
+    CHECK_EQ_I(credentials_clear(), ESP_OK, "effacement des identifiants et du verrou");
+    CHECK(fake_nvs_blob("dexcom", "cred", &taille) == NULL,
+          "verrou de l'ancien compte retire de l'espace correct");
+    CHECK_EQ_I(credentials_init(), ESP_OK, "redemarrage");
+    CHECK(!credentials_configured(), "configuration toujours vierge");
 
     return test_report("test_credentials");
 }

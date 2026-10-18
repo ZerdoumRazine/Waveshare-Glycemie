@@ -75,22 +75,25 @@ le rend **facultatif** :
 
 Le projet ne revendique aucun droit sur cet audio.
 
-### Banques vocales microSD — hors dépôt, distribuées à part
+### Banques vocales microSD — hors dépôt, redistribution à vérifier avant ouverture publique
 
 Les 396 fichiers WAV par langue (six langues, ≈ 20 à 25 Mo chacune) ont été générés **une seule
 fois sur un PC** avec **Google Cloud Text-to-Speech** (voix `*-Chirp3-HD-Aoede`), à partir des
 textes du projet. L'appareil ne contacte jamais Google : il lit ces fichiers sur sa microSD.
 
-Ils ne sont **pas dans le dépôt** (taille), mais ils sont **distribués séparément**, en pièces
-jointes de Release et dans le dossier à remettre. Chaque paquet contient sa propre notice de
-provenance (`PROVENANCE.md`, français et anglais), son manifeste et ses empreintes. Cette notice
+Les sons ne sont **pas dans le dépôt Git**. Une archive microSD a été préparée et
+placée dans la préversion privée v0.1.0. **Cette distribution antérieure ne suffit pas à
+établir les droits de redistribution au public** : une vérification des conditions contractuelles
+applicables au service et au compte de génération reste nécessaire. La v0.2.0 ne regénère
+ni ne recopie les WAV dans ses nouveaux téléchargements. Chaque ancienne archive contient
+une notice de provenance (`PROVENANCE.md`), un manifeste et des empreintes. Cette notice
 indique notamment :
 
 - le projet n'est ni affilié à Google ni approuvé par Google ; Google Cloud, Chirp et les voix
   citées appartiennent à Google ;
-- les sons sont distribués comme ressources de ce projet, dans le cadre de l'utilisation autorisée
-  des fichiers audio produits par le service ; le projet ne revendique aucun droit sur le modèle
-  ni sur la voix ;
+- les sons proviennent de fichiers générés avec un service tiers. La **diffusion publique**
+  doit être évaluée au regard des conditions Google Cloud applicables ; aucune licence
+  autonome sur les modèles vocaux ni permission générale de redistribution n'est présumée ;
 - **la licence MIT du code ne couvre pas ces enregistrements** ;
 - qui préfère les refaire avec son propre compte Google trouve la marche à suivre dans
   [TUTORIEL_VOIX_FR.md](TUTORIEL_VOIX_FR.md), parcours B.

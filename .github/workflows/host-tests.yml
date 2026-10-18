@@ -31,6 +31,8 @@ jobs:
         run: python tests/test_recuperation_microsd.py
       - name: Transfert des annonces (simulation)
         run: python tests/test_sd_voice_upload.py
+      - name: Paquet d'installation (fichiers factices)
+        run: python tests/test_pack_release.py
 
   windows-app:
     name: Application de configuration Windows (sans écran)
@@ -47,6 +49,14 @@ jobs:
         run: python tests/test_pc_app.py
       - name: Installer l'outil de construction Windows
         run: py -3 -m pip install pyinstaller
+      - name: Vérifier la syntaxe de l'installateur USB
+        shell: pwsh
+        run: |
+          $tok = $null
+          $errors = $null
+          [void][System.Management.Automation.Language.Parser]::ParseFile(
+            (Resolve-Path 'tools/installer.ps1').Path, [ref]$tok, [ref]$errors)
+          if ($errors.Count -gt 0) { $errors | Out-String | Write-Host; exit 1 }
       - name: Construire l'executable Windows
         shell: pwsh
         run: powershell -ExecutionPolicy Bypass -File tools/pc_app/construire_exe.ps1

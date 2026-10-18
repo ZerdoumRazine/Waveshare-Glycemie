@@ -62,33 +62,41 @@ L'écran s'allume en quelques secondes.
 
 ## 3. Installer le programme (sans rien compiler)
 
-Téléchargez les fichiers de la dernière *Release* du projet :
+Dans la [préversion v0.2.0](https://github.com/ZerdoumRazine/Waveshare-Glycemie/releases),
+récupérez `glycemie-installation-ecran-v0.2.0.zip` et, si vous souhaitez utiliser
+la configuration depuis un PC, `GlycemieConnexion.exe`.
 
-- `glycemie_display.bin`, `bootloader.bin`, `partition-table.bin` — le programme ;
-- `installer.ps1` — l'installation en une commande ;
-- `GlycemieConnexion.exe` — l'application de configuration pour Windows (étape 4, facultative) ;
-- `SHA256SUMS.txt` — les empreintes, pour vérifier que vos fichiers sont intacts.
+**Décompressez intégralement le ZIP** dans un nouveau dossier Windows. Il contient
+les trois fichiers du firmware, `installer.ps1`, une notice bilingue et leurs empreintes SHA-256.
+Ne mélangez pas ces fichiers avec ceux d'une ancienne version.
 
-Mettez-les tous **dans le même dossier**. Il faut aussi **Python** sur le PC ([python.org](https://www.python.org/downloads/),
-cochez « Add python.exe to PATH »), puis, une seule fois, dans PowerShell :
+Sur votre PC Windows, installez Python 3 ([python.org](https://www.python.org/downloads/))
+puis, dans PowerShell :
 
 ```powershell
 py -3 -m pip install esptool
 ```
 
-Ensuite, clic droit sur **`installer.ps1`** → *Exécuter avec PowerShell*. Comptez deux minutes.
+Branchez votre écran au port USB-C **UART/CH343** avec un câble de données.
+Dans PowerShell, depuis le dossier extrait, exécutez :
 
+```powershell
+powershell -ExecutionPolicy Bypass -File .\installer.ps1
 ```
-Installation sur COM7...
-Writing at 0x00010000... (100 %)
-C'est installé. L'écran redémarre et affiche l'assistant de configuration.
-```
 
-L'installation **ne formate pas** la microSD et **n'efface pas** la mémoire : elle remplace le
-programme, rien d'autre.
+Le script vérifie les empreintes et détecte la révision de la puce **ESP32-P4 pré-v3**.
+Il s'arrête en cas d'incompatibilité, puis demande de taper `INSTALLER` avant toute écriture.
+Si la détection du port échoue, précisez celui de l'écran, par exemple
+`powershell -ExecutionPolicy Bypass -File .\installer.ps1 -Port COM7`.
 
-> Si plusieurs appareils sont branchés, le script s'arrête et vous montre la liste : relancez-le
-> avec la bonne prise, par exemple `.\installer.ps1 -Port COM7`.
+Le flash remplace l'amorce, la table des partitions et le programme, mais **ne
+demande pas l'effacement général de la flash et ne formate pas la microSD**.
+Il peut néanmoins toujours échouer (coupure USB, mauvaise carte, panne mémoire) :
+conservez une sauvegarde de vos données et utilisez le matériel exactement indiqué.
+
+> **Limite :** la première installation avec saisie et validation d'un compte
+> sur un appareil neuf n'a pas encore été vérifiée de bout en bout sur matériel.
+> L'écran est un affichage expérimental complémentaire, non un système d'alarme médical.
 
 ---
 

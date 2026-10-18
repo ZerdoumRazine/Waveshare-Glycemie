@@ -61,34 +61,39 @@ The screen lights up within a few seconds.
 
 ## 3. Install the firmware (no compiling)
 
-Download the files from the project's latest *Release*:
+From the [v0.2.0 pre-release](https://github.com/ZerdoumRazine/Waveshare-Glycemie/releases),
+download `glycemie-installation-ecran-v0.2.0.zip`. For Windows USB configuration,
+also download `GlycemieConnexion.exe` (its interface is currently in French).
 
-- `glycemie_display.bin`, `bootloader.bin`, `partition-table.bin` — the firmware;
-- `installer.ps1` — one-command installation;
-- `GlycemieConnexion.exe` — the Windows configuration app (step 4, optional);
-- `SHA256SUMS.txt` — checksums, to verify your files are intact.
+**Extract the entire ZIP** to a new folder on Windows. It contains the three firmware
+binaries, `installer.ps1`, bilingual instructions, and SHA-256 checksums.
+Do not mix files from different releases.
 
-Put them all **in the same folder**. You also need **Python** on the PC
-([python.org](https://www.python.org/downloads/), tick "Add python.exe to PATH"), then, once, in
-PowerShell:
+Install Python 3 ([python.org](https://www.python.org/downloads/)) and then run:
 
 ```powershell
 py -3 -m pip install esptool
 ```
 
-Then right-click **`installer.ps1`** → *Run with PowerShell*. Allow two minutes.
+Connect the board's **UART/CH343** USB-C port using a data-capable cable.
+Open PowerShell in the extracted folder and run:
 
+```powershell
+powershell -ExecutionPolicy Bypass -File .\installer.ps1
 ```
-Installation sur COM7...
-Writing at 0x00010000... (100 %)
-C'est installé. L'écran redémarre et affiche l'assistant de configuration.
-```
 
-The installation **does not format** the microSD and **does not erase** the memory: it replaces the
-firmware, nothing else.
+The installer checks file hashes and the **pre-v3 ESP32-P4 chip revision**.
+It stops if the hardware is unsupported and requires you to type `INSTALLER`
+before writing anything. If auto-detection fails, specify the correct COM port,
+for example `powershell -ExecutionPolicy Bypass -File .\installer.ps1 -Port COM7`.
 
-> If several devices are plugged in, the script stops and lists them: run it again with the right
-> port, for example `.\installer.ps1 -Port COM7`.
+The installer writes the bootloader, partition table and application. It does
+**not request a full flash erase or format the microSD**. Nevertheless, hardware
+updates can fail, so keep backups and use only the documented board.
+
+> **Limit:** a complete first-time setup with real credentials on a brand-new
+> board has not yet been tested end to end on hardware. This is an experimental
+> supplementary display, not a medical alarm system.
 
 ---
 
