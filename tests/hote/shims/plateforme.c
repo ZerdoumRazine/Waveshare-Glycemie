@@ -65,12 +65,19 @@ static nvs_entry_t s_entries[NVS_MAX_ENTRIES];
 static char s_handle_ns[NVS_MAX_HANDLES][20];
 static int s_handle_used[NVS_MAX_HANDLES];
 static int s_writes;
+static char s_fail_next_open_ns[20]; /* injection de panne reservee aux tests */
 
 void fake_nvs_reset(void)
 {
     memset(s_entries, 0, sizeof(s_entries));
     memset(s_handle_used, 0, sizeof(s_handle_used));
     s_writes = 0;
+    s_fail_next_open_ns[0] = '\0';
+}
+
+void fake_nvs_fail_next_open(const char *namespace_name)
+{
+    snprintf(s_fail_next_open_ns, sizeof(s_fail_next_open_ns), "%s", namespace_name);
 }
 
 int fake_nvs_write_count(void) { return s_writes; }
@@ -99,6 +106,10 @@ static nvs_entry_t *find(const char *ns, const char *key, int create)
 esp_err_t nvs_open(const char *ns, nvs_open_mode_t mode, nvs_handle_t *out)
 {
     (void)mode;
+    if (s_fail_next_open_ns[0] != '\0' && strcmp(s_fail_next_open_ns, ns) == 0) {
+        s_fail_next_open_ns[0] = '\0';
+        return ESP_FAIL;
+    }
     for (int i = 1; i < NVS_MAX_HANDLES; i++) {
         if (!s_handle_used[i]) {
             s_handle_used[i] = 1;
