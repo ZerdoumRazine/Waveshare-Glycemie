@@ -1,0 +1,397 @@
+﻿fichier;texte;duree_s;taille_octets;crc32
+alert_urgent_low.wav;Attention, glycémie très basse.;2.090;66924;bb4799c5
+alert_low.wav;Attention, glycémie basse.;1.640;52524;79f8bdb6
+alert_high.wav;Attention, glycémie élevée.;2.130;68204;d0185700
+alert_urgent_high.wav;Attention, glycémie très élevée.;2.480;79404;1414cd92
+alert_no_data.wav;Aucune nouvelle donnée.;1.520;48684;257e14d6
+sensor_48h.wav;Le capteur devra être remplacé dans deux jours.;2.670;85484;b9ebde02
+sensor_24h.wav;Le capteur doit être remplacé demain.;2.660;85164;1efc2082
+sensor_12h.wav;Le capteur doit être remplacé dans douze heures.;2.590;82924;67ccbda0
+sensor_grace.wav;Le capteur est maintenant en période de grâce.;2.420;77484;0aab14da
+sensor_2h.wav;Le capteur devra être remplacé dans deux heures.;2.800;89644;68aafbc0
+glucose_low.wav;Glycémie inférieure à quarante.;2.400;76844;ac8a5584
+glucose_high.wav;Glycémie supérieure à quatre cents.;1.980;63404;4a1a04d7
+catheter_24h.wav;Le cathétère doit être changé dans vingt-quatre heures.;2.600;83244;32b3cfaa
+catheter_6h.wav;Le cathétère doit être changé dans six heures.;3.030;97004;a26e7b30
+catheter_2h.wav;Le cathétère doit être changé dans deux heures.;2.910;93164;17a4838a
+catheter_due.wav;Le cathétère doit être changé maintenant.;2.980;95404;4f63bb3d
+trend_flat.wav;Stable.;1.230;39404;b671fd0f
+trend_up_slow.wav;En légère hausse.;1.670;53484;249298a7
+trend_up.wav;En hausse.;0.830;26604;402b3f6f
+trend_up_fast.wav;En hausse rapide.;1.320;42284;651a8d74
+trend_down_slow.wav;En légère baisse.;1.180;37804;ccf2d2fb
+trend_down.wav;En baisse.;0.980;31404;2acd9143
+trend_down_fast.wav;En baisse rapide.;1.060;33964;662aaa9e
+vc_data_old.wav;Données anciennes. Dernière mesure connue.;4.100;131244;f56fde3c
+vc_no_data.wav;Aucune donnée de glycémie disponible.;2.530;81004;59e9d6ff
+vc_sensor_confirm.wav;Nouveau capteur. Répétez pour confirmer.;3.200;102444;cf78aa8c
+vc_sensor_saved.wav;Nouveau capteur enregistré.;1.740;55724;b1f9dae3
+vc_catheter_confirm.wav;Nouveau cathétère. Répétez pour confirmer.;3.200;102444;b3ab73a0
+vc_catheter_saved.wav;Nouveau cathétère enregistré.;2.530;81004;fd58a64d
+vc_cancelled.wav;Commande annulée.;1.160;37164;a29e39cc
+vc_time_unavailable.wav;Heure non synchronisée. Enregistrement impossible.;3.850;123244;073ddc8e
+sensor_rappel_24h.wav;Rappel. Le capteur doit être changé demain.;2.920;93484;737cc978
+sensor_rappel_2h.wav;Rappel. Le capteur doit être changé dans deux heures.;3.370;107884;89fb1d6b
+catheter_rappel_2h.wav;Rappel. Le cathétère doit être changé dans deux heures.;3.550;113644;9c0a7e80
+vc_sensor_ask.wav;Nouveau capteur. Dites confirmer capteur.;3.540;113324;964fe96c
+glucose_040.wav;Glycémie quarante.;1.500;48044;72742639
+glucose_041.wav;Glycémie quarante et un.;1.320;42284;81609084
+glucose_042.wav;Glycémie quarante-deux.;1.510;48364;b24b52b8
+glucose_043.wav;Glycémie quarante-trois.;1.720;55084;0fa0bbdc
+glucose_044.wav;Glycémie quarante-quatre.;1.630;52204;7c1ef1a6
+glucose_045.wav;Glycémie quarante-cinq.;1.570;50284;95073ad5
+glucose_046.wav;Glycémie quarante-six.;1.670;53484;5e9b2fcd
+glucose_047.wav;Glycémie quarante-sept.;1.370;43884;a93e7a91
+glucose_048.wav;Glycémie quarante-huit.;1.350;43244;60b1651d
+glucose_049.wav;Glycémie quarante-neuf.;1.680;53804;532b4346
+glucose_050.wav;Glycémie cinquante.;1.260;40364;5df58330
+glucose_051.wav;Glycémie cinquante et un.;1.310;41964;237d141e
+glucose_052.wav;Glycémie cinquante-deux.;1.620;51884;8285a8e1
+glucose_053.wav;Glycémie cinquante-trois.;1.400;44844;d763e194
+glucose_054.wav;Glycémie cinquante-quatre.;1.640;52524;6ba03f5d
+glucose_055.wav;Glycémie cinquante-cinq.;1.490;47724;433bf104
+glucose_056.wav;Glycémie cinquante-six.;1.480;47404;f909d627
+glucose_057.wav;Glycémie cinquante-sept.;1.540;49324;699e3fd5
+glucose_058.wav;Glycémie cinquante-huit.;1.800;57644;a0143a57
+glucose_059.wav;Glycémie cinquante-neuf.;1.640;52524;ea4544d4
+glucose_060.wav;Glycémie soixante.;1.360;43564;7199b066
+glucose_061.wav;Glycémie soixante et un.;1.490;47724;7e51aafe
+glucose_062.wav;Glycémie soixante-deux.;1.390;44524;9f9b0dd5
+glucose_063.wav;Glycémie soixante-trois.;1.680;53804;b0945bb7
+glucose_064.wav;Glycémie soixante-quatre.;1.780;57004;1a8c0f21
+glucose_065.wav;Glycémie soixante-cinq.;1.550;49644;21a09451
+glucose_066.wav;Glycémie soixante-six.;1.360;43564;d8ce6a90
+glucose_067.wav;Glycémie soixante-sept.;1.680;53804;b5cc6b8a
+glucose_068.wav;Glycémie soixante-huit.;1.940;62124;2bbd67de
+glucose_069.wav;Glycémie soixante-neuf.;1.590;50924;0e224e1a
+glucose_070.wav;Glycémie soixante-dix.;1.460;46764;8a14d975
+glucose_071.wav;Glycémie soixante et onze.;1.890;60524;750970aa
+glucose_072.wav;Glycémie soixante-douze.;1.350;43244;1231e9e0
+glucose_073.wav;Glycémie soixante-treize.;1.550;49644;0dd3b3db
+glucose_074.wav;Glycémie soixante-quatorze.;1.970;63084;78d39fca
+glucose_075.wav;Glycémie soixante-quinze.;1.520;48684;676c4e52
+glucose_076.wav;Glycémie soixante-seize.;1.750;56044;9748a134
+glucose_077.wav;Glycémie soixante-dix-sept.;1.640;52524;2c3b4ed8
+glucose_078.wav;Glycémie soixante-dix-huit.;1.640;52524;81b4ac83
+glucose_079.wav;Glycémie soixante-dix-neuf.;1.840;58924;ec8897cf
+glucose_080.wav;Glycémie quatre-vingts.;1.320;42284;b24c222f
+glucose_081.wav;Glycémie quatre-vingt-un.;1.290;41324;0cc87399
+glucose_082.wav;Glycémie quatre-vingt-deux.;1.520;48684;55a7a31b
+glucose_083.wav;Glycémie quatre-vingt-trois.;1.720;55084;1a38aa5d
+glucose_084.wav;Glycémie quatre-vingt-quatre.;1.460;46764;60f96f64
+glucose_085.wav;Glycémie quatre-vingt-cinq.;1.480;47404;ded3cdee
+glucose_086.wav;Glycémie quatre-vingt-six.;1.820;58284;a635cc55
+glucose_087.wav;Glycémie quatre-vingt-sept.;1.680;53804;0a2737f8
+glucose_088.wav;Glycémie quatre-vingt-huit.;2.130;68204;f6b61f60
+glucose_089.wav;Glycémie quatre-vingt-neuf.;1.400;44844;badd63fa
+glucose_090.wav;Glycémie quatre-vingt-dix.;1.480;47404;2876bad8
+glucose_091.wav;Glycémie quatre-vingt-onze.;1.610;51564;7cba2308
+glucose_092.wav;Glycémie quatre-vingt-douze.;2.010;64364;f410dce9
+glucose_093.wav;Glycémie quatre-vingt-treize.;2.080;66604;11d6e520
+glucose_094.wav;Glycémie quatre-vingt-quatorze.;1.740;55724;dca1fb7c
+glucose_095.wav;Glycémie quatre-vingt-quinze.;1.590;50924;3875037e
+glucose_096.wav;Glycémie quatre-vingt-seize.;1.750;56044;8ddaa636
+glucose_097.wav;Glycémie quatre-vingt-dix-sept.;1.920;61484;c4fa1bca
+glucose_098.wav;Glycémie quatre-vingt-dix-huit.;1.880;60204;b9c1022f
+glucose_099.wav;Glycémie quatre-vingt-dix-neuf.;1.850;59244;dab0a30e
+glucose_100.wav;Glycémie cent.;1.550;49644;0cf932e2
+glucose_101.wav;Glycémie cent un.;1.380;44204;da72680c
+glucose_102.wav;Glycémie cent deux.;1.510;48364;67ec5a21
+glucose_103.wav;Glycémie cent trois.;1.400;44844;58311344
+glucose_104.wav;Glycémie cent quatre.;1.560;49964;a3eb9cd4
+glucose_105.wav;Glycémie cent cinq.;1.290;41324;5a7ae71c
+glucose_106.wav;Glycémie cent six.;1.670;53484;93c1f7d8
+glucose_107.wav;Glycémie cent sept.;1.510;48364;65b89cbd
+glucose_108.wav;Glycémie cent huit.;1.450;46444;d0e576b4
+glucose_109.wav;Glycémie cent neuf.;1.080;34604;00351474
+glucose_110.wav;Glycémie cent dix.;1.470;47084;0b815867
+glucose_111.wav;Glycémie cent onze.;1.400;44844;2661d9ac
+glucose_112.wav;Glycémie cent douze.;1.440;46124;9e9f0278
+glucose_113.wav;Glycémie cent treize.;1.080;34604;383db86b
+glucose_114.wav;Glycémie cent quatorze.;1.660;53164;ec504db1
+glucose_115.wav;Glycémie cent quinze.;1.480;47404;28d2ac3c
+glucose_116.wav;Glycémie cent seize.;1.550;49644;ceeb1b9c
+glucose_117.wav;Glycémie cent dix-sept.;1.690;54124;9f8bbbb4
+glucose_118.wav;Glycémie cent dix-huit.;1.400;44844;0a3da5cf
+glucose_119.wav;Glycémie cent dix-neuf.;1.530;49004;a7fb6e24
+glucose_120.wav;Glycémie cent vingt.;1.160;37164;a65c0a6a
+glucose_121.wav;Glycémie cent vingt et un.;1.630;52204;34e508eb
+glucose_122.wav;Glycémie cent vingt-deux.;1.460;46764;07929329
+glucose_123.wav;Glycémie cent vingt-trois.;1.680;53804;f9c93eb8
+glucose_124.wav;Glycémie cent vingt-quatre.;1.740;55724;52ea2c65
+glucose_125.wav;Glycémie cent vingt-cinq.;1.610;51564;9ff412b6
+glucose_126.wav;Glycémie cent vingt-six.;1.730;55404;cc7b605b
+glucose_127.wav;Glycémie cent vingt-sept.;1.480;47404;a6dce955
+glucose_128.wav;Glycémie cent vingt-huit.;1.480;47404;5a46a9b3
+glucose_129.wav;Glycémie cent vingt-neuf.;1.280;41004;62149b80
+glucose_130.wav;Glycémie cent trente.;1.550;49644;596a6b01
+glucose_131.wav;Glycémie cent trente et un.;1.620;51884;a788d97b
+glucose_132.wav;Glycémie cent trente-deux.;1.320;42284;f95fe68e
+glucose_133.wav;Glycémie cent trente-trois.;1.480;47404;be12f117
+glucose_134.wav;Glycémie cent trente-quatre.;1.730;55404;5d309d64
+glucose_135.wav;Glycémie cent trente-cinq.;1.410;45164;ddea3ffc
+glucose_136.wav;Glycémie cent trente-six.;1.550;49644;428a99e4
+glucose_137.wav;Glycémie cent trente-sept.;1.950;62444;a6ee397f
+glucose_138.wav;Glycémie cent trente-huit.;1.970;63084;6c746328
+glucose_139.wav;Glycémie cent trente-neuf.;1.680;53804;39b4f59a
+glucose_140.wav;Glycémie cent quarante.;1.640;52524;a2a3f388
+glucose_141.wav;Glycémie cent quarante et un.;1.670;53484;3b78f7fa
+glucose_142.wav;Glycémie cent quarante-deux.;1.520;48684;a3e06c3e
+glucose_143.wav;Glycémie cent quarante-trois.;1.690;54124;97ba3363
+glucose_144.wav;Glycémie cent quarante-quatre.;1.970;63084;c889eeed
+glucose_145.wav;Glycémie cent quarante-cinq.;1.960;62764;ba3c2fca
+glucose_146.wav;Glycémie cent quarante-six.;1.930;61804;3f1f79d6
+glucose_147.wav;Glycémie cent quarante-sept.;1.680;53804;50a550a9
+glucose_148.wav;Glycémie cent quarante-huit.;1.920;61484;326910f7
+glucose_149.wav;Glycémie cent quarante-neuf.;1.730;55404;49bdd0b9
+glucose_150.wav;Glycémie cent cinquante.;2.020;64684;64b3819e
+glucose_151.wav;Glycémie cent cinquante et un.;1.810;57964;9dc42e6c
+glucose_152.wav;Glycémie cent cinquante-deux.;1.710;54764;a86a5c59
+glucose_153.wav;Glycémie cent cinquante-trois.;1.930;61804;14a155fa
+glucose_154.wav;Glycémie cent cinquante-quatre.;1.480;47404;021bab16
+glucose_155.wav;Glycémie cent cinquante-cinq.;1.920;61484;8d5d81b1
+glucose_156.wav;Glycémie cent cinquante-six.;1.890;60524;f3291b27
+glucose_157.wav;Glycémie cent cinquante-sept.;1.750;56044;a15bf695
+glucose_158.wav;Glycémie cent cinquante-huit.;1.750;56044;84209e43
+glucose_159.wav;Glycémie cent cinquante-neuf.;2.080;66604;b1eb9ea8
+glucose_160.wav;Glycémie cent soixante.;1.440;46124;f8b9a00e
+glucose_161.wav;Glycémie cent soixante et un.;1.480;47404;a3434aaf
+glucose_162.wav;Glycémie cent soixante-deux.;1.730;55404;f402f7d5
+glucose_163.wav;Glycémie cent soixante-trois.;1.700;54444;c3fb502d
+glucose_164.wav;Glycémie cent soixante-quatre.;1.800;57644;a316d7cb
+glucose_165.wav;Glycémie cent soixante-cinq.;1.880;60204;71d53f5d
+glucose_166.wav;Glycémie cent soixante-six.;1.800;57644;d04369b0
+glucose_167.wav;Glycémie cent soixante-sept.;1.920;61484;a99c2bfd
+glucose_168.wav;Glycémie cent soixante-huit.;1.620;51884;fc2ffce9
+glucose_169.wav;Glycémie cent soixante-neuf.;1.660;53164;14546be6
+glucose_170.wav;Glycémie cent soixante-dix.;2.140;68524;5eae0373
+glucose_171.wav;Glycémie cent soixante et onze.;1.800;57644;53dfc36d
+glucose_172.wav;Glycémie cent soixante-douze.;2.250;72044;700a9c5d
+glucose_173.wav;Glycémie cent soixante-treize.;1.990;63724;1a8a6793
+glucose_174.wav;Glycémie cent soixante-quatorze.;1.780;57004;b6eb6182
+glucose_175.wav;Glycémie cent soixante-quinze.;2.020;64684;b792df71
+glucose_176.wav;Glycémie cent soixante-seize.;1.850;59244;5cc5c447
+glucose_177.wav;Glycémie cent soixante-dix-sept.;1.980;63404;2907f5b5
+glucose_178.wav;Glycémie cent soixante-dix-huit.;1.640;52524;37f34d3a
+glucose_179.wav;Glycémie cent soixante-dix-neuf.;1.640;52524;35d9d587
+glucose_180.wav;Glycémie cent quatre-vingts.;1.290;41324;2f43ec1e
+glucose_181.wav;Glycémie cent quatre-vingt-un.;1.480;47404;e644d591
+glucose_182.wav;Glycémie cent quatre-vingt-deux.;1.910;61164;a6790578
+glucose_183.wav;Glycémie cent quatre-vingt-trois.;1.900;60844;6573b6e4
+glucose_184.wav;Glycémie cent quatre-vingt-quatre.;1.910;61164;bb978d15
+glucose_185.wav;Glycémie cent quatre-vingt-cinq.;1.920;61484;1e4bb22d
+glucose_186.wav;Glycémie cent quatre-vingt-six.;1.680;53804;74343306
+glucose_187.wav;Glycémie cent quatre-vingt-sept.;1.910;61164;19e87c51
+glucose_188.wav;Glycémie cent quatre-vingt-huit.;1.860;59564;4373d2a6
+glucose_189.wav;Glycémie cent quatre-vingt-neuf.;1.680;53804;22088e4d
+glucose_190.wav;Glycémie cent quatre-vingt-dix.;1.900;60844;23f31829
+glucose_191.wav;Glycémie cent quatre-vingt-onze.;1.840;58924;4feff3c3
+glucose_192.wav;Glycémie cent quatre-vingt-douze.;2.140;68524;27b25ba1
+glucose_193.wav;Glycémie cent quatre-vingt-treize.;1.530;49004;5df8a8a3
+glucose_194.wav;Glycémie cent quatre-vingt-quatorze.;2.020;64684;9fe7f019
+glucose_195.wav;Glycémie cent quatre-vingt-quinze.;1.730;55404;5fee4817
+glucose_196.wav;Glycémie cent quatre-vingt-seize.;2.050;65644;96ce9f4e
+glucose_197.wav;Glycémie cent quatre-vingt-dix-sept.;2.000;64044;da840056
+glucose_198.wav;Glycémie cent quatre-vingt-dix-huit.;1.890;60524;fc99a603
+glucose_199.wav;Glycémie cent quatre-vingt-dix-neuf.;1.780;57004;935562bc
+glucose_200.wav;Glycémie deux cents.;1.620;51884;7e853717
+glucose_201.wav;Glycémie deux cent un.;1.370;43884;24cdc712
+glucose_202.wav;Glycémie deux cent deux.;1.290;41324;e03bfb0a
+glucose_203.wav;Glycémie deux cent trois.;1.330;42604;3fb17ff0
+glucose_204.wav;Glycémie deux cent quatre.;1.600;51244;5bfb6b56
+glucose_205.wav;Glycémie deux cent cinq.;1.380;44204;d601288f
+glucose_206.wav;Glycémie deux cent six.;1.680;53804;e88fca1e
+glucose_207.wav;Glycémie deux cent sept.;1.340;42924;0ff2b301
+glucose_208.wav;Glycémie deux cent huit.;1.510;48364;bc6d873e
+glucose_209.wav;Glycémie deux cent neuf.;1.640;52524;67f4aaf0
+glucose_210.wav;Glycémie deux cent dix.;1.680;53804;7cb0b39e
+glucose_211.wav;Glycémie deux cent onze.;1.640;52524;2913fc5b
+glucose_212.wav;Glycémie deux cent douze.;1.380;44204;fea9be48
+glucose_213.wav;Glycémie deux cent treize.;1.620;51884;f4ba746a
+glucose_214.wav;Glycémie deux cent quatorze.;1.940;62124;9574d048
+glucose_215.wav;Glycémie deux cent quinze.;1.610;51564;1d84cc15
+glucose_216.wav;Glycémie deux cent seize.;1.480;47404;9c54feac
+glucose_217.wav;Glycémie deux cent dix-sept.;1.460;46764;1277aaba
+glucose_218.wav;Glycémie deux cent dix-huit.;1.740;55724;8a40aec4
+glucose_219.wav;Glycémie deux cent dix-neuf.;1.790;57324;116c55ce
+glucose_220.wav;Glycémie deux cent vingt.;1.640;52524;47ae7323
+glucose_221.wav;Glycémie deux cent vingt et un.;2.070;66284;5afd73f9
+glucose_222.wav;Glycémie deux cent vingt-deux.;2.030;65004;bcab4583
+glucose_223.wav;Glycémie deux cent vingt-trois.;2.010;64364;62bb83e3
+glucose_224.wav;Glycémie deux cent vingt-quatre.;1.740;55724;d7b767c5
+glucose_225.wav;Glycémie deux cent vingt-cinq.;1.870;59884;6c985f09
+glucose_226.wav;Glycémie deux cent vingt-six.;1.690;54124;71a05ad9
+glucose_227.wav;Glycémie deux cent vingt-sept.;1.770;56684;69fb1675
+glucose_228.wav;Glycémie deux cent vingt-huit.;1.720;55084;ffebce11
+glucose_229.wav;Glycémie deux cent vingt-neuf.;1.840;58924;eefd7cf5
+glucose_230.wav;Glycémie deux cent trente.;1.400;44844;1e5fc354
+glucose_231.wav;Glycémie deux cent trente et un.;2.010;64364;c19211d9
+glucose_232.wav;Glycémie deux cent trente-deux.;1.680;53804;edc7ce7b
+glucose_233.wav;Glycémie deux cent trente-trois.;1.730;55404;2adb97cd
+glucose_234.wav;Glycémie deux cent trente-quatre.;1.480;47404;ff3c3804
+glucose_235.wav;Glycémie deux cent trente-cinq.;1.690;54124;8eeaf801
+glucose_236.wav;Glycémie deux cent trente-six.;1.650;52844;3d09089f
+glucose_237.wav;Glycémie deux cent trente-sept.;1.530;49004;59c177cc
+glucose_238.wav;Glycémie deux cent trente-huit.;1.480;47404;19813ee3
+glucose_239.wav;Glycémie deux cent trente-neuf.;1.640;52524;a6991e51
+glucose_240.wav;Glycémie deux cent quarante.;1.820;58284;7798ffa6
+glucose_241.wav;Glycémie deux cent quarante et un.;1.790;57324;c81c9622
+glucose_242.wav;Glycémie deux cent quarante-deux.;1.840;58924;f23de2a7
+glucose_243.wav;Glycémie deux cent quarante-trois.;1.920;61484;29abbe9c
+glucose_244.wav;Glycémie deux cent quarante-quatre.;1.820;58284;e2f5382e
+glucose_245.wav;Glycémie deux cent quarante-cinq.;1.800;57644;1840ad66
+glucose_246.wav;Glycémie deux cent quarante-six.;2.360;75564;10b79b08
+glucose_247.wav;Glycémie deux cent quarante-sept.;1.760;56364;4dd81e65
+glucose_248.wav;Glycémie deux cent quarante-huit.;1.930;61804;5a43dbe9
+glucose_249.wav;Glycémie deux cent quarante-neuf.;2.180;69804;c4c95355
+glucose_250.wav;Glycémie deux cent cinquante.;1.920;61484;a6e37f38
+glucose_251.wav;Glycémie deux cent cinquante et un.;1.530;49004;8552a516
+glucose_252.wav;Glycémie deux cent cinquante-deux.;1.750;56044;81cd346c
+glucose_253.wav;Glycémie deux cent cinquante-trois.;1.800;57644;3ca29d24
+glucose_254.wav;Glycémie deux cent cinquante-quatre.;2.240;71724;79f6a7e1
+glucose_255.wav;Glycémie deux cent cinquante-cinq.;2.170;69484;402d755f
+glucose_256.wav;Glycémie deux cent cinquante-six.;2.370;75884;c3a80f5b
+glucose_257.wav;Glycémie deux cent cinquante-sept.;1.900;60844;374d3050
+glucose_258.wav;Glycémie deux cent cinquante-huit.;2.250;72044;dc40d783
+glucose_259.wav;Glycémie deux cent cinquante-neuf.;1.810;57964;888c6f57
+glucose_260.wav;Glycémie deux cent soixante.;1.840;58924;83c4255f
+glucose_261.wav;Glycémie deux cent soixante et un.;1.980;63404;d652312b
+glucose_262.wav;Glycémie deux cent soixante-deux.;1.670;53484;e6b28262
+glucose_263.wav;Glycémie deux cent soixante-trois.;1.710;54764;3b29b801
+glucose_264.wav;Glycémie deux cent soixante-quatre.;1.870;59884;bb6a2947
+glucose_265.wav;Glycémie deux cent soixante-cinq.;1.910;61164;cc82d509
+glucose_266.wav;Glycémie deux cent soixante-six.;1.950;62444;17ccb040
+glucose_267.wav;Glycémie deux cent soixante-sept.;1.890;60524;fa373187
+glucose_268.wav;Glycémie deux cent soixante-huit.;2.030;65004;5946c358
+glucose_269.wav;Glycémie deux cent soixante-neuf.;1.700;54444;f0afe405
+glucose_270.wav;Glycémie deux cent soixante-dix.;1.930;61804;9db0f1bf
+glucose_271.wav;Glycémie deux cent soixante et onze.;1.940;62124;fc95138f
+glucose_272.wav;Glycémie deux cent soixante-douze.;2.130;68204;2338ba83
+glucose_273.wav;Glycémie deux cent soixante-treize.;2.000;64044;1034079b
+glucose_274.wav;Glycémie deux cent soixante-quatorze.;2.420;77484;03bbeb58
+glucose_275.wav;Glycémie deux cent soixante-quinze.;2.290;73324;303feaa5
+glucose_276.wav;Glycémie deux cent soixante-seize.;1.720;55084;f64927fc
+glucose_277.wav;Glycémie deux cent soixante-dix-sept.;2.080;66604;d8fde46b
+glucose_278.wav;Glycémie deux cent soixante-dix-huit.;2.330;74604;d15b3f0b
+glucose_279.wav;Glycémie deux cent soixante-dix-neuf.;2.240;71724;67cec4c4
+glucose_280.wav;Glycémie deux cent quatre-vingts.;1.710;54764;c78fadbb
+glucose_281.wav;Glycémie deux cent quatre-vingt-un.;1.740;55724;c6114f85
+glucose_282.wav;Glycémie deux cent quatre-vingt-deux.;1.920;61484;cc57ff41
+glucose_283.wav;Glycémie deux cent quatre-vingt-trois.;1.970;63084;e7087305
+glucose_284.wav;Glycémie deux cent quatre-vingt-quatre.;1.900;60844;a178b8d9
+glucose_285.wav;Glycémie deux cent quatre-vingt-cinq.;2.090;66924;b04d64ee
+glucose_286.wav;Glycémie deux cent quatre-vingt-six.;2.070;66284;8c31fb62
+glucose_287.wav;Glycémie deux cent quatre-vingt-sept.;1.980;63404;85b8e39f
+glucose_288.wav;Glycémie deux cent quatre-vingt-huit.;1.810;57964;68a5fe16
+glucose_289.wav;Glycémie deux cent quatre-vingt-neuf.;1.790;57324;ac03b65b
+glucose_290.wav;Glycémie deux cent quatre-vingt-dix.;2.610;83564;10ec5756
+glucose_291.wav;Glycémie deux cent quatre-vingt-onze.;1.890;60524;8e64d202
+glucose_292.wav;Glycémie deux cent quatre-vingt-douze.;1.890;60524;d0995e46
+glucose_293.wav;Glycémie deux cent quatre-vingt-treize.;2.370;75884;7096f1eb
+glucose_294.wav;Glycémie deux cent quatre-vingt-quatorze.;2.670;85484;4fd7e206
+glucose_295.wav;Glycémie deux cent quatre-vingt-quinze.;2.000;64044;3ade57d5
+glucose_296.wav;Glycémie deux cent quatre-vingt-seize.;2.160;69164;2751f901
+glucose_297.wav;Glycémie deux cent quatre-vingt-dix-sept.;2.130;68204;8e216834
+glucose_298.wav;Glycémie deux cent quatre-vingt-dix-huit.;1.900;60844;cd09fcc5
+glucose_299.wav;Glycémie deux cent quatre-vingt-dix-neuf.;2.020;64684;abc89335
+glucose_300.wav;Glycémie trois cents.;1.450;46444;e575bebd
+glucose_301.wav;Glycémie trois cent un.;1.520;48684;3aaa0d67
+glucose_302.wav;Glycémie trois cent deux.;1.670;53484;97d40285
+glucose_303.wav;Glycémie trois cent trois.;1.560;49964;b757acb0
+glucose_304.wav;Glycémie trois cent quatre.;1.740;55724;61822c63
+glucose_305.wav;Glycémie trois cent cinq.;1.680;53804;f895675e
+glucose_306.wav;Glycémie trois cent six.;1.490;47724;a2e2350f
+glucose_307.wav;Glycémie trois cent sept.;1.620;51884;9464b8cf
+glucose_308.wav;Glycémie trois cent huit.;1.590;50924;0f9c9a05
+glucose_309.wav;Glycémie trois cent neuf.;1.690;54124;51113dd5
+glucose_310.wav;Glycémie trois cent dix.;1.970;63084;4982b181
+glucose_311.wav;Glycémie trois cent onze.;1.640;52524;1b58ee1c
+glucose_312.wav;Glycémie trois cent douze.;1.470;47084;e5bf97cc
+glucose_313.wav;Glycémie trois cent treize.;1.640;52524;82d0f388
+glucose_314.wav;Glycémie trois cent quatorze.;1.980;63404;134c2a96
+glucose_315.wav;Glycémie trois cent quinze.;1.900;60844;9eb63c83
+glucose_316.wav;Glycémie trois cent seize.;1.590;50924;50dc3f3d
+glucose_317.wav;Glycémie trois cent dix-sept.;1.550;49644;0519133d
+glucose_318.wav;Glycémie trois cent dix-huit.;1.730;55404;79935422
+glucose_319.wav;Glycémie trois cent dix-neuf.;1.700;54444;df203b51
+glucose_320.wav;Glycémie trois cent vingt.;1.500;48044;c62cc9a2
+glucose_321.wav;Glycémie trois cent vingt et un.;1.880;60204;97cbfeef
+glucose_322.wav;Glycémie trois cent vingt-deux.;1.580;50604;e234b5f7
+glucose_323.wav;Glycémie trois cent vingt-trois.;1.840;58924;0fce9261
+glucose_324.wav;Glycémie trois cent vingt-quatre.;1.760;56364;d7a273c7
+glucose_325.wav;Glycémie trois cent vingt-cinq.;1.790;57324;9af885dd
+glucose_326.wav;Glycémie trois cent vingt-six.;1.720;55084;011be97b
+glucose_327.wav;Glycémie trois cent vingt-sept.;1.480;47404;c383967e
+glucose_328.wav;Glycémie trois cent vingt-huit.;1.660;53164;2fabc63e
+glucose_329.wav;Glycémie trois cent vingt-neuf.;2.000;64044;e50e2e94
+glucose_330.wav;Glycémie trois cent trente.;1.730;55404;c371f0a4
+glucose_331.wav;Glycémie trois cent trente et un.;1.640;52524;38065327
+glucose_332.wav;Glycémie trois cent trente-deux.;1.680;53804;0f4c925e
+glucose_333.wav;Glycémie trois cent trente-trois.;1.640;52524;b61b6e89
+glucose_334.wav;Glycémie trois cent trente-quatre.;1.620;51884;4e984ed1
+glucose_335.wav;Glycémie trois cent trente-cinq.;1.680;53804;f5245076
+glucose_336.wav;Glycémie trois cent trente-six.;1.950;62444;7dc4dc86
+glucose_337.wav;Glycémie trois cent trente-sept.;1.890;60524;283cf530
+glucose_338.wav;Glycémie trois cent trente-huit.;1.480;47404;db4fc5c9
+glucose_339.wav;Glycémie trois cent trente-neuf.;1.870;59884;15551503
+glucose_340.wav;Glycémie trois cent quarante.;1.870;59884;c2802081
+glucose_341.wav;Glycémie trois cent quarante et un.;1.850;59244;bbb0f437
+glucose_342.wav;Glycémie trois cent quarante-deux.;1.920;61484;165effe8
+glucose_343.wav;Glycémie trois cent quarante-trois.;2.160;69164;6045bf2b
+glucose_344.wav;Glycémie trois cent quarante-quatre.;1.850;59244;221c1294
+glucose_345.wav;Glycémie trois cent quarante-cinq.;1.820;58284;daf28310
+glucose_346.wav;Glycémie trois cent quarante-six.;1.920;61484;00f692fc
+glucose_347.wav;Glycémie trois cent quarante-sept.;1.800;57644;4a084c2f
+glucose_348.wav;Glycémie trois cent quarante-huit.;2.000;64044;ac06ce9c
+glucose_349.wav;Glycémie trois cent quarante-neuf.;1.990;63724;2464f761
+glucose_350.wav;Glycémie trois cent cinquante.;1.860;59564;56154561
+glucose_351.wav;Glycémie trois cent cinquante et un.;2.010;64364;13f983de
+glucose_352.wav;Glycémie trois cent cinquante-deux.;1.800;57644;0fcc2427
+glucose_353.wav;Glycémie trois cent cinquante-trois.;1.980;63404;506f75d8
+glucose_354.wav;Glycémie trois cent cinquante-quatre.;2.210;70764;c6b3e14a
+glucose_355.wav;Glycémie trois cent cinquante-cinq.;1.910;61164;5f549207
+glucose_356.wav;Glycémie trois cent cinquante-six.;2.210;70764;d0bc03e3
+glucose_357.wav;Glycémie trois cent cinquante-sept.;2.010;64364;85836fdf
+glucose_358.wav;Glycémie trois cent cinquante-huit.;1.780;57004;9c38f45e
+glucose_359.wav;Glycémie trois cent cinquante-neuf.;1.680;53804;efb36dc2
+glucose_360.wav;Glycémie trois cent soixante.;1.760;56364;e8a8a82a
+glucose_361.wav;Glycémie trois cent soixante et un.;1.810;57964;948188cd
+glucose_362.wav;Glycémie trois cent soixante-deux.;1.860;59564;ce7c1253
+glucose_363.wav;Glycémie trois cent soixante-trois.;1.960;62764;ba5b8b4c
+glucose_364.wav;Glycémie trois cent soixante-quatre.;1.950;62444;6f5502f8
+glucose_365.wav;Glycémie trois cent soixante-cinq.;1.830;58604;118c2289
+glucose_366.wav;Glycémie trois cent soixante-six.;2.110;67564;e988b3a0
+glucose_367.wav;Glycémie trois cent soixante-sept.;1.920;61484;0a5fa5e4
+glucose_368.wav;Glycémie trois cent soixante-huit.;2.000;64044;071c8577
+glucose_369.wav;Glycémie trois cent soixante-neuf.;1.880;60204;17baa8a3
+glucose_370.wav;Glycémie trois cent soixante-dix.;1.930;61804;d3f53265
+glucose_371.wav;Glycémie trois cent soixante et onze.;2.260;72364;ef1f1fdb
+glucose_372.wav;Glycémie trois cent soixante-douze.;1.970;63084;4d4a39d4
+glucose_373.wav;Glycémie trois cent soixante-treize.;1.980;63404;0dd12c78
+glucose_374.wav;Glycémie trois cent soixante-quatorze.;2.180;69804;e741d45e
+glucose_375.wav;Glycémie trois cent soixante-quinze.;1.830;58604;004fe46e
+glucose_376.wav;Glycémie trois cent soixante-seize.;2.080;66604;a206be1b
+glucose_377.wav;Glycémie trois cent soixante-dix-sept.;2.240;71724;9fe6849a
+glucose_378.wav;Glycémie trois cent soixante-dix-huit.;1.990;63724;d88c7d6c
+glucose_379.wav;Glycémie trois cent soixante-dix-neuf.;2.400;76844;39747842
+glucose_380.wav;Glycémie trois cent quatre-vingts.;1.570;50284;09bb6cb7
+glucose_381.wav;Glycémie trois cent quatre-vingt-un.;1.630;52204;88bc7317
+glucose_382.wav;Glycémie trois cent quatre-vingt-deux.;1.920;61484;997f4fc3
+glucose_383.wav;Glycémie trois cent quatre-vingt-trois.;1.890;60524;7ad33053
+glucose_384.wav;Glycémie trois cent quatre-vingt-quatre.;1.910;61164;f55811dc
+glucose_385.wav;Glycémie trois cent quatre-vingt-cinq.;1.980;63404;51150fc7
+glucose_386.wav;Glycémie trois cent quatre-vingt-six.;2.520;80684;9f37ec89
+glucose_387.wav;Glycémie trois cent quatre-vingt-sept.;2.010;64364;c0b184d4
+glucose_388.wav;Glycémie trois cent quatre-vingt-huit.;2.140;68524;cf0f8f88
+glucose_389.wav;Glycémie trois cent quatre-vingt-neuf.;1.920;61484;c581572e
+glucose_390.wav;Glycémie trois cent quatre-vingt-dix.;2.120;67884;c19812ab
+glucose_391.wav;Glycémie trois cent quatre-vingt-onze.;1.940;62124;d829c7fa
+glucose_392.wav;Glycémie trois cent quatre-vingt-douze.;1.910;61164;b1a864e3
+glucose_393.wav;Glycémie trois cent quatre-vingt-treize.;1.940;62124;6db72cb4
+glucose_394.wav;Glycémie trois cent quatre-vingt-quatorze.;2.160;69164;b1aa7ee2
+glucose_395.wav;Glycémie trois cent quatre-vingt-quinze.;1.890;60524;72fce39b
+glucose_396.wav;Glycémie trois cent quatre-vingt-seize.;1.910;61164;a3184b2c
+glucose_397.wav;Glycémie trois cent quatre-vingt-dix-sept.;1.960;62764;07a36d3f
+glucose_398.wav;Glycémie trois cent quatre-vingt-dix-huit.;2.240;71724;b162d74f
+glucose_399.wav;Glycémie trois cent quatre-vingt-dix-neuf.;2.060;65964;eea5f096
+glucose_400.wav;Glycémie quatre cents.;1.290;41324;f2e97f4d

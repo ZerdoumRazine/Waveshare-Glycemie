@@ -1,0 +1,82 @@
+# glycemie_display - defaults du projet.
+# Base : exemple Waveshare 09_lvgl_demo_v9 (demos retirees) + 05_wifistation.
+# Le profil de revision (config/esp32p4_rev1_3.defaults) est ajoute APRES ce fichier.
+CONFIG_IDF_TARGET="esp32p4"
+
+# Flash / partitions (disposition identique au firmware d'origine)
+CONFIG_ESPTOOLPY_FLASHMODE_QIO=y
+CONFIG_ESPTOOLPY_FLASHSIZE_32MB=y
+CONFIG_SPI_FLASH_SUPPORT_GD_CHIP=y
+CONFIG_BOOTLOADER_LOG_LEVEL_WARN=y
+CONFIG_PARTITION_TABLE_CUSTOM=y
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"
+
+# Performances / memoire
+CONFIG_IDF_EXPERIMENTAL_FEATURES=y
+CONFIG_COMPILER_OPTIMIZATION_PERF=y
+CONFIG_SPIRAM=y
+CONFIG_SPIRAM_SPEED_200M=y
+# XIP depuis la PSRAM desactive avec le Wi-Fi heberge (retour d'experience sur cette carte)
+# CONFIG_SPIRAM_XIP_FROM_PSRAM is not set
+# Allocations generiques en PSRAM : la RAM interne reste disponible pour les tampons DMA
+# (pilote SDIO d'ESP-Hosted, affichage). Sans cela, la RAM interne s'epuise pendant les echanges HTTPS.
+CONFIG_SPIRAM_MALLOC_ALWAYSINTERNAL=0
+CONFIG_SPIRAM_TRY_ALLOCATE_WIFI_LWIP=y
+CONFIG_CACHE_L2_CACHE_256KB=y
+CONFIG_CACHE_L2_CACHE_LINE_128B=y
+CONFIG_ESP_MAIN_TASK_STACK_SIZE=10240
+CONFIG_ESP_SYSTEM_EVENT_TASK_STACK_SIZE=4096
+CONFIG_FREERTOS_HZ=1000
+
+# Surveillance : watchdog de taches avec redemarrage
+CONFIG_ESP_TASK_WDT_EN=y
+CONFIG_ESP_TASK_WDT_INIT=y
+CONFIG_ESP_TASK_WDT_PANIC=y
+CONFIG_ESP_TASK_WDT_TIMEOUT_S=60
+CONFIG_ESP_SYSTEM_PANIC_PRINT_REBOOT=y
+# Diagnostic : en cas de panique (dont watchdog), piles de toutes les taches sur la console avant le redemarrage
+# (core dump ELF sur UART, aucune partition supplementaire ; decodage sur PC avec idf.py coredump-info)
+CONFIG_ESP_COREDUMP_ENABLE_TO_UART=y
+CONFIG_ESP_COREDUMP_DATA_FORMAT_ELF=y
+CONFIG_ESP_COREDUMP_DECODE_DISABLE=y
+
+# LVGL 9.5
+CONFIG_LV_USE_CLIB_MALLOC=y
+CONFIG_LV_USE_CLIB_STRING=y
+CONFIG_LV_USE_CLIB_SPRINTF=y
+CONFIG_LV_DEF_REFR_PERIOD=30
+CONFIG_LV_OS_FREERTOS=y
+CONFIG_LV_DRAW_SW_DRAW_UNIT_CNT=2
+# CONFIG_LV_ATTRIBUTE_FAST_MEM_USE_IRAM is not set
+CONFIG_LV_FONT_MONTSERRAT_14=y
+CONFIG_LV_FONT_MONTSERRAT_20=y
+CONFIG_LV_FONT_MONTSERRAT_28=y
+CONFIG_LV_USE_TINY_TTF=y
+CONFIG_LV_USE_SNAPSHOT=y
+
+# Wi-Fi heberge : pas de point d'acces (exemple 05)
+CONFIG_ESP_WIFI_SOFTAP_SUPPORT=n
+
+# HTTPS : verification TLS par le bundle de certificats ESP-IDF
+CONFIG_MBEDTLS_CERTIFICATE_BUNDLE=y
+CONFIG_MBEDTLS_CERTIFICATE_BUNDLE_DEFAULT_FULL=y
+# Tampons TLS en PSRAM (la RAM interne est limitee par les tampons d'affichage)
+CONFIG_MBEDTLS_EXTERNAL_MEM_ALLOC=y
+CONFIG_ESP_HTTP_CLIENT_ENABLE_HTTPS=y
+
+# Heure
+CONFIG_LWIP_SNTP_MAX_SERVERS=2
+
+# microSD : noms de fichiers longs (AAAA-MM-JJ.csv), jamais de formatage automatique
+CONFIG_FATFS_LFN_HEAP=y
+CONFIG_FATFS_MAX_LFN=255
+# CONFIG_BSP_SD_FORMAT_ON_MOUNT_FAIL is not set
+
+# Journal
+CONFIG_LOG_DEFAULT_LEVEL_INFO=y
+
+# Commandes vocales locales (ESP-SR 2.5.3) : modeles empaquetes dans la partition "model" par le composant
+# (WakeNet9L francais "Bonjour ESP" + MultiNet7 a phonemes), lus en flash
+CONFIG_MODEL_IN_FLASH=y
+CONFIG_SR_WN_WN9L_FR_BONJOURESP_TTS3=y
+CONFIG_SR_MN_EN_MULTINET7_QUANT=y

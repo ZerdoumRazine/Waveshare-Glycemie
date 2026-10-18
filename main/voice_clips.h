@@ -1,0 +1,96 @@
+/* Genere par tools/voice/pack_voice.py a partir des extraits WAV (voix Windows fr-FR) - ne pas modifier */
+#pragma once
+
+#include <stdint.h>
+
+typedef enum {
+    VOICE_P_TRES_BASSE,
+    VOICE_P_BASSE,
+    VOICE_P_ELEVEE,
+    VOICE_P_TRES_ELEVEE,
+    VOICE_P_AUCUNE_DONNEE,
+    VOICE_P_MINUTES,
+    VOICE_P_CAPTEUR_48H,
+    VOICE_P_CAPTEUR_24H,
+    VOICE_P_CAPTEUR_12H,
+    VOICE_P_CAPTEUR_GRACE,
+    VOICE_P_CAPTEUR_2H,
+    VOICE_P_TEST,
+    VOICE_P_GLYCEMIE,
+    VOICE_P_MG_DL,
+    VOICE_W_UN,
+    VOICE_W_DEUX,
+    VOICE_W_TROIS,
+    VOICE_W_QUATRE,
+    VOICE_W_CINQ,
+    VOICE_W_SIX,
+    VOICE_W_SEPT,
+    VOICE_W_HUIT,
+    VOICE_W_NEUF,
+    VOICE_W_DIX,
+    VOICE_W_ONZE,
+    VOICE_W_DOUZE,
+    VOICE_W_TREIZE,
+    VOICE_W_QUATORZE,
+    VOICE_W_QUINZE,
+    VOICE_W_SEIZE,
+    VOICE_W_VINGT,
+    VOICE_W_TRENTE,
+    VOICE_W_QUARANTE,
+    VOICE_W_CINQUANTE,
+    VOICE_W_SOIXANTE,
+    VOICE_W_QUATRE_VINGT,
+    VOICE_W_QUATRE_VINGTS,
+    VOICE_W_CENT,
+    VOICE_W_CENTS,
+    VOICE_W_ET,
+    VOICE_CLIP_COUNT,
+} voice_clip_id_t;
+
+typedef struct {
+    uint32_t offset;  /* en echantillons */
+    uint32_t samples;
+} voice_clip_t;
+
+static const voice_clip_t k_voice_clips[VOICE_CLIP_COUNT] = {
+    {0, 35994}, /* p_tres_basse */
+    {35994, 32139}, /* p_basse */
+    {68133, 19232}, /* p_elevee */
+    {87365, 37722}, /* p_tres_elevee */
+    {125087, 26444}, /* p_aucune_donnee */
+    {151531, 10538}, /* p_minutes */
+    {162069, 36177}, /* p_capteur_48h */
+    {198246, 37477}, /* p_capteur_24h */
+    {235723, 35817}, /* p_capteur_12h */
+    {271540, 36121}, /* p_capteur_grace */
+    {307661, 43368}, /* p_capteur_2h */
+    {351029, 17372}, /* p_test */
+    {368401, 13636}, /* p_glycemie */
+    {382037, 27264}, /* p_mg_dl */
+    {409301, 3840}, /* w_un */
+    {413141, 6707}, /* w_deux */
+    {419848, 8035}, /* w_trois */
+    {427883, 9672}, /* w_quatre */
+    {437555, 9428}, /* w_cinq */
+    {446983, 8951}, /* w_six */
+    {455934, 9266}, /* w_sept */
+    {465200, 8758}, /* w_huit */
+    {473958, 8745}, /* w_neuf */
+    {482703, 8302}, /* w_dix */
+    {491005, 7056}, /* w_onze */
+    {498061, 9370}, /* w_douze */
+    {507431, 9694}, /* w_treize */
+    {517125, 12732}, /* w_quatorze */
+    {529857, 8337}, /* w_quinze */
+    {538194, 10120}, /* w_seize */
+    {548314, 6648}, /* w_vingt */
+    {554962, 9321}, /* w_trente */
+    {564283, 10525}, /* w_quarante */
+    {574808, 13513}, /* w_cinquante */
+    {588321, 14293}, /* w_soixante */
+    {602614, 10608}, /* w_quatre_vingt */
+    {613222, 10608}, /* w_quatre_vingts */
+    {623830, 6896}, /* w_cent */
+    {630726, 6896}, /* w_cents */
+    {637622, 4021}, /* w_et */
+};

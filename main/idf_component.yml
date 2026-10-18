@@ -1,0 +1,23 @@
+## Dependances gerees - pile officielle Waveshare actuelle (depot waveshareteam, commit 9fcd49a)
+dependencies:
+  idf:
+    version: ">=5.5.5"
+
+  # BSP officiel de la carte (exemples 08/09) : ecran EK79007 MIPI-DSI, GT911, retroeclairage, esp_lvgl_adapter.
+  waveshare/esp32_p4_wifi6_touch_lcd_7b:
+    version: "==3.0.1"
+
+  # Version LVGL imposee par le BSP 3.0.1 / esp_lvgl_adapter ~0.6 (exemple 09).
+  lvgl/lvgl:
+    version: "==9.5.0"
+    public: true
+
+  # Wi-Fi via l'ESP32-C6 (exemple 05_wifistation).
+  espressif/esp_wifi_remote:
+    version: "==1.2.5"
+  espressif/esp_hosted:
+    version: "1.4.*"
+
+  # Commandes vocales locales (WakeNet / MultiNet), version compatible ESP32-P4 rev < 3 avec ESP-IDF 5.x.
+  espressif/esp-sr:
+    version: "==2.5.3"

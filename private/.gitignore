@@ -1,0 +1,4 @@
+# Ce dossier contient les identifiants reels : rien ne doit jamais etre versionne.
+# Seul ce fichier .gitignore est suivi par Git, pour que le dossier existe apres un clone.
+*
+!.gitignore

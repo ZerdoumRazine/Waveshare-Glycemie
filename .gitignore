@@ -1,0 +1,70 @@
+# --- Identifiants prives : ne jamais versionner ---------------------------
+/private/*
+!/private/.gitignore
+device_secrets.h
+
+# --- Sorties de compilation ----------------------------------------------
+# Le firmware compile contient les identifiants : ne jamais le publier.
+/build/
+/managed_components/
+sdkconfig
+sdkconfig.old
+/dependencies.lock.bak
+/tests/build/
+
+# --- Outils installes localement, caches, environnements ------------------
+/tools/esp-idf-v5.5.5/
+/tools/espressif/
+/tools/cache/
+/tools/logs/
+/tools/voice/.venv_tts/
+/tools/voice/google_raw/
+/tools/voice/bank/
+/tools/voice/wav/
+/.venv/
+__pycache__/
+*.pyc
+
+# --- Donnees personnelles et sauvegardes ----------------------------------
+# Sauvegarde brute de la flash (peut contenir identifiants et donnees de sante)
+/backup_flash/
+*.bin.backup
+flash_original*.bin
+# Historique glycemique recupere de la microSD
+/donnees/
+*.csv.perso
+
+# --- Copie prete a publier (depot Git a part entiere) ---------------------
+/Razine/
+
+# --- Paquets de banque vocale prepares pour une Release (jamais dans Git) ---
+/dist_voix/
+
+# --- Archives fabriquees a la main (une archive publique se fait avec git archive) ---
+/Razine.zip
+/*.zip
+
+# --- Application Windows : le .exe et ses fichiers de construction se refabriquent ---
+# (tools\pc_app\construire_exe.ps1). Seules les SOURCES sont dans le depot.
+/tools/pc_app/build/
+/tools/pc_app/dist/
+__pycache__/
+
+# --- Divers ---------------------------------------------------------------
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+
+# --- Ancienne voix Windows (PCM) : droits de redistribution non etablis -------------------
+# Le fichier reste sur le disque pour une compilation locale (option GLY_VOICE_OLD_PCM),
+# mais il ne doit jamais partir dans le depot public. Voir docs/LICENCES_TIERCES_FR.md.
+main/voice/*.pcm
+
+# --- Fichiers prets a telecharger (se refabriquent : tools\publier_firmware.ps1) ---
+/livraison/
+
+/paquet_a_remettre/
+
+# --- Preparation locale de la publication GitHub (notes pour le proprietaire) ---
+/publication_github/
