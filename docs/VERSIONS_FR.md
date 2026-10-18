@@ -267,7 +267,7 @@ une langue non installée, Dexcom et Wi-Fi inchangés, NVS conservée.
   les annonces parlées en six langues et les alertes sonores restent disponibles.
 - Contrôles hors matériel exécutés ; l'essai complet sur une carte neuve reste à faire.
 
-## Après K19
+## Entre K19 et K20
 
 Rien jusqu'au 15 octobre 2026, date de la reconstitution du dépôt puis de K20 et K21
 ci-dessus. En particulier,
