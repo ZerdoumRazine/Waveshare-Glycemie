@@ -130,7 +130,7 @@ Exécutés et passés le **2026-10-15** sur cette machine :
   la partie « rappels des consommables et anti-répétition » est couverte en test hôte.
 - **Audio et voix** : validés à l'oreille et par mesure au micro de la carte.
 
-## 9. Mesures rapportées, non refaites
+## 10. Mesures rapportées, non refaites
 
 Les chiffres de performance et de mémoire cités dans la documentation (112 ms de
 rafraîchissement de l'accueil, 94–104 Ko de RAM interne, ≈ 22 Mo de PSRAM, endurances de
@@ -138,7 +138,7 @@ rafraîchissement de l'accueil, 94–104 Ko de RAM interne, ≈ 22 Mo de PSRAM, 
 sont rapportés tels quels, à titre de référence historique : **ils n'ont pas été refaits**
 lors de la constitution de ce dépôt.
 
-## 10. Opérations volontairement non effectuées
+## 11. Opérations volontairement non effectuées
 
 Lors de la constitution de ce dépôt, aucune opération modifiant la carte n'a été faite :
 pas de flash, pas d'effacement, pas d'écriture NVS, pas de formatage de la microSD, pas de
