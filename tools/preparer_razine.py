@@ -5,9 +5,10 @@ Pourquoi cette methode : copier un dossier a la main laisse passer des journaux,
 un firmware personnel. Ici, le contenu vient de `git archive HEAD` : seuls les fichiers enregistres
 dans le depot en font partie, et le dossier private\ n'en fait jamais partie.
 
-La copie est ensuite verifiee : fichiers interdits, identifiants reels, adresses de courriel,
-chemins personnels (tools/controle_donnees_perso.py). Si la verification echoue, la copie est
-effacee : une copie refusee ne doit pas rester parmi les fichiers prets a partager.
+La copie est ensuite verifiee : fichiers interdits, secrets connus, adresses de courriel,
+chemins personnels (tools/controle_donnees_perso.py). Ce controle reste heuristique.
+La destination doit etre un dossier INEXISTANT : le script refuse de remplacer une
+copie ou un depot Git deja presents. Aucun historique Git n'est modifie.
 
 Usage :
     python tools\preparer_razine.py
