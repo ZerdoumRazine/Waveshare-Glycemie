@@ -35,16 +35,14 @@ Ce projet est un **afficheur familial complémentaire**, personnel et expérimen
 ## 3. Fonctions absentes (volontairement)
 
 - **Pas de mmol/L** : l'affichage est en mg/dL uniquement.
-- **Les commandes vocales restent en français** dans toutes les langues : le moteur ESP-SR n'existe
-  qu'avec un modèle anglais, et les phrases françaises ont été réglées une à une pour éliminer les
-  déclenchements spontanés. Les refaire dans cinq langues demanderait le même travail de réglage.
+- **La reconnaissance des commandes vocales et l'écoute du microphone sont exclues du programme public.** Les annonces parlées et alertes restent proposées en six langues depuis les banques WAV de la microSD. L'ancienne variante de reconnaissance vocale est expérimentale et n'est pas fournie dans le programme public.
 - Le journal de la microSD, les fichiers CSV et la console restent en français, pour que les
   enregistrements anciens et nouveaux restent comparables.
 - La voix portugaise est **brésilienne** : Google ne propose pas de voix Chirp 3 HD en portugais
   européen.
 - Les banques vocales ne sont **pas** dans le dépôt (≈ 22 Mo par langue, audio produit par un
   service tiers) : `tools/voice/gen_voice_google.py --lang <code>` les régénère.
-- **Pas de configuration Wi-Fi à l'écran** : le réseau est compilé dans le firmware.
+- **Configuration sur écran neuf non entièrement validée** : l'assistant tactile et la configuration USB sont présents, mais le parcours complet de saisie, sauvegarde et redémarrage a été vérifié en simulation, pas encore de bout en bout sur une carte vierge.
 - **Pas de page STATS** : elle a existé jusqu'à K14 et a été **supprimée** à K15. Elle ne
   doit pas être recréée. AUJOURD'HUI est la seule page de statistiques.
 - **Pas de Nightscout**, pas d'API Dexcom v3 / Clarity, pas de détection automatique de
@@ -79,20 +77,10 @@ Ce projet est un **afficheur familial complémentaire**, personnel et expérimen
 - Le firmware de l'ESP32-C6 n'est jamais modifié ; sa version reste « inconnue » car il ne
   répond pas à la requête de version.
 
-## 6. Commandes vocales — limites réelles
+## 6. Commandes vocales — variante expérimentale non distribuée
 
-- Le moteur est un modèle **anglais** (MultiNet7 `mn7_en`) : Espressif ne fournit pas de
-  modèle français en libre-service. Les phrases françaises sont écrites phonétiquement.
-- Les scores sont faibles (0,14 à 0,36). Fiabilité d'environ **1 m en français**, meilleure
-  à distance en anglais. Sensible au bruit ambiant.
-- Pas de réduction de bruit (AFE) : son coût en RAM interne mettait en péril la stabilité
-  Dexcom / Wi-Fi.
-- Les seuils ont été réglés pour **éliminer les déclenchements spontanés**, au prix de la
-  portée — choix explicite de l'utilisateur.
-- Les voix de synthèse françaises ne déclenchent presque jamais les phrases françaises :
-  **valider une commande demande une voix humaine**, ce qui limite les tests automatisables.
-- Les commandes vocales sont **désactivées par défaut** (≈ 6 Mo de PSRAM et ≈ 12 Ko de RAM
-  interne).
+La **version publique ne propose pas de reconnaissance de commandes vocales** et n'ouvre pas le microphone pour ce service. La variante historique, fondée sur ESP-SR, a été écartée en raison de sa fiabilité insuffisante et de ses besoins matériels. Les annonces et alertes sonores restent indépendantes et disponibles avec les banques microSD dans les six langues.
+
 
 ## 7. Ce qui est couvert par des tests automatiques
 
