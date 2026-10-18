@@ -43,8 +43,7 @@ de 40 à 400 mg/dL.
 
 Changer la langue dans RÉGLAGES **ne crée aucun fichier**. Si la langue choisie n'a pas sa banque sur
 la carte, l'appareil **replie sur le français** ; s'il n'y a rien du tout, il ne reste qu'un bip.
-Les **commandes vocales** (« Glycémie », « Enregistrer nouveau capteur »…) restent en français quelle
-que soit la langue de l'écran.
+**La version publique n'écoute pas les commandes vocales** : le microphone de reconnaissance est désactivé. Les annonces parlées et les alertes restent disponibles dans les six langues.
 
 ---
 
@@ -52,8 +51,7 @@ que soit la langue de l'écran.
 
 ### 2.1 Récupérer le paquet de sa langue
 
-Les paquets sont publiés en **pièces jointes d'une version (Release) GitHub**, pas dans le dépôt
-lui-même : ce sont des fichiers volumineux qui n'ont pas à être clonés avec le code.
+Les paquets sont **prévus pour les pièces jointes d'une version (Release) GitHub**, séparément du code. Vérifiez leur disponibilité dans [Releases](../../releases) : si aucune Release n'est publiée, ces téléchargements ne sont pas encore accessibles.
 
 | Paquet | Contenu | Taille du ZIP |
 |---|---|---|
