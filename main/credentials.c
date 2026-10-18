@@ -283,23 +283,13 @@ void credentials_trial_cancel(void)
 
 esp_err_t credentials_clear(void)
 {
-    /* Effacer d'abord le verrou lie au compte. Si la NVS est inaccessible,
-     * conserver la configuration existante et signaler l'erreur au demandeur. */
-    nvs_handle_t h;
-    esp_err_t err = nvs_open("dexguard", NVS_READWRITE, &h);
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "Effacement refuse : verrou Dexcom inaccessible (%s)", esp_err_to_name(err));
-        return err;
-    }
-    err = nvs_erase_all(h);
-    if (err == ESP_OK) {
-        err = nvs_commit(h);
-    }
-    nvs_close(h);
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "Effacement refuse : verrou Dexcom non confirme (%s)", esp_err_to_name(err));
-        return err;
-    }
+    /* Supprimer en premier les identifiants du stockage NVS. Le verrou
+     * Dexcom est dans un autre espace NVS : les deux espaces ne peuvent
+     * pas etre modifies de maniere atomique. Il ne doit donc jamais etre
+     * efface AVANT la confirmation de l'enregistrement d'une configuration
+     * vide, sous peine d'autoriser des tentatives de connexion avec les
+     * anciens acces apres une erreur NVS. */
+    esp_err_t err;
 
     /* Conserver l'ancien etat en RAM tant que l'ecriture de la configuration
      * vide n'a pas ete confirmee. Un effacement de cle NVS serait insuffisant :
@@ -345,6 +335,25 @@ esp_err_t credentials_clear(void)
     xSemaphoreGive(s_mutex);
     memset(&precedent, 0, sizeof(precedent));
     memset(&essai_precedent, 0, sizeof(essai_precedent));
+
+    /* Espace reel du verrou : "dexcom" (dexcom_guard.c), et non "dexguard".
+     * Son effacement est secondaire : il ne contient qu'une empreinte courte
+     * des anciens identifiants et ne permettra pas de reconstituer la
+     * configuration qui vient d'etre retiree.
+     * Une panne ici ne transforme pas un effacement effectif en echec. */
+    nvs_handle_t h;
+    err = nvs_open("dexcom", NVS_READWRITE, &h);
+    if (err == ESP_OK) {
+        err = nvs_erase_all(h);
+        if (err == ESP_OK) {
+            err = nvs_commit(h);
+        }
+        nvs_close(h);
+    }
+    if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND) {
+        ESP_LOGW(TAG, "Identifiants retires, mais nettoyage du verrou Dexcom impossible (%s)",
+                 esp_err_to_name(err));
+    }
 
     ESP_LOGI(TAG, "Identifiants retires de la configuration active et NVS vide enregistree");
     return ESP_OK;
