@@ -89,6 +89,7 @@ jobs:
           notes = Path('docs/RELEASE_NOTES_0_2_0.md').read_text(encoding='utf-8')
           Path('/tmp/release_payload.json').write_text(
               json.dumps({'body': notes, 'draft': False, 'prerelease': True,
+                          'target_commitish': __import__('os').environ['GITHUB_SHA'],
                           'make_latest': 'false'}, ensure_ascii=False),
               encoding='utf-8')
           PY
@@ -104,7 +105,7 @@ jobs:
              --jq '.[] | select(.tag_name == "v0.1.0") | .id')"
           if [ -n "$OLD_ID" ]; then
             gh api -X PATCH "repos/$GITHUB_REPOSITORY/releases/$OLD_ID" \
-              -f draft=true -f prerelease=true --jq '{tag_name, draft}'
+              -F draft=true -F prerelease=true --jq '{tag_name, draft}'
           fi
           test "$(gh api "repos/$GITHUB_REPOSITORY" --jq '.private')" = true
           echo "Préversion 0.2.0 publiée dans le dépôt PRIVE. 0.1.0 archivée."
