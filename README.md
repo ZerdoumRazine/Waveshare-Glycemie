@@ -96,20 +96,18 @@ esp_hosted 1.4.x · ESP‑SR 2.5.3. Resolved versions are committed in `dependen
 
 ## Build
 
-```bash
-git clone <repo-url> waveshare-glycemie
+**For a ready-to-install device**, follow the [beginner's tutorial](docs/BEGINNER_TUTORIAL_EN.md). The public firmware is configured after installation, on the touchscreen or with the Windows application; it does not require personal credentials compiled into the source.
+
+**Developers** can build the firmware from source with ESP-IDF 5.5.5. See the [technical installation instructions](docs/INSTALLATION_FR.md) (French):
+
+```powershell
+git clone https://github.com/ZerdoumRazine/Waveshare-Glycemie.git waveshare-glycemie
 cd waveshare-glycemie
-copy main\device_secrets.example.h private\device_secrets.h   # then fill it in
 idf.py set-target esp32p4
 idf.py build
-idf.py -p COM7 flash monitor
 ```
 
-> ⚠️ **The project path must be pure ASCII** (no accented characters). ccache, `ldgen` and
-> the linker fail otherwise. Spaces are fine.
-
-Credentials live in `private/device_secrets.h`, which is git‑ignored. They are compiled into
-the firmware, so **never publish `build/` or a compiled `.bin`**.
+Keep the project path and ESP-IDF tools in paths without accents. A legacy source-level credentials option remains available for private builds, but never distribute a binary containing your own credentials.
 
 ## Tests
 
@@ -144,11 +142,6 @@ The main beginner and voice guides are available in **English and French**. Most
 
 ## Licence
 
-Project code: **MIT** (see [LICENSE](LICENSE)). Initiated, designed and directed by
-**Mohamed-Razine Zerdoum** for real family use; a large part of the code was produced with
-automated assistance under his direction — see [CREDITS.md](CREDITS.md) (French). Third‑party
-components keep their own authors and licences — see
-[docs/LICENCES_TIERCES_FR.md](docs/LICENCES_TIERCES_FR.md).
+The project's original code is released under the **MIT licence** (see [LICENSE](LICENSE)). Project initiated and led by **Mohamed-Razine Zerdoum** — [English credits](CREDITS_EN.md) · [Crédits français](CREDITS.md). Third-party components retain their authors and applicable licences: [third-party licences](docs/LICENCES_TIERCES_FR.md).
 
-Supplementary family display, not certified, provided without warranty. Treatment decisions
-and safety alarms belong to the official devices and applications, and to medical follow‑up.
+This is an experimental supplementary display, not certified for medical use. It can report delayed or incorrect readings and must never replace official glucose monitoring, alerts, or treatment guidance.
