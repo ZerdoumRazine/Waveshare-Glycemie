@@ -1,0 +1,55 @@
+name: Vérification audio microSD
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/voice-preflight.yml"
+      - "tools/release_voice_archive.py"
+      - "tests/test_release_voice_archive.py"
+      - "tools/voice/sd_voice_upload.py"
+      - "tests/test_sd_voice_upload.py"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  voice-bank:
+    name: Vérifier les six langues et la provenance
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Tester les garde-fous hors ligne
+        run: python tests/test_release_voice_archive.py
+      - name: Télécharger les voix originales de la Release privée
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p _voice
+          gh release download v0.1.0 --repo "$GITHUB_REPOSITORY" \
+            --pattern 'glycemie-microSD.zip' \
+            --pattern 'SHA256SUMS.txt' \
+            --dir _voice
+      - name: Examiner les 2376 fichiers WAV réels et reconstruire un ZIP propre
+        run: |
+          python tools/release_voice_archive.py \
+            --archive _voice/glycemie-microSD.zip \
+            --historical-sha _voice/SHA256SUMS.txt \
+            --out _voice/repackage
+          (cd _voice/repackage && sha256sum -c SHA256SUMS-voix.txt)
+      - name: Vérifier que les données personnelles ne sont pas incluses
+        run: |
+          python - <<'PY'
+          import zipfile
+          archive='_voice/repackage/glycemie-microSD-v0.2.0.zip'
+          with zipfile.ZipFile(archive) as z:
+              names=z.namelist()
+              assert len(names)==2377
+              assert len([n for n in names if n.lower().endswith('.wav')])==2376
+              assert all(n.startswith('glycemie/audio/voice/') or n=='PROVENANCE_VOIX.txt' for n in names)
+              print('Structure valide ; aucun journal, identifiant ni historique dans le ZIP')
+          PY

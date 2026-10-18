@@ -54,9 +54,9 @@ La carte a **trois prises USB** : deux USB-C et une USB-A.
 
 L'écran s'allume en quelques secondes.
 
-> **Photos à ajouter ici** (elles manquent, et rien ne sera inventé) : une photo de l'arrière de la
-> carte montrant les deux prises USB-C et le bouton BOOT, une photo du connecteur du haut-parleur,
-> une photo de la microSD en place. Envoyez-les : elles seront insérées à cet endroit.
+Pour identifier les ports USB-C, le connecteur audio et l'emplacement microSD,
+consultez les illustrations et schémas officiels du
+[Waveshare ESP32-P4-WIFI6-Touch-LCD-7B](https://www.waveshare.com/wiki/ESP32-P4-WIFI6-Touch-LCD-7B).
 
 ---
 
@@ -167,58 +167,51 @@ projet, parce qu'il est irréversible et rendrait l'appareil non récupérable e
 
 ---
 
-## 5. Copier les sons sur la microSD
+## 5. Installer les six langues sur la microSD
 
-Les annonces parlées (« glycémie 95, stable », alertes) sont des fichiers audio préparés à l'avance,
-**en six langues**. Sans eux, l'écran fonctionne mais reste muet (les alertes sonores, elles,
-marchent toujours : ce sont des bips produits par l'appareil).
+Les annonces parlées sont optionnelles : sans elles, l'écran fonctionne et
+conserve les bips d'alerte. La [Release v0.2.0](https://github.com/ZerdoumRazine/Waveshare-Glycemie/releases/tag/v0.2.0)
+fournit les **six langues ensemble** dans `glycemie-microSD-v0.2.0.zip`.
 
 ### Avec un lecteur de carte
 
-1. Éteignez l'écran, sortez la microSD, mettez-la dans le PC.
-2. Téléchargez le paquet de votre langue, par exemple `glycemie-voix-fr-k21.zip` (environ 20 Mo).
-3. Décompressez-le **à la racine de la carte**. Vous devez obtenir :
-   - en français : les 396 fichiers `.wav` directement dans `glycemie\audio\voice\` ;
-   - dans une autre langue : les 396 fichiers dans `glycemie\audio\voice\<langue>\`
-     (`en`, `es`, `de`, `it` ou `pt`).
+1. Éteignez l'écran, retirez la microSD et sauvegardez son contenu sur le PC.
+2. Téléchargez et vérifiez le ZIP avec `SHA256SUMS-voix.txt`.
+3. Décompressez le ZIP sur votre PC. Copiez **seulement le dossier `glycemie`**
+   à la racine de la microSD, en fusionnant sans supprimer son contenu existant.
+4. Le français doit être dans `glycemie/audio/voice/` ; les autres langues dans
+   `voice/en/`, `voice/es/`, `voice/de/`, `voice/it/`, `voice/pt/`.
+   **Ne créez pas de dossier `voice/fr/`.**
+5. Remettez la carte à l'écran éteint, rallumez puis utilisez **RÉGLAGES → TEST VOIX**.
 
-   > C'est exactement ce que contiennent les paquets : il n'y a rien à déplacer. Le français est à la
-   > racine parce que c'est la banque de secours quand une autre langue manque.
-4. Remettez la carte dans l'écran éteint, rallumez.
-5. **RÉGLAGES → TEST VOIX** : vous devez entendre une phrase.
+### Sans lecteur de carte — câble USB-C UART/CH343
 
-### Sans lecteur de carte — par le câble USB
+Vous n'avez pas besoin de retirer la carte. Décompressez le ZIP dans un dossier
+du PC, par exemple `C:\VoixWaveshare`, et récupérez les sources du dépôt
+pour disposer de `tools/voice/sd_voice_upload.py`.
 
-**La carte reste dans l'écran.** Les sons passent par le câble qui a servi à l'installation. Il faut
-Python et le dossier `tools/` des sources (il est fourni avec ce tutoriel) :
+Dans PowerShell, à la racine des sources :
 
 ```powershell
 py -3 -m pip install pyserial
-py -3 tools\voice\sd_voice_upload.py --port COM7 --lang fr --log copie_voix_fr.log
+py -3 tools\voice\sd_voice_upload.py --port COM7 --lang fr --sd-root "C:\VoixWaveshare" --log copie_fr.log
 ```
 
-Comptez **environ 7 minutes par langue**. L'outil se termine par `CONFORME` quand les 396 fichiers
-ont été écrits puis relus. Pour **vérifier** une carte sans rien y écrire :
+Remplacez `COM7` par le port de votre écran et `C:\VoixWaveshare` par
+le dossier où se trouve `glycemie/` après extraction. Pour l'anglais,
+remplacez `--lang fr` par `--lang en` ; même méthode pour les autres langues.
+Chaque copie prend plusieurs minutes et se termine par `CONFORME`.
+
+Vérifier une langue **sans aucune écriture** sur la microSD :
 
 ```powershell
-py -3 tools\voice\sd_voice_upload.py --port COM7 --lang fr --verify-only --log verif_fr.log
+py -3 tools\voice\sd_voice_upload.py --port COM7 --lang fr --sd-root "C:\VoixWaveshare" --verify-only --log verif_fr.log
 ```
 
-> `--verify-only` n'envoie que des commandes de lecture : aucun fichier écrit, aucun dossier créé.
-
-Le même câble sert aussi à **sauvegarder** le contenu de la carte, toujours sans la sortir :
-
-```powershell
-py -3 tools\recuperer_microsd.py --port COM7
-```
-
-Plusieurs langues peuvent cohabiter : `voice\fr\`, `voice\en\`, `voice\es\`… La voix suit la langue
-de l'interface. Les détails et la vérification fichier par fichier sont dans
-[TUTORIEL_VOIX_FR.md](TUTORIEL_VOIX_FR.md).
-
-> **Ne formatez pas la carte** si Windows vous le propose : vous perdriez l'historique des mesures.
-
----
+Pour les détails, les mesures de sauvegarde et les formats attendus :
+[Tutoriel des voix](TUTORIEL_VOIX_FR.md).
+Les fichiers audio sont issus de Google Cloud Text-to-Speech et ne sont pas
+soumis à la licence MIT du code ([provenance](LICENCES_TIERCES_FR.md)).
 
 ## 6. Tester
 

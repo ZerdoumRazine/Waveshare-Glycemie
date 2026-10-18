@@ -22,19 +22,28 @@ Cette version est issue de sources compilées et testées pour le
 - **GlycemieConnexion.exe** : saisie des accès par USB depuis Windows.
 - **SHA256SUMS.txt** : empreintes des deux téléchargements ci-dessus.
 - **SOURCE_COMMIT.txt** : commit des sources utilisé pour les constructions.
+- **glycemie-microSD-v0.2.0.zip** : six banques vocales WAV pour la microSD,
+  396 fichiers par langue, préparés à partir des ressources générées pour ce projet.
+- **SHA256SUMS-voix.txt** : empreinte SHA-256 du ZIP microSD.
 
 Le code source de la version correspondante est également fourni
 automatiquement par GitHub (« Source code »).
 
 ### Son et microSD
-Les banques WAV en six langues sont optionnelles ; sans elles, les alarmes
-sonores de secours restent disponibles. Les scripts et instructions pour
-produire et transférer les banques sont dans
-[le tutoriel voix](https://github.com/ZerdoumRazine/Waveshare-Glycemie/blob/main/docs/TUTORIEL_VOIX_FR.md).
 
-**Les enregistrements générés par Google ne sont pas redistribués à nouveau
-dans cette livraison automatique.** Vérifier les conditions de diffusion
-avant de proposer publiquement les anciennes archives vocales.
+Les six langues parlées sont proposées dans le fichier microSD séparé.
+L'appareil fonctionne également sans les WAV : les bips restent disponibles.
+Les instructions de copie avec ou sans lecteur sont dans le
+[tutoriel des voix](https://github.com/ZerdoumRazine/Waveshare-Glycemie/blob/main/docs/TUTORIEL_VOIX_FR.md).
+
+Les voix ont été synthétisées avec **Google Cloud Text-to-Speech**.
+Google autorise l'utilisation des fichiers audio générés dans des applications
+ou des médias, dans le respect de ses conditions et des lois applicables
+([documentation officielle](https://docs.cloud.google.com/text-to-speech/quotas)).
+Ces WAV sont distribués **uniquement comme ressources de cette application** ;
+ils ne sont **pas** couverts par la licence MIT du code et aucun droit sur
+les modèles ou marques de Google n'est revendiqué.
+Le projet n'est ni affilié à Google ni approuvé par Google.
 
 ### Limites importantes
 Première installation et configuration complètes sur **appareil neuf**
@@ -57,15 +66,22 @@ and a USB installer with SHA-256 checks, hardware-revision checks,
 and explicit confirmation.
 
 Downloads: the firmware installation ZIP, Windows configuration EXE,
-checksums, and a text file identifying the source commit.
+the six-language microSD WAV ZIP, checksums, and a file identifying the source commit.
 GitHub also automatically provides a source-code archive.
 
-The six-language WAV voice banks are optional. Sound-generation and
-microSD instructions remain in
-[VOICE_TUTORIAL_EN.md](https://github.com/ZerdoumRazine/Waveshare-Glycemie/blob/main/docs/VOICE_TUTORIAL_EN.md).
-Generated Google audio is **not repackaged in this automated release**;
-rights to redistribute prior voice archives should be checked before
-public distribution.
+The optional six-language WAV bank is provided as
+`glycemie-microSD-v0.2.0.zip` with a separate SHA-256 checksum.
+Without audio files, the display continues to produce alert beeps.
+For installation see the
+[English voice tutorial](https://github.com/ZerdoumRazine/Waveshare-Glycemie/blob/main/docs/VOICE_TUTORIAL_EN.md).
+
+These files were generated using **Google Cloud Text-to-Speech**.
+Google permits the use of generated audio files in applications and media
+subject to its terms and applicable law
+([official guidance](https://docs.cloud.google.com/text-to-speech/quotas)).
+They are provided solely as this display's audio resources, **not under
+the MIT source-code licence**. No rights in Google's models or brands
+are claimed; the project is not affiliated with or endorsed by Google.
 
 The complete first-time setup on an unused board has **not yet been
 tested end-to-end on hardware**. This is an experimental supplementary

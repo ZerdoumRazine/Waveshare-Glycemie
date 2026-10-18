@@ -21,6 +21,7 @@ sys.path.insert(0, os.path.join(ROOT, 'tools', 'voice'))
 sys.path.insert(0, os.path.join(ROOT, 'tools'))
 
 import sd_voice_upload as up  # noqa: E402  (le chemin doit etre ajoute avant l'import)
+ORIGINAL_CONFIGURE = up.configure  # restauration apres les transports simules
 
 FICHIERS = ['alert_low.wav', 'glucose_100.wav', 'trend_flat.wav']
 resultats = []
@@ -185,7 +186,7 @@ def executer(carte, lang, verify_only):
     """Lance l'outil sur une carte simulee ; retourne (code de sortie, lien)."""
     dossier = tempfile.mkdtemp(prefix='banque_')
     voice, entrees = banque_temporaire(dossier)
-    up.configure = lambda _lang: None          # la banque de test remplace la vraie
+    up.configure = lambda _lang, _sd_root=None: None  # banque simulee, meme signature
     up.BANK, up.MANIFEST = voice, os.path.join(dossier, 'manifest.csv')
     liens = []
 
@@ -248,6 +249,36 @@ def main():
     check('fr : la copie normale envoie le fichier manquant', carte.ecritures == [FICHIERS[-1]],
           ', '.join(carte.ecritures))
     check('fr : la copie normale se termine CONFORME', code == 0, 'code %d' % code)
+
+    # ZIP public : le script doit pouvoir copier directement la structure
+    # glycemie/audio/voice sans le cache ni le compte Google de generation.
+    up.configure = ORIGINAL_CONFIGURE
+    old_bank, old_manifest = up.BANK, up.MANIFEST
+    with tempfile.TemporaryDirectory(prefix='sd_root_public_') as sd_root:
+        for lang in ('fr', 'en'):
+            sd_voice = os.path.join(sd_root, 'glycemie', 'audio', 'voice')
+            dest = sd_voice if lang == 'fr' else os.path.join(sd_voice, lang)
+            os.makedirs(dest, exist_ok=True)
+            for i in range(396):
+                name = 'glucose_%03d.wav' % i
+                with open(os.path.join(dest, name), 'wb') as output:
+                    output.write(b'RIFF' + bytes([i % 251]) * 12)
+            up.configure(lang, sd_root)
+            entries_public = up.load_manifest()
+            check('%s : archive microSD extraite lue sans Google' % lang,
+                  len(entries_public) == 396 and up.MANIFEST is None)
+            check('%s : CRC32 calcule sur les WAV reels' % lang,
+                  all(int(crc, 16) == zlib.crc32(open(os.path.join(dest, name), 'rb').read()) & 0xFFFFFFFF
+                      for name, taille, crc in entries_public))
+        os.remove(os.path.join(sd_root, 'glycemie', 'audio', 'voice', 'en', 'glucose_395.wav'))
+        up.configure('en', sd_root)
+        refused = False
+        try:
+            up.load_manifest()
+        except SystemExit:
+            refused = True
+        check('banque extraite incomplete refusee', refused)
+    up.BANK, up.MANIFEST = old_bank, old_manifest
 
     largeur = max(len(r[0]) for r in resultats)
     echecs = 0

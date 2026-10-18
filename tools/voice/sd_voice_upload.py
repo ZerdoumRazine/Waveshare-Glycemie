@@ -34,13 +34,24 @@ BANK = os.path.join(HERE, 'bank', 'voice')
 MANIFEST = os.path.join(HERE, 'bank', 'manifest.csv')
 
 
-def configure(lang):
-    """Banque locale a copier. Le francais est a la racine (bank/voice), comme a l'origine ;
-    les autres langues dans bank/<code>/voice, et sur la carte dans /glycemie/audio/voice/<code>."""
+def configure(lang, sd_root=None):
+    """Banque depuis les fichiers de travail ou depuis le ZIP microSD extrait.
+
+    --sd-root pointe vers un dossier contenant glycemie/audio/voice, pour
+    copier directement les sons telecharges sans relancer une generation Google.
+    """
     global BANK, MANIFEST
-    base = os.path.join(HERE, 'bank') if lang == 'fr' else os.path.join(HERE, 'bank', lang)
-    BANK = os.path.join(base, 'voice')
-    MANIFEST = os.path.join(base, 'manifest.csv')
+    if sd_root is not None:
+        root = os.path.abspath(sd_root)
+        base = os.path.join(root, 'glycemie', 'audio', 'voice')
+        BANK = base if lang == 'fr' else os.path.join(base, lang)
+        MANIFEST = None  # CRC32, nom et taille calcules sur les WAV reels
+    else:
+        base = os.path.join(HERE, 'bank') if lang == 'fr' else os.path.join(HERE, 'bank', lang)
+        BANK = os.path.join(base, 'voice')
+        MANIFEST = os.path.join(base, 'manifest.csv')
+    if not os.path.isdir(BANK):
+        raise SystemExit('Banque vocale absente : %s' % BANK)
 CHUNK = 896
 FAST_BAUD = 921600
 SLOW_BAUD = 115200
@@ -119,9 +130,23 @@ class Link:
 
 def load_manifest():
     entries = []
-    with open(MANIFEST, encoding='utf-8-sig', newline='') as f:
-        for row in csv.DictReader(f, delimiter=';'):
-            entries.append((row['fichier'], int(row['taille_octets']), row['crc32'].lower()))
+    if MANIFEST is None:
+        # ZIP public : pas besoin d'un compte Google ou d'un manifest prive.
+        # Les cinq sous-dossiers de langue dans la banque francaise ne sont
+        # pas des fichiers et ne doivent jamais etre copies comme tels.
+        names = sorted(n for n in os.listdir(BANK) if n.lower().endswith('.wav')
+                       and os.path.isfile(os.path.join(BANK, n)))
+        if len(names) != 396:
+            raise SystemExit('Banque incomplète (%d WAV sur 396) : %s' % (len(names), BANK))
+        for name in names:
+            if not re.fullmatch(r'[A-Za-z0-9_-]+\.wav', name):
+                raise SystemExit('Nom WAV non autorise : %s' % name)
+            data = open(os.path.join(BANK, name), 'rb').read()
+            entries.append((name, len(data), '%08x' % (zlib.crc32(data) & 0xffffffff)))
+    else:
+        with open(MANIFEST, encoding='utf-8-sig', newline='') as f:
+            for row in csv.DictReader(f, delimiter=';'):
+                entries.append((row['fichier'], int(row['taille_octets']), row['crc32'].lower()))
     for name, size, crc in entries:
         data = open(os.path.join(BANK, name), 'rb').read()
         if len(data) != size or '%08x' % (zlib.crc32(data) & 0xFFFFFFFF) != crc:
@@ -253,9 +278,10 @@ def main(argv=None):
     ap.add_argument('--verify-only', action='store_true')
     ap.add_argument('--lang', default='fr', choices=['fr', 'en', 'es', 'de', 'it', 'pt'],
                     help='langue de la banque a copier (fr par defaut : racine de la carte)')
+    ap.add_argument('--sd-root', default=None, help='dossier extrait du ZIP microSD contenant glycemie/')
     args = ap.parse_args(argv)
 
-    configure(args.lang)
+    configure(args.lang, args.sd_root)
     entries = load_manifest()
     link = LINK(args.port, args.log)
     ok = False
