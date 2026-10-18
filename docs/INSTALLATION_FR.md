@@ -87,7 +87,12 @@ cd C:\dev\waveshare-glycemie
 
 ---
 
-## 5. Identifiants privés
+## 5. Identifiants privés — ancienne méthode facultative
+
+**Pour installer le programme public, ne renseignez aucun secret dans le code.** Après installation, l'assistant tactile ou l'application Windows permet de saisir ses propres accès Wi-Fi et Dexcom, sans recompilation ([tutoriel débutant](TUTORIEL_DEBUTANT_FR.md)).
+
+Les instructions ci-dessous concernent uniquement l'**ancienne méthode facultative** de compilation d'un programme personnel avec ses identifiants intégrés. Ne distribuez jamais les binaires ainsi obtenus.
+
 
 ```powershell
 copy main\device_secrets.example.h private\device_secrets.h
