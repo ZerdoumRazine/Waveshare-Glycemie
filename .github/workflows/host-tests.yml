@@ -45,3 +45,15 @@ jobs:
           python-version: "3.12"
       - name: Tests de l'application Windows
         run: python tests/test_pc_app.py
+      - name: Installer l'outil de construction Windows
+        run: py -3 -m pip install pyinstaller
+      - name: Construire l'executable Windows
+        shell: pwsh
+        run: .\\tools\\pc_app\\construire_exe.ps1
+      - name: Conserver l'executable verifie (depot prive)
+        uses: actions/upload-artifact@v4
+        with:
+          name: GlycemieConnexion-${{ github.sha }}
+          path: tools/pc_app/dist/GlycemieConnexion.exe
+          if-no-files-found: error
+          retention-days: 30
