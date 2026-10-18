@@ -1,6 +1,6 @@
 # Dexcom G7 family glucose display — Waveshare ESP32‑P4 7″
 
-> ⚠️ **Experimental personal project. This is NOT a medical device.**
+> ⚠️ **Experimental personal project. This project is not certified for medical use.**
 > It must not be used for treatment decisions and does not replace the official Dexcom
 > application, its alarms, or any certified monitoring system.
 
@@ -8,7 +8,7 @@
 
 A permanent wall display showing a Dexcom G7 reading large enough to be read from several
 metres away: value, trend arrow, change since the previous reading, data age, 24 h chart,
-daily statistics, consumable tracking and spoken French alerts.
+daily statistics, consumable tracking and spoken alerts in six languages.
 
 Data path: G7 sensor → phone → **Dexcom Share** servers → Internet → display.
 The device never talks to the sensor directly.
@@ -128,8 +128,7 @@ replaced by stubs.
 
 ## Documentation
 
-All guides live in `docs/` and are written in French, except the voice guide which exists in both
-languages:
+The main beginner and voice guides are available in **English and French**. Most developer documentation is in French:
 
 | Document | Contents |
 |---|---|
