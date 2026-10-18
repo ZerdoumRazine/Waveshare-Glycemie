@@ -10,7 +10,7 @@ Ce document décrit ce qu'on voit, ce qu'on entend, et les seules actions utiles
 | Zone | Contenu |
 |---|---|
 | Gauche | date longue (« Jeudi 15 octobre ») |
-| Centre | `MODE DÉMO` si actif, indicateur d'alerte, pastille des commandes vocales |
+| Centre | `MODE DÉMO` si actif et état des alertes. La reconnaissance vocale n'est pas active dans le programme public. |
 | Droite | heure, en 44 px (lisible de loin) |
 
 Il n'y a **pas** de voyants Wi-Fi / Internet / Dexcom / SD : ils ont été retirés
@@ -144,7 +144,7 @@ Page défilable au doigt :
 - **ÉCRAN** : luminosité jour.
 - **MODE NUIT** : activation, début (22:00), fin (07:00), luminosité nuit, **TEST MODE NUIT**.
 - **CONSOMMABLES** : intervalle du cathéter 48 H / 72 H.
-- **COMMANDES VOCALES** : activation, mot d'éveil « Bonjour ESP », état.
+- **CONNEXION** : état du Wi-Fi et de Dexcom, modification des accès et mode démonstration. La reconnaissance des commandes vocales est absente du programme public.
 - **INFORMATIONS** : état détaillé des liaisons, nombre de fichiers vocaux présents, versions.
 
 ---
