@@ -121,6 +121,11 @@ def main() -> None:
         for info in source.infolist():
             if info.is_dir():
                 continue
+            # L'ancien ZIP comporte aussi une notice de téléchargement créée
+            # localement. Ne jamais la réutiliser dans le paquet publiable :
+            # une notice de provenance neutre est régénérée ci-dessous.
+            if info.filename in ("LISEZMOI.txt",):
+                continue
             path = PurePosixPath(info.filename)
             if not info.filename.startswith(BASE) or ".." in path.parts:
                 raise ValueError("Fichier inattendu dans la microSD : " + info.filename)
