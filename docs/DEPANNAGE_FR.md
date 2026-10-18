@@ -156,7 +156,7 @@ Commandes : `vcmd_on`, `vcmd_off`, `vcmd_eveil 0|1`, `vcmd_gain <dB>`, `vcmd_inf
 Non, pas aujourd'hui : l'affichage est en mg/dL uniquement.
 
 **Peut-on configurer le Wi-Fi à l'écran ?**
-Non : le réseau est compilé dans le firmware (`private/device_secrets.h`).
+Oui : depuis K22, ouvrez **RÉGLAGES → CONNEXION** ou utilisez l'application Windows `GlycemieConnexion.exe` reliée par USB. La configuration dans `private/device_secrets.h` ne concerne que l'ancienne méthode de compilation personnelle.
 
 **Peut-on l'utiliser avec Nightscout ?**
 Non. Le projet lit Dexcom Share directement, et il n'a pas été converti à Nightscout.
