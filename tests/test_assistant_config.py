@@ -346,7 +346,9 @@ def main():
     with Journal() as j:
         code = ac.effacer(app, demande=reponses('oui'))
     check('echec NVS : le refus renvoie un code non nul', code != 0)
-    check('echec NVS : anciens acces conserves', anciens_intacts(simule))
+    check('echec NVS : anciens acces conserves',
+          simule.enregistre_wifi == (SSID, MDP_WIFI) and
+          simule.enregistre_dexcom == (USER, MDP_DEX, 'ous'))
     check('echec NVS : aucune instruction de redemarrage trompeuse',
           'Redemarrez l\'appareil' not in j.contenu and 'PAS' in j.contenu)
 
