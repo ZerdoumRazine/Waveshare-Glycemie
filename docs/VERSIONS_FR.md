@@ -1,11 +1,13 @@
 # Historique des versions
 
-Le développement s'est déroulé du **13 au 21 septembre 2026**. Chaque version a été
-réellement compilée, flashée sur la carte et vérifiée avant de passer à la suivante ; une
-sauvegarde binaire complète était conservée à chaque étape pour pouvoir revenir en arrière.
+Les premières versions (V1 à K19) ont été développées du **13 au 21 septembre 2026**.
+Le projet a ensuite évolué en octobre 2026 avec la traduction de l'interface (K20),
+les annonces en six langues (K21) et l'assistant de connexion tactile et Windows (K22).
 
-La version livrée dans ce dépôt est **K19 (2026-09-21)**, la dernière effectivement
-flashée et validée.
+La **préversion GitHub v0.1.0** provient de K22. L'écran familial a été mis à jour,
+mais **l'installation et la première configuration complète sur une carte neuve**
+restent à valider sur matériel. Les modifications ultérieures du code sont
+distinguées de cette préversion et nécessitent une nouvelle compilation et des tests.
 
 > Les mesures citées (durées de rafraîchissement, RAM, PSRAM) sont les relevés **historiques**
 > de septembre 2026 sur la carte réelle. Elles sont rapportées telles quelles et n'ont pas
@@ -174,7 +176,7 @@ haut à droite, la glycémie plus grande, les voyants Wi-Fi/Internet/Dexcom/SD s
 
 Validé par les tests 345 : 5 onglets au doigt, captures des 5 pages, aucun texte tronqué.
 
-## K19 — 2026-09-21 · commande vocale du capteur sécurisée *(version livrée)*
+## K19 — 2026-09-21 · commande vocale du capteur sécurisée *(version historique)*
 
 Problème réel : annonces spontanées « Nouveau capteur… » plusieurs fois par jour.
 
@@ -255,6 +257,16 @@ usage, et les journaux passent par `tr_fr()`.
 (panneau « LOW GLUCOSE », journal microSD en français), repli vers la banque française confirmé pour
 une langue non installée, Dexcom et Wi-Fi inchangés, NVS conservée.
 
+## K22 — 2026-10-17 · configuration pour chaque utilisateur
+
+- Assistant tactile : choix de la langue, Wi-Fi, compte Dexcom, vérification puis
+  enregistrement après confirmation.
+- Application Windows `GlycemieConnexion.exe` reliée par USB, en complément du tactile.
+- Programme public **sans identifiants personnels**, avec mode démonstration.
+- Reconnaissance des commandes vocales **désactivée dans le programme distribué** ;
+  les annonces parlées en six langues et les alertes sonores restent disponibles.
+- Contrôles hors matériel exécutés ; l'essai complet sur une carte neuve reste à faire.
+
 ## Après K19
 
 Rien jusqu'au 15 octobre 2026, date de la reconstitution du dépôt puis de K20 et K21
@@ -263,10 +275,11 @@ les fonctions parfois évoquées mais **jamais implémentées** ne figurent pas 
 équilibre alimentaire par IA, tableau de bord additionnel, intégration à un autre produit,
 conversion vers Nightscout, affichage en mmol/L.
 
-## Compilation de référence du dépôt
+## Compilation historique de K19 (pas celle de la version actuelle)
 
-Le code de ce dépôt est **identique** à celui de K19 (comparaison fichier par fichier avec
-la sauvegarde `K19_VOIX_CAPTEUR_BIN`). Recompilé le 2026-10-15 avec la même pile
+Les chiffres ci-dessous concernent **K19**, dont les sources étaient identiques
+à celles de la sauvegarde `K19_VOIX_CAPTEUR_BIN`. Cette version historique a été
+recompilée le 2026-10-15 avec la même pile
 (ESP-IDF 5.5.5, mêmes versions résolues dans `dependencies.lock`) :
 
 - compilation réussie, 2 433 cibles ;
