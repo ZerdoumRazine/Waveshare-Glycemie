@@ -42,8 +42,7 @@ Fetching glucose values is a separate matter, over Wi‑Fi and your Dexcom accou
 400 mg/dL.
 
 Changing the language in SETTINGS **creates no file**. If the chosen language has no bank on the
-card, the device **falls back to French**; with nothing at all, only a beep is left. **Voice commands**
-("Glycémie", "Enregistrer nouveau capteur"…) stay in French whatever the screen language.
+card, the device **falls back to French**; with nothing at all, only a beep is left. **Voice-command recognition is disabled in the public build**; its microphone is not used for listening to commands. Spoken announcements and alerts remain available in all six languages.
 
 ---
 
@@ -51,8 +50,7 @@ card, the device **falls back to French**; with nothing at all, only a beep is l
 
 ### 2.1 Get the package for your language
 
-Packages are published as **GitHub Release attachments**, not inside the repository: they are large
-files that should not be cloned with the code.
+The packages are **intended to be supplied as GitHub Release attachments**, separate from the source code. Check [Releases](../../releases) for availability; until a Release is published, these downloads are not yet available.
 
 | Package | Contents | ZIP size |
 |---|---|---|
