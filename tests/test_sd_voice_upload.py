@@ -21,6 +21,7 @@ sys.path.insert(0, os.path.join(ROOT, 'tools', 'voice'))
 sys.path.insert(0, os.path.join(ROOT, 'tools'))
 
 import sd_voice_upload as up  # noqa: E402  (le chemin doit etre ajoute avant l'import)
+ORIGINAL_CONFIGURE = up.configure  # restauration apres les transports simules
 
 FICHIERS = ['alert_low.wav', 'glucose_100.wav', 'trend_flat.wav']
 resultats = []
@@ -185,7 +186,7 @@ def executer(carte, lang, verify_only):
     """Lance l'outil sur une carte simulee ; retourne (code de sortie, lien)."""
     dossier = tempfile.mkdtemp(prefix='banque_')
     voice, entrees = banque_temporaire(dossier)
-    up.configure = lambda _lang: None          # la banque de test remplace la vraie
+    up.configure = lambda _lang, _sd_root=None: None  # banque simulee, meme signature
     up.BANK, up.MANIFEST = voice, os.path.join(dossier, 'manifest.csv')
     liens = []
 
@@ -251,6 +252,7 @@ def main():
 
     # ZIP public : le script doit pouvoir copier directement la structure
     # glycemie/audio/voice sans le cache ni le compte Google de generation.
+    up.configure = ORIGINAL_CONFIGURE
     old_bank, old_manifest = up.BANK, up.MANIFEST
     with tempfile.TemporaryDirectory(prefix='sd_root_public_') as sd_root:
         for lang in ('fr', 'en'):
