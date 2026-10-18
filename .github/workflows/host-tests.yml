@@ -1,11 +1,8 @@
 name: Tests hors matériel
 
 on:
-  push:
-    branches:
-      - main
-      - "audit/**"
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
