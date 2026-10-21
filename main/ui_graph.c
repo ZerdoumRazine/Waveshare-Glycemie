@@ -1,4 +1,10 @@
 /*
+ * ui_graph.c: Layout and touch interactions of the glucose graph.
+ * FR: Mise en page et interaction tactile du graphique.
+ * Design note: Keep display calculations separate from data acquisition.
+ */
+
+/*
  * Owns the graph page controls and coordinates range selection with the chart widget.
  * Pilote la page graphique et les durées sélectionnées.
  */
