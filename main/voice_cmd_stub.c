@@ -1,4 +1,10 @@
 /*
+ * voice_cmd_stub.c: Inactive voice-command implementation for the public build.
+ * FR: Module vocal inactif de la version publique.
+ * Design note: This stub must not activate microphone listening.
+ */
+
+/*
  * Commandes vocales ABSENTES de cette compilation (GLY_VOICE_CMD=OFF).
  *
  * Raison : la reconnaissance locale (ESP-SR MultiNet) n'existe qu'en anglais et en chinois. Les phrases
