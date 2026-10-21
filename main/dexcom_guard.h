@@ -1,3 +1,7 @@
+/* dexcom_guard.h: Persistent Dexcom authentication state API.
+ * FR: API du verrou d'authentification Dexcom.
+ * The declarations below are shared with other firmware modules.
+ */
 /*
  * Verrou d'authentification Dexcom, persistant en NVS.
  *
