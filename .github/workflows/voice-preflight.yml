@@ -27,31 +27,61 @@ jobs:
           python-version: "3.12"
       - name: Tester les garde-fous hors ligne
         run: python tests/test_release_voice_archive.py
-      - name: Télécharger les voix originales de la Release privée
+      # EN: v0.1.0 is archived as a draft; check the published v0.2.0 assets instead.
+      # FR: v0.1.0 est archivée ; vérifier directement les ressources v0.2.0.
+      - name: Télécharger la banque audio de la préversion actuelle
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           mkdir -p _voice
-          gh release download v0.1.0 --repo "$GITHUB_REPOSITORY" \
-            --pattern 'glycemie-microSD.zip' \
-            --pattern 'SHA256SUMS.txt' \
+          gh release download v0.2.0 --repo "$GITHUB_REPOSITORY" \
+            --pattern 'glycemie-microSD-v0.2.0.zip' \
+            --pattern 'SHA256SUMS-voix.txt' \
             --dir _voice
-      - name: Examiner les 2376 fichiers WAV réels et reconstruire un ZIP propre
-        run: |
-          python tools/release_voice_archive.py \
-            --archive _voice/glycemie-microSD.zip \
-            --historical-sha _voice/SHA256SUMS.txt \
-            --out _voice/repackage
-          (cd _voice/repackage && sha256sum -c SHA256SUMS-voix.txt)
-      - name: Vérifier que les données personnelles ne sont pas incluses
+          (cd _voice && sha256sum -c SHA256SUMS-voix.txt)
+      - name: Vérifier 2376 WAV, formats et absence de fichiers privés
         run: |
           python - <<'PY'
+          import csv
+          import io
+          from pathlib import Path
+          import re
+          import wave
           import zipfile
-          archive='_voice/repackage/glycemie-microSD-v0.2.0.zip'
+          expected = {
+              row['fichier']
+              for row in csv.DictReader(
+                  Path('assets/banque_vocale_manifeste.csv').open(
+                      encoding='utf-8-sig', newline=''), delimiter=';')
+          }
+          assert len(expected) == 396
+          languages = ('fr', 'en', 'es', 'de', 'it', 'pt')
+          found = {lang: set() for lang in languages}
+          root = 'glycemie/audio/voice/'
+          archive = '_voice/glycemie-microSD-v0.2.0.zip'
           with zipfile.ZipFile(archive) as z:
-              names=z.namelist()
-              assert len(names)==2377
-              assert len([n for n in names if n.lower().endswith('.wav')])==2376
-              assert all(n.startswith('glycemie/audio/voice/') or n=='PROVENANCE_VOIX.txt' for n in names)
-              print('Structure valide ; aucun journal, identifiant ni historique dans le ZIP')
+              assert z.testzip() is None
+              names = z.namelist()
+              assert len(names) == 2377
+              for name in names:
+                  if name == 'PROVENANCE_VOIX.txt':
+                      continue
+                  assert name.startswith(root), name
+                  parts = name[len(root):].split('/')
+                  if len(parts) == 1:
+                      lang, filename = 'fr', parts[0]
+                  else:
+                      assert len(parts) == 2 and parts[0] in languages[1:], name
+                      lang, filename = parts
+                  assert re.fullmatch(r'[a-zA-Z0-9_-]+\.wav', filename), name
+                  assert filename in expected and filename not in found[lang], name
+                  found[lang].add(filename)
+                  with wave.open(io.BytesIO(z.read(name)), 'rb') as wav:
+                      assert (wav.getnchannels(), wav.getsampwidth(),
+                              wav.getframerate()) == (1, 2, 16000), name
+                      assert wav.getnframes() > 0, name
+              assert all(found[lang] == expected for lang in languages)
+              notice = z.read('PROVENANCE_VOIX.txt').decode('utf-8')
+              assert 'Google Cloud Text-to-Speech' in notice
+              print('OK: 6 x 396 WAV, PCM mono 16 kHz, CRC, provenance, no private files')
           PY
