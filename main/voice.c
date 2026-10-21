@@ -1,4 +1,12 @@
 /*
+ * voice.c: Plays prerecorded announcements from the microSD.
+ * FR: Lit les annonces préenregistrées sur microSD.
+ * Design decision: Alert beeps must remain available without language files.
+ *
+ * Experimental supplementary display; official monitoring remains authoritative.
+ */
+
+/*
  * Combines stored PCM WAV clips for six languages with a French and then beep fallback.
  * Assemble les annonces WAV des six langues avec un repli audio.
  */
