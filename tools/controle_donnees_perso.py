@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Checks release candidates for likely personal data.
+# FR: Vérifie la présence possible de données personnelles.
+# Design note: Automated checks reduce risk but do not replace a human review.
 # EN: Scans public files, binaries and ZIP contents for known private data.
 # FR: Contrôle les sources, exécutables et ZIP avant publication.
 r"""Controle des donnees personnelles dans ce qui serait publie.
