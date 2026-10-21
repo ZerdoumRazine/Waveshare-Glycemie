@@ -1,4 +1,10 @@
 /*
+ * ui_setup.c: Touchscreen wizard for initial Wi-Fi and Dexcom setup.
+ * FR: Assistant tactile de première configuration.
+ * Design note: Trial values are not persisted until validated and confirmed.
+ */
+
+/*
  * Guides first-time Wi-Fi and Dexcom configuration with a reversible connection trial.
  * Guide la configuration initiale en protégeant les accès existants.
  */
