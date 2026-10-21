@@ -1,4 +1,10 @@
 /*
+ * voice_cmd.c: Optional experimental voice command recognition.
+ * FR: Reconnaissance vocale expérimentale et facultative.
+ * Design note: Disabled in the standard public build to avoid false triggers.
+ */
+
+/*
  * Optional experimental voice-command recognizer; excluded from the public firmware.
  * Reconnaissance vocale expérimentale, absente du firmware distribué.
  */
