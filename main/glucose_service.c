@@ -1,4 +1,10 @@
 /*
+ * glucose_service.c: Refresh, data age, and presentation of glucose readings.
+ * FR: Actualisation, ancienneté et diffusion des mesures.
+ * Design note: Expose stale readings rather than treating them as current.
+ */
+
+/*
  * glucose_service.c: Coordinates refreshing, ageing, and presenting glucose data.
  * FR: Coordonne l'actualisation, l'âge et la diffusion des mesures.
  * Design decision: Display the age of a reading instead of pretending it is current.
