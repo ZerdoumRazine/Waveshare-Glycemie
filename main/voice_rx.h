@@ -1,3 +1,7 @@
+/* voice_rx.h: USB serial voice-file transfer protocol.
+ * FR: Protocole série de transfert des voix.
+ * Shared declarations for the implementation.
+ */
 /*
  * Reception de la banque vocale par le cable USB-serie de la console (outil temporaire, PC :
  * tools/voice/sd_voice_upload.py) : copie dans /glycemie/audio/voice/ sans retirer la microSD ni utiliser le
