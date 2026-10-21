@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Scans tracked content for credential-like patterns.
+# FR: Recherche des secrets possibles dans les fichiers versionnés.
+# Design note: No pattern scan can guarantee every secret has been found.
 # EN: Looks for accidentally included credentials without ever echoing secret values.
 # FR: Recherche les identifiants accidentellement publiés sans les afficher.
 """Recherche des identifiants prives dans des fichiers texte (journaux, rapports, sources).
