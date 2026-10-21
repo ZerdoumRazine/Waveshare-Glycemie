@@ -1,4 +1,10 @@
 /*
+ * sensor_session.c: Sensor insertion dates and expected replacement time.
+ * FR: Dates de pose et échéances du capteur.
+ * Design note: Keep insertion dates persistent across normal reboots.
+ */
+
+/*
  * Keeps sensor insertion time, expected expiration and one-time reminder flags.
  * Suit la date de pose du capteur et les rappels déjà délivrés.
  */
