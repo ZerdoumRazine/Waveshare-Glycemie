@@ -1,4 +1,12 @@
 /*
+ * ui_settings.c: Builds settings controls and connection confirmation dialogs.
+ * FR: Construit les réglages et les confirmations de connexion.
+ * Design decision: A failed deletion must not be reported as successful.
+ *
+ * Experimental supplementary display; official monitoring remains authoritative.
+ */
+
+/*
  * Presents user options and the touchscreen connection wizard without printing passwords.
  * Affiche les réglages et l'assistant de connexion sans révéler les mots de passe.
  */
