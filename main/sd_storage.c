@@ -1,4 +1,10 @@
 /*
+ * sd_storage.c: microSD history, files and storage checks.
+ * FR: Historique microSD et opérations de stockage.
+ * Design note: Never automatically format the user's card.
+ */
+
+/*
  * sd_storage.c: Handles the microSD history files and supporting storage operations.
  * FR: Gère l'historique microSD et les opérations de stockage.
  * Design decision: Never automatically format a card containing user history.
