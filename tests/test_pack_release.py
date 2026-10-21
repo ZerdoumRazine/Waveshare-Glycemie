@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# EN: Build a synthetic release ZIP and verify checksums without connecting a board.
+# FR: Construit un ZIP de test pour vérifier les empreintes sans écran.
 """Regression test for self-contained, offline v0.2.0 installation archives."""
 from __future__ import annotations
 
@@ -18,6 +20,7 @@ SOURCE_NAMES = {
 }
 
 
+# Use dummy binaries to test the packager without accidentally distributing a real device image.
 def main() -> int:
     with tempfile.TemporaryDirectory(prefix="test-glycemie-release-") as folder:
         tmp = Path(folder)

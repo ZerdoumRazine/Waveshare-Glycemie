@@ -7,6 +7,10 @@
  *   rouvre le panneau), contour seul tant que la glycemie reste basse / tres basse / elevee / tres elevee ou que
  *   les donnees manquent apres OK ou RAPPEL.
  */
+/* Public interface / Interface publique
+ * EN: LVGL alert overlays, acknowledgement and snooze controls.
+ * FR: Panneaux LVGL des alertes et commandes d'acquittement.
+ */
 #pragma once
 
 #include <stdbool.h>

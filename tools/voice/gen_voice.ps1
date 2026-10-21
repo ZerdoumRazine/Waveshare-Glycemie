@@ -1,3 +1,5 @@
+# EN: Generate legacy Windows speech samples for private development, not public distribution.
+# FR: Génère des échantillons vocaux Windows réservés à un usage privé.
 # Genere les extraits vocaux francais (WAV 16 kHz, 16 bits, mono) avec la voix Windows fr-FR installee.
 # Aucune dependance Internet, aucune installation. Sortie : tools\voice\wav\<id>.wav
 # Usage : powershell -ExecutionPolicy Bypass -File tools\voice\gen_voice.ps1

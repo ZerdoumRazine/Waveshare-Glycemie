@@ -26,7 +26,7 @@ components keep their own authors and licences.
 | 🔧 **Set up the device** | [Beginner's tutorial](docs/BEGINNER_TUTORIAL_EN.md) — buy, connect, install, configure |
 | ⬇️ **Download the programs** | [Releases](../../releases) — firmware, Windows app and checksums (voice banks are separate) |
 | 🔊 **Prepare the microSD** | [Voice tutorial](docs/VOICE_TUTORIAL_EN.md) — optional six-language banks, including how to generate your own |
-| 🧩 **Understand the code** | [Architecture](docs/ARCHITECTURE_FR.md) (French) and the [`main/`](main/) folder |
+| 🧩 **Understand the code** | [English code guide](docs/CODE_GUIDE_EN.md) · [Guide français](docs/CODE_GUIDE_FR.md) · [`main/`](main/) |
 
 > **Not yet tried end to end on a brand-new device.** Installation, update, reconnection,
 > announcements and the setup wizard were verified on the author's own device; first-time setup of

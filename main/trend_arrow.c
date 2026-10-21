@@ -1,3 +1,7 @@
+/*
+ * Draws a trend icon and halo using LVGL primitives shared with the home view.
+ * Dessine l'icône de tendance et son halo lumineux.
+ */
 #include "trend_arrow.h"
 
 #include <math.h>
@@ -30,6 +34,7 @@ static lv_point_precise_t pt(float x, float y)
 }
 
 /* Fleche centree en (cx, cy), orientee selon angle_deg (0 = droite, 90 = haut), longueur totale length */
+/* Draw the symbol after child objects to preserve legibility. */
 static void draw_arrow(lv_layer_t *layer, const arrow_ctx_t *ctx, float cx, float cy, float angle_deg, float length)
 {
     const float rad = angle_deg * (float)M_PI / 180.0f;
@@ -138,6 +143,7 @@ lv_obj_t *trend_arrow_create(lv_obj_t *parent, int32_t size, const lv_font_t *fa
     return cont;
 }
 
+/* Choose the icon shape from the received trend value. */
 void trend_arrow_set(lv_obj_t *arrow, uint8_t trend, lv_color_t color)
 {
     arrow_ctx_t *ctx = lv_obj_get_user_data(arrow);
@@ -162,6 +168,7 @@ void trend_arrow_set(lv_obj_t *arrow, uint8_t trend, lv_color_t color)
     lv_obj_invalidate(arrow);
 }
 
+/* Adjust glow as a visual cue only; it does not change alert thresholds. */
 void trend_arrow_set_glow(lv_obj_t *arrow, lv_opa_t opa)
 {
     arrow_ctx_t *ctx = lv_obj_get_user_data(arrow);

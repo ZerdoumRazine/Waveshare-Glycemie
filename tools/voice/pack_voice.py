@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# EN: Processes a legacy Windows voice into short PCM clips for local use only.
+# FR: Prépare les anciens extraits PCM Windows sans autoriser leur redistribution.
 """Assemble les extraits vocaux WAV en un bloc PCM integre au firmware.
 
 - rogne les silences de debut et de fin (marge 30 ms) ;
@@ -46,6 +48,7 @@ def db(value):
     return 20.0 * math.log10(max(value, 1e-9))
 
 
+# Read the source audio in the expected PCM format.
 def load(path):
     with wave.open(path, 'rb') as w:
         if w.getframerate() != RATE or w.getsampwidth() != 2 or w.getnchannels() != 1:
@@ -57,6 +60,7 @@ def load(path):
         return data
 
 
+# Remove leading and trailing silence without changing the spoken text.
 def trim(samples):
     start = 0
     end = len(samples)
@@ -79,6 +83,7 @@ def active_rms(x):
     return math.sqrt(sum(energies) / len(energies)) if energies else 0.0
 
 
+# Control peaks before embedding clips in a personal firmware build.
 def limit(x):
     """Limiteur a anticipation : |sortie| <= plafond sans ecretage.
 
@@ -143,6 +148,7 @@ def process(samples):
     return out, stats
 
 
+# Generate a private legacy bank; these recordings are not part of public releases.
 def main():
     os.makedirs(os.path.dirname(OUT_PCM), exist_ok=True)
     blob = array.array('h')

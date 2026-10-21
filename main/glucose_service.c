@@ -1,3 +1,8 @@
+/*
+ * Polls Dexcom Share, deduplicates readings, and serves both live and demo modes.
+ * Interroge Dexcom Share, évite les doublons et fournit le mode démonstration.
+ * This is a supplementary display: official Dexcom alarms remain authoritative.
+ */
 #include "glucose_service.h"
 
 #include <inttypes.h>
@@ -319,6 +324,7 @@ static uint8_t demo_trend(int delta_5min)
     return TREND_DOUBLE_DOWN;
 }
 
+/* Produce clearly identified simulated readings without a Dexcom connection. */
 static void demo_task(void *arg)
 {
     (void)arg;
@@ -698,6 +704,7 @@ static void test_set(gly_test_t etat, const char *msg)
     portEXIT_CRITICAL(&s_test_lock);
 }
 
+/* Test candidate credentials without persisting them before user confirmation. */
 static void test_task(void *arg)
 {
     (void)arg;

@@ -5,6 +5,10 @@
  * voir main/device_secrets.example.h). Ce fichier ne doit etre inclus que par les
  * modules qui en ont besoin, et aucune de ces valeurs ne doit jamais etre journalisee.
  */
+/* Public interface / Interface publique
+ * EN: Private-build compatibility values; never log or distribute real credentials.
+ * FR: Compatibilité des identifiants locaux à ne jamais publier.
+ */
 #pragma once
 
 #if __has_include("device_secrets.h")

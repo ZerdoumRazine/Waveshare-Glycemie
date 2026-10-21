@@ -11,6 +11,10 @@
  *
  * API non officielle : ce module isole entierement le service distant.
  */
+/* Public interface / Interface publique
+ * EN: Dexcom Share HTTPS client types, timestamps and result codes.
+ * FR: Interface du client HTTPS Dexcom Share.
+ */
 #pragma once
 
 #include <stdbool.h>

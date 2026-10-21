@@ -2,6 +2,10 @@
  * Pages de l'interface : ACCUEIL, GRAPHIQUE, AUJOURD'HUI, CONSOMMABLES, REGLAGES.
  * Toutes les fonctions s'executent dans la tache LVGL.
  */
+/* Public interface / Interface publique
+ * EN: Shared view factory interfaces for the five touchscreen pages.
+ * FR: Interfaces communes des cinq pages tactiles.
+ */
 #pragma once
 
 #include <stdbool.h>

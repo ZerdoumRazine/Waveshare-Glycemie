@@ -2,6 +2,10 @@
  * Reglages utilisateur persistants (NVS, espace "settings") : volume, voix, alertes, seuils, luminosite.
  * Les modifications sont enregistrees en differe (2 s) par une tache dediee : jamais depuis l'interface.
  */
+/* Public interface / Interface publique
+ * EN: Validated user preferences and delayed persistent storage.
+ * FR: Préférences validées et sauvegarde différée.
+ */
 #pragma once
 
 #include <stdbool.h>

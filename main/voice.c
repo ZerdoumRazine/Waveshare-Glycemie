@@ -1,3 +1,7 @@
+/*
+ * Combines stored PCM WAV clips for six languages with a French and then beep fallback.
+ * Assemble les annonces WAV des six langues avec un repli audio.
+ */
 #include "voice.h"
 
 #include "i18n.h"
@@ -89,6 +93,7 @@ void voice_lang_changed(void)
     s_lang_missing_logged = false;
 }
 
+/* Look in the selected language folder; missing recordings must not crash the display. */
 static bool load_voice_file(const char *name, int slot, voice_pcm_t *out)
 {
     if (s_file_buf == NULL) {
@@ -427,6 +432,7 @@ static int number_words(int n, voice_clip_id_t *out, int max)
     return k;
 }
 
+/* Read pre-generated number clips; speech is not synthesized on the board. */
 static void say_number(int n, int volume)
 {
     voice_clip_id_t words[MAX_WORDS];

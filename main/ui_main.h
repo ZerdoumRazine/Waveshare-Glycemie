@@ -1,6 +1,10 @@
 /*
  * Interface 1024x600 (LVGL 9.5) : bandeau d'etat, 5 pages et barre de navigation tactile.
  */
+/* Public interface / Interface publique
+ * EN: UI lifecycle and queued requests from non-UI tasks.
+ * FR: Cycle de vie de l'interface et requêtes des tâches secondaires.
+ */
 #pragma once
 
 #include <stdbool.h>

@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# EN: Configures the device by USB when touchscreen entry is inconvenient.
+# FR: Configure le Waveshare par USB lorsque la saisie tactile est difficile.
 r"""Assistant de configuration par le cable USB (solution de secours a l'assistant de l'ecran tactile).
 
 A utiliser si la saisie au doigt pose probleme (mot de passe long, clavier a l'ecran peu pratique) ou si
@@ -218,6 +220,7 @@ def trouver_port():
     return None   # zero ou plusieurs candidats : ne jamais choisir a la place de l'utilisateur
 
 
+# Open the serial port without toggling DTR/RTS and unintentionally rebooting the board.
 def ouvrir_port(nom):
     if PYSERIAL:
         return PortPySerial(nom)
@@ -277,6 +280,7 @@ def lire_mot_de_passe(texte):
     return mdp
 
 
+# Try new credentials in RAM before asking the user to save them.
 def configurer(app, demande=demander, mot_de_passe=lire_mot_de_passe):
     """Pose les questions, essaie les identifiants, les enregistre apres reussite et confirmation.
 
@@ -351,6 +355,7 @@ def enregistrer(app, demande=demander):
     return 0
 
 
+# Treat deletion as successful only when the device confirms it in NVS.
 def effacer(app, demande=demander):
     """Efface les identifiants, apres confirmation explicite. Renvoie 0 si l'effacement a eu lieu."""
     if demande('Effacer le reseau Wi-Fi et le compte Dexcom ? (oui/non)', 'non').strip().lower() != 'oui':
@@ -367,6 +372,7 @@ def effacer(app, demande=demander):
     return 0
 
 
+# Poll the asynchronous network test without exposing either password.
 def verifier(app, tours=30, pause=0.5):
     print('\n--- Verification ---')
     print("L'appareil essaie le Wi-Fi, l'heure, puis la connexion Dexcom (jusqu'a une minute).")

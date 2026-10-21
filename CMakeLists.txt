@@ -1,3 +1,5 @@
+# EN: Top-level ESP-IDF project definition and firmware version.
+# FR: Définition du projet ESP-IDF et version du programme.
 # Afficheur familial de glycemie Dexcom G7 - Waveshare ESP32-P4-WIFI6-Touch-LCD-7B
 # ESP-IDF v5.5.5, BSP Waveshare 3.0.1, LVGL 9.5.0, ESP-Hosted (ESP32-C6).
 cmake_minimum_required(VERSION 3.16)

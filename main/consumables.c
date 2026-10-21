@@ -1,3 +1,7 @@
+/*
+ * Maintains infusion-set dates, configurable intervals and reminders in persistent storage.
+ * Conserve les dates et rappels du cathéter en mémoire persistante.
+ */
 #include "consumables.h"
 
 #include <inttypes.h>
@@ -39,6 +43,7 @@ static int64_t s_logged[CONSUMABLE_COUNT];
 static const char *const k_csv_type[CONSUMABLE_COUNT] = {"G7", "infusion_set"};
 static const char *const k_logged_key[CONSUMABLE_COUNT] = {KEY_LOGGED_G7, KEY_LOGGED_CATH};
 
+/* Build the deadline relative to the saved replacement time, not the current clock. */
 static int64_t catheter_reminder_time(int reminder, int64_t start_s, int hours)
 {
     const int64_t due = start_s + (int64_t)hours * 3600;
@@ -51,6 +56,7 @@ static int64_t catheter_reminder_time(int reminder, int64_t start_s, int hours)
 }
 
 /* Verrou pris */
+/* Persist a confirmed catheter change so an ordinary reboot preserves the date. */
 static esp_err_t persist_catheter(void)
 {
     s_revision++;
@@ -93,6 +99,7 @@ static esp_err_t persist_logged(consumable_t c)
 }
 
 /* Rappels deja depasses a l'enregistrement : marques comme faits (pas de rafale de rappels perimes) */
+/* Skip overdue historical reminders rather than replaying them after every restart. */
 static void mark_past_catheter_reminders(int64_t now_s)
 {
     s_cath_done = 0;

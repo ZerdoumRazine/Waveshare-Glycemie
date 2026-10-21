@@ -1,3 +1,7 @@
+/*
+ * Owns the LVGL event loop, the page switcher and capture/diagnostic entry points.
+ * Coordonne LVGL, la navigation entre pages et les captures.
+ */
 #include "ui_main.h"
 
 #include <inttypes.h>
@@ -161,6 +165,7 @@ static int64_t now_epoch_ms(void)
     return (int64_t)tv.tv_sec * 1000 + tv.tv_usec / 1000;
 }
 
+/* Take a coherent snapshot of shared state before rendering a frame. */
 static void collect_data(void)
 {
     ui_data_t *d = &g_ui;
@@ -228,6 +233,7 @@ static void update_top_bar(void)
  * le callback d'un bouton, puisque les objets qui portent ce callback sont detruits ici.
  * Seules les pages sont reconstruites : le bandeau, la barre de navigation, l'ecran nuit et la
  * fenetre d'alerte sont conserves et simplement remis a jour. */
+/* Rebuild translated page labels outside the callback of the control being destroyed. */
 static void apply_language(lang_t lang)
 {
     settings_lang_set(lang); /* applique la langue puis demande l'enregistrement NVS differe */
@@ -306,6 +312,7 @@ static void stress_timer_cb(lv_timer_t *timer)
     }
 }
 
+/* Keep display work on the LVGL task; other services only request updates. */
 static void ui_timer_cb(lv_timer_t *timer)
 {
     (void)timer;
@@ -505,6 +512,7 @@ void ui_test_set_age_offset(int minutes)
     s_test_age_offset_min = minutes;
 }
 
+/* Queue a navigation request instead of modifying widgets from another task. */
 void ui_request_page(int page)
 {
     if (page >= 0 && page < UI_PAGE_COUNT) {
@@ -580,6 +588,7 @@ void ui_print_stats(void)
 static uint8_t *s_snap_raw;      /* PSRAM, alloue a la premiere capture */
 static unsigned char *s_snap_b64;
 
+/* Capture the visible composition for documentation and diagnostics. */
 static void snapshot_flush(uint8_t *raw, size_t *raw_len, bool final)
 {
     size_t usable = final ? *raw_len : (*raw_len / 3) * 3;

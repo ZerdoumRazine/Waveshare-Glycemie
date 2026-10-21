@@ -2,6 +2,10 @@
  * Elements communs de l'interface : dimensions, couleurs, polices, donnees calculees
  * une fois par seconde et partagees entre les pages.
  */
+/* Public interface / Interface publique
+ * EN: Shared LVGL colours, fonts and formatting helpers for all pages.
+ * FR: Couleurs, polices et formats partagés entre pages.
+ */
 #pragma once
 
 #include <stdbool.h>

@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# EN: Exports only tracked Git files and rejects unsafe publication artefacts.
+# FR: Archive uniquement les fichiers Git suivis et refuse les ressources privées.
 r"""Fabrique et controle l'archive publique du depot, a partir de ce que Git suit reellement.
 
 Un .gitignore ne nettoie PAS une archive faite en copiant un dossier : journaux, identifiants ou
@@ -71,6 +73,7 @@ def git(*args):
                           timeout=300, encoding='utf-8', errors='replace')
 
 
+# Inspect the actual bytes, including nested archives, instead of trusting filenames.
 def controler_contenu(dossier, secrets):
     """Examine le contenu reellement extrait de l'archive. Renvoie (trouvailles, fichiers lus)."""
     trouves, lus = [], 0
@@ -89,6 +92,7 @@ def controler_contenu(dossier, secrets):
     return trouves, lus
 
 
+# Fail closed when the public archive includes a forbidden file or a known private value.
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--sortie', default=tempfile.gettempdir())

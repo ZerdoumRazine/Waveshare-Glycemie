@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# EN: Exports a safe tracked-file snapshot without overwriting an existing repository.
+# FR: Exporte une copie sûre sans écraser un dépôt déjà existant.
 r"""Prepare la copie publiable du projet (dossier Razine) a partir de ce que Git suit reellement.
 
 Pourquoi cette methode : copier un dossier a la main laisse passer des journaux, des sauvegardes ou
@@ -29,6 +31,7 @@ import archive_publique as ap          # noqa: E402  (motifs interdits et fichie
 import controle_donnees_perso as cdp   # noqa: E402
 
 
+# Run an explicit Git command against the project root.
 def git(*args):
     return subprocess.run(['git', '-C', RACINE] + list(args), capture_output=True, text=True,
                           timeout=300, encoding='utf-8', errors='replace')
@@ -43,6 +46,7 @@ def enlever_lecture_seule(fonction, chemin, _erreur):
         pass
 
 
+# Refuse an occupied destination and never rewrite the established GitHub history.
 def main():
     parseur = argparse.ArgumentParser()
     parseur.add_argument('--dossier', default=os.path.join(RACINE, 'Razine'))

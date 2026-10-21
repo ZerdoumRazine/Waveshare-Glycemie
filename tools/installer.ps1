@@ -1,3 +1,5 @@
+# EN: Before USB flash, verify the firmware checksums, board revision and user confirmation.
+# FR: Vérifie les empreintes, la puce et l'accord de l'utilisateur avant installation.
 <#
 .SYNOPSIS
     Installe la version publique sur le Waveshare ESP32-P4-WIFI6-Touch-LCD-7B.

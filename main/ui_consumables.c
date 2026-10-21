@@ -1,3 +1,7 @@
+/*
+ * Implements touchscreen confirmation for sensor, infusion set and stock changes.
+ * Gère les confirmations tactiles des changements et des stocks.
+ */
 #include "i18n.h"
 #include "ui_pages.h"
 
@@ -60,6 +64,7 @@ static stock_item_t s_qty_item;
 static int s_qty_edit;
 static uint32_t s_revision_drawn = UINT32_MAX;
 
+/* Apply a consumable change only after an explicit confirmation. */
 static void on_confirm(lv_event_t *e)
 {
     (void)e;
@@ -112,6 +117,7 @@ static lv_obj_t *dialog_button(lv_obj_t *parent, const char *text, int32_t x, in
     return btn;
 }
 
+/* Open the right replacement dialog while leaving saved dates untouched until confirmation. */
 void ui_consumables_open_dialog(consumable_t c)
 {
     if (s_backdrop != NULL || c >= CONSUMABLE_COUNT) {
@@ -197,6 +203,7 @@ static void on_qty_cancel(lv_event_t *e)
     qty_close();
 }
 
+/* Validate a requested quantity before saving it to local stock. */
 static void on_qty_ok(lv_event_t *e)
 {
     (void)e;
@@ -384,6 +391,7 @@ static void show_unknown(section_t *s, const char *what)
     set_bar(s->bar, 0, UI_G_STALE);
 }
 
+/* Present the sensor countdown from the last recorded installation time. */
 static void update_sensor(int64_t now_s)
 {
     section_t *s = &s_sections[CONSUMABLE_SENSOR];
@@ -423,6 +431,7 @@ static void update_sensor(int64_t now_s)
     ui_set_text(s->detail, buf);
 }
 
+/* Present the catheter deadline according to the selected replacement interval. */
 static void update_catheter(int64_t now_s)
 {
     section_t *s = &s_sections[CONSUMABLE_CATHETER];

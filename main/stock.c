@@ -1,3 +1,7 @@
+/*
+ * Tracks local stock levels and signals low quantities without creating negative values.
+ * Suit les consommables en stock et prévient quand ils deviennent rares.
+ */
 #include "stock.h"
 
 #include <inttypes.h>
@@ -29,6 +33,7 @@ static volatile uint32_t s_revision;
 static stock_event_t s_events[EVENT_MAX];
 static int s_event_count;
 
+/* Keep a quantity in the representable range even when an input is unexpected. */
 static int clamp_qty(int value)
 {
     if (value <= STOCK_UNKNOWN) {
@@ -38,6 +43,7 @@ static int clamp_qty(int value)
 }
 
 /* Verrou pris */
+/* Persist the item that changed without resetting other stock counters. */
 static esp_err_t persist(stock_item_t item)
 {
     s_revision++;
@@ -63,6 +69,7 @@ static esp_err_t persist(stock_item_t item)
 }
 
 /* Verrou pris : evenement local si le stock renseigne vient de passer au niveau faible */
+/* Raise a stock reminder separately from medical glucose alerts. */
 static void push_low_event(stock_item_t item)
 {
     if (s_qty[item] == STOCK_UNKNOWN || s_qty[item] > s_low[item]) {

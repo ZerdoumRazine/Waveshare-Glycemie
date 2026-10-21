@@ -1,3 +1,7 @@
+/*
+ * Presents user options and the touchscreen connection wizard without printing passwords.
+ * Affiche les réglages et l'assistant de connexion sans révéler les mots de passe.
+ */
 #include "i18n.h"
 #include "ui_main.h"
 #include "ui_pages.h"
@@ -94,6 +98,7 @@ static void on_connexion_modifier(lv_event_t *e)
     ui_setup_open(false);
 }
 
+/* Switch between demo and live modes explicitly so synthetic data stays labelled. */
 static void on_demo_switch(lv_event_t *e)
 {
     const bool on = lv_obj_has_state(lv_event_get_target_obj(e), LV_STATE_CHECKED);
@@ -115,6 +120,7 @@ static void on_effacer_annuler(lv_event_t *e)
     fermer_modal();
 }
 
+/* Confirm that NVS accepted an empty account before restarting the device. */
 static void on_effacer_confirmer(lv_event_t *e)
 {
     (void)e;
@@ -160,6 +166,7 @@ static void on_effacer(lv_event_t *e)
     lv_obj_set_style_bg_color(oui, UI_G_CRIT, 0);
 }
 
+/* Schedule translation changes without destroying the pressed LVGL button in its own callback. */
 static void on_language(lv_event_t *e)
 {
     if (s_updating) {
@@ -616,6 +623,7 @@ void ui_settings_create(lv_obj_t *page)
     lv_obj_set_pos(s_info, 24, 2160);
 }
 
+/* Read settings and refresh controls without rewriting identical values to flash. */
 void ui_settings_update(const ui_data_t *d, bool force)
 {
     const uint32_t revision = settings_revision();

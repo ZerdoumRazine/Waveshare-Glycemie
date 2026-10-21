@@ -1,3 +1,7 @@
+/*
+ * Schedules alert priorities and repetitions; acknowledgements are stored separately from readings.
+ * Planifie les priorités, répétitions et acquittements des alertes.
+ */
 #include "alerts.h"
 
 #include <stdio.h>
@@ -71,6 +75,7 @@ static int64_t now_epoch_ms(void)
     return (int64_t)tv.tv_sec * 1000 + tv.tv_usec / 1000;
 }
 
+/* Translate the current alert into the title, value and buttons seen on screen. */
 static void build_view(alert_type_t type, int value, alert_view_t *v)
 {
     v->type = type;
@@ -117,6 +122,7 @@ static void build_view(alert_type_t type, int value, alert_view_t *v)
 }
 
 /* type : type sonore (pour l'alerte de test simulee, le type simule) ; test : trace marquee comme test */
+/* Choose the matching audio pattern; a simulated alert is not a live glucose alarm. */
 static void sound(alert_type_t type, int value, const settings_t *cfg, int repeats, bool test)
 {
     const bool may_sound = cfg->alerts || (type == ALERT_VERY_LOW && cfg->very_low_always);
@@ -143,6 +149,7 @@ static void sound(alert_type_t type, int value, const settings_t *cfg, int repea
              value, volume, repeats + 1);
 }
 
+/* Evaluate current readings on a schedule while respecting snooze and repetition limits. */
 static void alerts_task(void *arg)
 {
     (void)arg;

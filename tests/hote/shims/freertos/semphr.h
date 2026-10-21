@@ -1,4 +1,7 @@
 /* Mutex sans effet : les tests sont mono-tache. */
+/* EN: Simulate the mutex interface without real scheduling.
+ * FR: Simule les mutex sans ordonnanceur matériel.
+ */
 #pragma once
 #include "freertos/FreeRTOS.h"
 

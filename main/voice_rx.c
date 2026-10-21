@@ -1,3 +1,7 @@
+/*
+ * Transfers pre-generated WAV files through a bounded serial protocol to microSD.
+ * Transfère les banques WAV par USB-série avec contrôles d'intégrité.
+ */
 #include "voice_rx.h"
 
 #include <inttypes.h>
@@ -84,6 +88,7 @@ static void set_baud(uint32_t baud)
     }
 }
 
+/* Restore the console baud rate and release temporary transfer buffers. */
 static void end_session(const char *why)
 {
     s_session = false;
@@ -97,6 +102,7 @@ static void end_session(const char *why)
              sd_storage_voice_files());
 }
 
+/* Verify microSD readiness and negotiate a temporary faster serial baud rate. */
 static void cmd_begin(const char *args)
 {
     s_subdir[0] = '\0'; /* chaque session repart de la banque francaise (racine) */
@@ -232,6 +238,7 @@ static void cmd_dir(const char *args)
     reply("VRX DIR %s\n", code);
 }
 
+/* Check file size and CRC before committing a received WAV. */
 static void cmd_put(const char *args)
 {
     char name[48];
@@ -289,6 +296,7 @@ static void list_file(const char *name, long size, void *arg)
     }
 }
 
+/* List the requested language directory with CRCs for read-only verification. */
 static void cmd_list(const char *args)
 {
     list_ctx_t ctx = {.crc = strcmp(args, "crc") == 0};

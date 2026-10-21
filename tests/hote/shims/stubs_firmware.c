@@ -1,4 +1,7 @@
 /* Bouchons des modules non testes ici (reseau, microSD) : aucune ecriture reelle. */
+/* EN: Stub unrelated firmware dependencies during targeted module tests.
+ * FR: Remplace les services non testés par des fonctions factices.
+ */
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>

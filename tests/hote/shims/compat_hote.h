@@ -2,6 +2,9 @@
  * Compatibilite du compilateur hote pour les tests sur PC.
  * Inclus de force par tests/run_tests.py (option /FI avec MSVC, -include avec gcc/clang).
  */
+/* EN: Portable replacements for ESP-IDF platform conveniences during tests.
+ * FR: Remplacements pour compiler les tests hors ESP32.
+ */
 #pragma once
 
 #ifdef _MSC_VER

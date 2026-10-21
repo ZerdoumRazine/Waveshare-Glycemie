@@ -5,6 +5,10 @@
  * AVERTISSEMENT : afficheur familial complementaire. Ce n'est pas un dispositif medical ;
  * il ne doit pas servir a prendre des decisions therapeutiques.
  */
+/*
+ * Brings up the board, background services and USB maintenance console in a defined order.
+ * Démarre les services matériels et la console de maintenance USB.
+ */
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -95,6 +99,7 @@ static void play_test_voice(int volume_pct)
 }
 
 /* Interface figee : etat des taches utiles (le watchdog de taches produira ensuite le core dump) */
+/* Record display stalls so a UI fault can be diagnosed separately from glucose polling. */
 static void report_ui_freeze(int64_t age_ms)
 {
     static const char *const k_tasks[] = {"lvgl", "swdraw", "alertes", "audio", "reglages", "console", "glycemie",
@@ -606,6 +611,7 @@ static void console_task(void *arg)
     }
 }
 
+/* Initialise storage and settings before services that depend on them; do not erase NVS to hide an error. */
 void app_main(void)
 {
     log_system_info();

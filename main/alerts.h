@@ -3,6 +3,10 @@
  * rappels du capteur. Anti-repetition : acquittement, rappel differe (snooze), repetitions limitees,
  * volume croissant (RAMP) pour l'alerte critique. Les alertes glycemiques exigent une mesure recente.
  */
+/* Public interface / Interface publique
+ * EN: Public alert types, priorities and acknowledgement controls.
+ * FR: Types d'alertes et interfaces d'acquittement.
+ */
 #pragma once
 
 #include <stdbool.h>

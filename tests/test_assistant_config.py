@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# EN: Simulate USB setup to prove passwords never appear in logs and failed trials are reversible.
+# FR: Simule l'assistant USB pour vérifier les secrets et l'annulation des essais.
 """Controles de l'assistant de configuration par USB (tools/assistant_config.py).
 
 Deux proprietes comptent plus que les autres :
@@ -200,6 +202,7 @@ def mdp_fixes(*valeurs):
 ANCIENS = (((ANCIEN_SSID, ANCIEN_MDP)), (ANCIEN_USER, ANCIEN_MDP_DEX, 'ous'))
 
 
+# Feed deterministic network states to the serial assistant without hardware.
 def scenario(essais, mdp_wifi=MDP_WIFI, mdp_dex=MDP_DEX, ssid=SSID, user=USER, region='1',
              muet=False, confirmation='oui', deja=ANCIENS):
     """Configuration complete sur un appareil simule -> (code, appareil, texte affiche)."""
@@ -211,11 +214,13 @@ def scenario(essais, mdp_wifi=MDP_WIFI, mdp_dex=MDP_DEX, ssid=SSID, user=USER, r
     return code, simule, j.contenu
 
 
+# Check that rejected trial credentials never replace the recorded account.
 def anciens_intacts(simule):
     return (simule.enregistre_wifi == (ANCIEN_SSID, ANCIEN_MDP)
             and simule.enregistre_dexcom == (ANCIEN_USER, ANCIEN_MDP_DEX, 'ous'))
 
 
+# Exercise success, refusal, disconnect and erase-failure paths.
 def main():
     # --- 1. Configuration complete, essayee puis confirmee -------------------------------------
     etapes = [(ac.ETAT_EN_COURS, 'wifi'), (ac.ETAT_EN_COURS, 'internet'),

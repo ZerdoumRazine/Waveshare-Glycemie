@@ -10,6 +10,9 @@
  *
  * Les valeurs utilisees ici sont fictives.
  */
+/* EN: Exercise credential validation, persistence, erasure and failed-write recovery.
+ * FR: Teste les accès, leur sauvegarde, leur effacement et les pannes NVS.
+ */
 #include <stdio.h>
 #include <string.h>
 

@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# EN: Check that all six language catalogs and audio phrase inventories are consistent.
+# FR: Vérifie la cohérence des six catalogues de phrases vocales.
 """Controles de la banque vocale multilingue (tools/voice/langues_voix.py).
 
 Ne genere aucun audio et n'appelle aucun service : ce sont des controles de texte.
@@ -28,6 +30,7 @@ def check(nom, ok, detail=''):
     resultats.append((nom, bool(ok), detail))
 
 
+# Detect missing clips or mismatched translated IDs before packaging audio.
 def main():
     # 1. Le francais doit correspondre exactement au manifeste de la banque installee
     attendu = {}

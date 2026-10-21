@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# EN: Validate CRC and interrupted-transfer handling with artificial microSD data.
+# FR: Vérifie CRC et transmissions interrompues sur des données simulées.
 """Controles de la recuperation de la microSD par le cable (tools/recuperer_microsd.py).
 
 Ce qui compte ici : une copie n'est declaree bonne que si la taille ET l'empreinte annoncees par
@@ -85,6 +87,7 @@ CSV = ('date;valeur;tendance;variation\n'
 BINAIRE = bytes(range(256)) * 3
 
 
+# Reject truncated or damaged downloads rather than calling them valid backups.
 def main():
     fichiers = {'/glycemie/history/2026-10-17.csv': CSV, '/glycemie/audio/essai.bin': BINAIRE}
 

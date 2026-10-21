@@ -1,3 +1,7 @@
+/*
+ * Mounts FAT32 microSD storage and manages append-only glucose history with repair tools.
+ * Gère la microSD FAT32, l'historique CSV et les contrôles de cohérence.
+ */
 #include "sd_storage.h"
 
 #include <dirent.h>
@@ -521,6 +525,7 @@ static FILE *open_csv(const char *path)
 
 /* Ecrit une seule fois chaque mesure plus recente que la derniere ligne du CSV, de la plus ancienne a la plus
  * recente. Un seul fclose (vidage et mise a jour de la FAT) par lot : environ une ecriture toutes les 5 minutes. */
+/* Merge delayed readings with the last stored day and avoid duplicate CSV rows. */
 static void sync_history(void)
 {
     xSemaphoreTake(s_snapshot_mutex, portMAX_DELAY);
@@ -719,6 +724,7 @@ static void check_csv(const char *path, const char *name, int64_t *times)
     printf("SD_CSV %s derniere=%s\n", name, last);
 }
 
+/* Report consistency errors rather than assuming that old data can be discarded. */
 static void check_card(void)
 {
     if (!s_mounted) {
@@ -838,6 +844,7 @@ static int repair_csv(const char *path, const char *name)
     return removed;
 }
 
+/* Repair known CSV defects conservatively; keep a separate backup of the card. */
 static void repair_history(void)
 {
     if (!s_mounted) {

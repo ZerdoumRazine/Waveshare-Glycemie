@@ -1,3 +1,7 @@
+/*
+ * Provides controlled touch diagnostics and synthetic tap injection for development.
+ * Fournit les diagnostics du tactile et l'injection d'appuis de test.
+ */
 #include "touch_diag.h"
 
 #include <inttypes.h>
@@ -307,6 +311,7 @@ static esp_err_t diag_read(esp_lcd_touch_handle_t tp, esp_lcd_touch_point_data_t
     return err;
 }
 
+/* Record event timing to diagnose missed touches or UI stalls. */
 static void on_indev_event(lv_event_t *e)
 {
     const lv_event_code_t code = lv_event_get_code(e);
@@ -350,6 +355,7 @@ static void on_indev_event(lv_event_t *e)
     }
 }
 
+/* Attach diagnostics to the input device without changing its normal mapping. */
 void touch_diag_init(lv_indev_t *indev, int rotation_deg)
 {
     if (indev == NULL) {

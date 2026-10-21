@@ -1,3 +1,8 @@
+/*
+ * Manages saved Wi-Fi/Dexcom access separately from unconfirmed trial settings.
+ * Sépare les identifiants enregistrés des nouveaux accès non confirmés.
+ * This is a supplementary display: official Dexcom alarms remain authoritative.
+ */
 #include "credentials.h"
 
 #include <stdio.h>
@@ -38,6 +43,7 @@ static const struct {
 
 /* Brouillage : OU exclusif avec une cle derivee de l'adresse MAC. Ce n'est pas un chiffrement
  * (voir credentials.h) : il evite seulement de lire un mot de passe en clair dans un vidage de flash. */
+/* Obfuscate NVS bytes, but do not mistake this reversible step for encryption. */
 static void scramble(uint8_t *data, size_t len)
 {
     uint8_t mac[6] = {0};
@@ -47,6 +53,7 @@ static void scramble(uint8_t *data, size_t len)
     }
 }
 
+/* Commit a copy of the active settings to NVS; callers need the real error code. */
 static esp_err_t persist(void)
 {
     credentials_t copy;
@@ -77,6 +84,7 @@ static esp_err_t persist(void)
     return err;
 }
 
+/* Restore saved settings without reapplying obsolete defaults when a valid record exists. */
 esp_err_t credentials_init(void)
 {
     if (s_mutex == NULL) {
@@ -244,6 +252,7 @@ esp_err_t credentials_trial_set_dexcom(const char *user, const char *password, c
     return ESP_OK;
 }
 
+/* Replace saved credentials only after a successful connection test. */
 esp_err_t credentials_trial_commit(void)
 {
     if (!s_essai) {
@@ -281,6 +290,7 @@ void credentials_trial_cancel(void)
     ESP_LOGW(TAG, "Essai annule : retour aux acces precedents");
 }
 
+/* Store an explicitly empty record before removing auxiliary account state. */
 esp_err_t credentials_clear(void)
 {
     /* Supprimer en premier les identifiants du stockage NVS. Le verrou

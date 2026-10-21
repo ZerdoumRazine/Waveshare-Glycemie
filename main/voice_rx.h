@@ -18,6 +18,9 @@
  *                                     micros de l'ecoute vocale, sans rien ecrire sur la carte -> VRX OK inject ...
  *   vrx_end                        -> VRX END, retour a 115200 (automatique apres 30 s sans commande)
  */
+/* EN: USB serial commands for adding and verifying microSD voice clips.
+ * FR: Commandes série USB pour copier et vérifier les sons.
+ */
 #pragma once
 
 #include <stdbool.h>

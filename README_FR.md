@@ -27,7 +27,7 @@ tiers gardent leurs auteurs et leurs licences.
 | 🔧 **Installer l'appareil** | [Tutoriel pour débuter](docs/TUTORIEL_DEBUTANT_FR.md) — acheter, brancher, installer, configurer |
 | ⬇️ **Télécharger les programmes** | [Releases](../../releases) — firmware, application Windows et fichiers d'intégrité (banques vocales en ressources séparées) |
 | 🔊 **Préparer la microSD** | [Tutoriel des voix](docs/TUTORIEL_VOIX_FR.md) — créer ou installer les banques optionnelles, avec ou sans lecteur de carte |
-| 🧩 **Comprendre le code** | [Architecture](docs/ARCHITECTURE_FR.md) et le dossier [`main/`](main/) |
+| 🧩 **Comprendre le code** | [Guide du code en français](docs/CODE_GUIDE_FR.md) · [English guide](docs/CODE_GUIDE_EN.md) · [`main/`](main/) |
 
 > **Pas encore essayé de bout en bout sur un appareil neuf.** L'installation, la mise à jour, la
 > reconnexion, les annonces et l'assistant de connexion ont été vérifiés sur l'appareil de

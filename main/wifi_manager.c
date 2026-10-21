@@ -1,3 +1,7 @@
+/*
+ * Coordinates the ESP32-C6 network driver, reconnection and Wi-Fi scanning.
+ * Coordonne le pilote Wi-Fi, ses reconnexions et la recherche de réseaux.
+ */
 #include "wifi_manager.h"
 
 /*
@@ -60,6 +64,7 @@ static esp_err_t apply_config(void)
     return err;
 }
 
+/* Convert asynchronous events into a stable connection state. */
 static void on_network_event(void *arg, esp_event_base_t base, int32_t id, void *data)
 {
     if (base == WIFI_EVENT) {
@@ -166,6 +171,7 @@ static void scan_networks(void)
     }
 }
 
+/* Retry network connection without blocking the LVGL touchscreen task. */
 static void wifi_task(void *arg)
 {
     xEventGroupWaitBits(s_events, BIT_STA_STARTED, pdFALSE, pdTRUE, portMAX_DELAY);

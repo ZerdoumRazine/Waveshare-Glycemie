@@ -1,3 +1,7 @@
+/*
+ * Maps stable text IDs to French, English, Spanish, German, Italian and Portuguese.
+ * Associe des identifiants de texte aux six langues de l'interface.
+ */
 #include "i18n.h"
 
 #include <stdio.h>
@@ -11,6 +15,7 @@ lang_t i18n_lang(void)
     return s_lang;
 }
 
+/* Apply the chosen catalog immediately while leaving glucose values unchanged. */
 void i18n_set_lang(lang_t lang)
 {
     if (lang >= 0 && lang < LANG_COUNT) {
@@ -634,6 +639,7 @@ const char *i18n_day_name(int wday)
     return k_days[s_lang][(wday >= 0 && wday < 7) ? wday : 0];
 }
 
+/* Produce localized day and month names for the selected language. */
 void i18n_format_date_long(const struct tm *tm_local, char *buf, size_t size)
 {
     const int wday = (tm_local->tm_wday >= 0 && tm_local->tm_wday < 7) ? tm_local->tm_wday : 0;

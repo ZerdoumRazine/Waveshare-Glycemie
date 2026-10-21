@@ -1,3 +1,7 @@
+/*
+ * Calculates and renders today's statistics using local midnight and available readings.
+ * Calcule les statistiques du jour à partir de minuit local.
+ */
 #include "i18n.h"
 #include "ui_pages.h"
 
@@ -267,6 +271,7 @@ static int64_t local_midnight_ms(const struct tm *now_tm)
 }
 
 /* Statistiques depuis minuit et etat de chaque creneau de 15 min */
+/* Use only available samples; incomplete coverage must remain visible. */
 static void compute_today(const ui_data_t *d, int64_t midnight_ms, today_t *t, uint8_t *slots)
 {
     memset(t, 0, sizeof(*t));
@@ -346,6 +351,7 @@ static void set_tile(tile_id_t id, const char *value, lv_color_t color)
     ui_set_text_color(s_tiles[id].value, color);
 }
 
+/* Refresh summaries when the day changes or a new measurement arrives. */
 void ui_today_update(const ui_data_t *d, bool force)
 {
     if (!force && !d->history_changed && !d->minute_changed) {

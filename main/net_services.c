@@ -1,3 +1,7 @@
+/*
+ * Checks DNS/HTTPS reachability and synchronizes local time independently of Dexcom login.
+ * Vérifie Internet et synchronise l'horloge sans dépendre de l'authentification Dexcom.
+ */
 #include "net_services.h"
 
 #include <stdlib.h>
@@ -35,6 +39,7 @@ bool net_time_is_valid(void)
     return s_time_synced || time(NULL) > MIN_VALID_EPOCH;
 }
 
+/* Confirm name resolution before classifying Internet connectivity. */
 static bool dns_check(void)
 {
     const struct addrinfo hints = {
@@ -54,6 +59,7 @@ static bool dns_check(void)
     return true;
 }
 
+/* Verify HTTPS with certificate validation, not merely successful DNS. */
 static bool https_check(void)
 {
     esp_http_client_config_t cfg = {
@@ -80,6 +86,7 @@ static bool https_check(void)
     return false;
 }
 
+/* Update network and SNTP status asynchronously so the UI stays responsive. */
 static void net_task(void *arg)
 {
     (void)arg;

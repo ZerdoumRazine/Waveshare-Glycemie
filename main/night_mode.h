@@ -11,6 +11,10 @@
  *   retour a l'ecran nuit 45 s apres la disparition du panneau.
  * - Apercu (bouton TEST MODE NUIT) : ecran nuit immediat sans modifier les horaires ; un toucher ou 60 s y mettent fin.
  */
+/* Public interface / Interface publique
+ * EN: Night schedule, brightness transitions and temporary wake-up preview.
+ * FR: Horaires du mode nuit et retour temporaire à l'écran principal.
+ */
 #pragma once
 
 #include <stdbool.h>

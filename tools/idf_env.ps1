@@ -1,3 +1,5 @@
+# EN: Locate and activate the exact ESP-IDF toolchain needed by this project.
+# FR: Active la chaîne d'outils ESP-IDF utilisée par le projet.
 # Environnement ESP-IDF v5.5.5 pour glycemie_display.
 # A dot-sourcer dans chaque session PowerShell, depuis n'importe ou :
 #     . <racine du projet>\tools\idf_env.ps1

@@ -1,3 +1,7 @@
+/*
+ * Owns the codec and serialises tones, alerts and spoken clips through one worker task.
+ * Pilote le codec et sérialise les sons dans une tâche dédiée.
+ */
 #include "audio_out.h"
 
 #include <inttypes.h>
@@ -99,6 +103,7 @@ static volatile bool s_stop;
 static volatile bool s_busy;
 static int16_t s_buf[CHUNK_FRAMES * 2];
 
+/* Prepare the codec before submitting samples to its audio path. */
 static esp_err_t codec_open(int volume)
 {
     if (!s_open) {
@@ -210,6 +215,7 @@ static void play_pattern(audio_pattern_t pattern)
     }
 }
 
+/* Handle the audio queue in one place to avoid overlapping writes to the codec. */
 static void audio_task(void *arg)
 {
     (void)arg;
@@ -246,6 +252,7 @@ static void audio_task(void *arg)
     }
 }
 
+/* Submit a request asynchronously instead of blocking the UI or glucose service. */
 static esp_err_t enqueue(const audio_req_t *req)
 {
     if (s_queue == NULL) {
@@ -425,6 +432,7 @@ static int16_t *mic_buffer(void)
     return s_rx;
 }
 
+/* Measure speaker test signals; this diagnostic does not certify alarm audibility. */
 static double measure(int freq, int chunks)
 {
     int16_t *rx = mic_buffer();

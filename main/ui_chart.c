@@ -1,3 +1,7 @@
+/*
+ * Draws historical glucose curves with touch exploration and variable time windows.
+ * Trace les courbes de glycémie et gère l'exploration tactile.
+ */
 #include "ui_chart.h"
 
 #include <stdio.h>
@@ -25,6 +29,7 @@ static int32_t value_to_y(const ui_chart_t *c, int value)
     return (int32_t)((int64_t)(c->y_max - value) * (c->h - 1) / (c->y_max - CHART_Y_MIN));
 }
 
+/* Position target bands and glucose scale consistently across time ranges. */
 static void layout_references(ui_chart_t *c)
 {
     const int32_t y_low = value_to_y(c, GLY_RANGE_LOW);
@@ -246,6 +251,7 @@ static void explore_select(ui_chart_t *c, int n)
 }
 
 /* Mesure reelle la plus proche horizontalement du doigt */
+/* Find the closest historical point to a touch rather than inventing an interpolated reading. */
 static void explore_select_at(ui_chart_t *c, int32_t x)
 {
     int best = -1;
@@ -264,6 +270,7 @@ static void explore_select_at(ui_chart_t *c, int32_t x)
     }
 }
 
+/* Handle touch events without changing the underlying measurements. */
 static void explore_event(lv_event_t *e)
 {
     ui_chart_t *c = (ui_chart_t *)lv_event_get_user_data(e);
@@ -379,6 +386,7 @@ void ui_chart_explore_reset(ui_chart_t *c)
     }
 }
 
+/* Redraw cached samples when the time range or history revision changes. */
 void ui_chart_update(ui_chart_t *c, const ui_data_t *d, int hours)
 {
     const int slots = hours * 12;

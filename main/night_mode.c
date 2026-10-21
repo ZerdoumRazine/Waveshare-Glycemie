@@ -1,3 +1,7 @@
+/*
+ * Controls the night display, brightness transitions and temporary touch previews.
+ * Pilote le mode nuit, la luminosité et les aperçus tactiles.
+ */
 #include "night_mode.h"
 
 #include "i18n.h"
@@ -116,6 +120,7 @@ static bool wakes_screen(alert_type_t style)
            style == ALERT_HIGH;
 }
 
+/* Interpret schedules correctly when the end time is on the next day. */
 static bool in_night_period(const night_settings_t *n, const ui_data_t *d)
 {
     if (!n->enabled || !d->time_ok || n->start_min == n->end_min) {
@@ -234,6 +239,7 @@ static void show_screen(bool visible, const ui_data_t *d)
 
 /* ------------------------------------------------------------------------- */
 
+/* Let an important alert take precedence over the quiet night view. */
 static void evaluate(const ui_data_t *d, bool immediate)
 {
     const int64_t now = esp_timer_get_time();

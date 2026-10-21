@@ -1,3 +1,7 @@
+/*
+ * Protects shared connection status and the glucose history with a mutex.
+ * Protège les états de connexion et l'historique partagé.
+ */
 #include "app_state.h"
 
 #include <string.h>
@@ -15,6 +19,7 @@ static uint32_t s_history_seq;
 #define LOCK()   xSemaphoreTake(s_mutex, portMAX_DELAY)
 #define UNLOCK() xSemaphoreGive(s_mutex)
 
+/* Allocate shared state and history before background tasks begin publishing updates. */
 void app_state_init(void)
 {
     memset(&s_state, 0, sizeof(s_state));
@@ -26,6 +31,7 @@ void app_state_init(void)
     configASSERT(s_history);
 }
 
+/* Return a consistent snapshot for the UI instead of exposing mutable state. */
 void app_state_get(app_state_t *out)
 {
     LOCK();
@@ -80,6 +86,7 @@ void app_state_set_coproc_fw(const char *version)
     UNLOCK();
 }
 
+/* Record connectivity separately from the last glucose value. */
 void app_state_set_dexcom(dexcom_state_t st, int32_t retry_s)
 {
     LOCK();

@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# EN: Captures the Windows configuration window for screenshots without changing device data.
+# FR: Capture la fenêtre Windows pour la documentation sans modifier l'appareil.
 r"""Capture la fenetre de l'application Windows, pour les tutoriels (jamais le bureau autour).
 
 Lance l'application, attend sa fenetre, photographie EXACTEMENT son rectangle, puis la ferme.
@@ -24,6 +26,7 @@ except ImportError:
 user32 = ctypes.windll.user32
 
 
+# Use the real window bounds rather than an arbitrary crop.
 def cadre_visible(hwnd):
     """Rectangle REELLEMENT visible de la fenetre : sans l'ombre portee, donc sans bout de bureau."""
     rect = wintypes.RECT()
@@ -59,6 +62,7 @@ def fenetres_du_processus(pids):
     return trouvees
 
 
+# Locate the application process before selecting a visible window.
 def pids_du_nom(nom):
     """PID de tous les processus portant ce nom (PyInstaller en lance deux : parent et enfant)."""
     sortie = subprocess.run(['tasklist', '/FI', 'IMAGENAME eq %s' % nom, '/FO', 'CSV', '/NH'],
@@ -71,6 +75,7 @@ def pids_du_nom(nom):
     return pids
 
 
+# Save a screenshot for documentation only; never include personal credentials.
 def main():
     if len(sys.argv) < 3:
         print(__doc__)

@@ -1,4 +1,7 @@
 /* Mini cadre d'assertions : aucune dependance, code de sortie 1 si un controle echoue. */
+/* EN: Minimal assertion helpers shared by host-compiled C test suites.
+ * FR: Assertions simples des tests C sur ordinateur.
+ */
 #pragma once
 #include <stdio.h>
 #include <string.h>

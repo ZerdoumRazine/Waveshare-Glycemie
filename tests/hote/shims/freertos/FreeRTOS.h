@@ -1,4 +1,7 @@
 /* Remplacant minimal de FreeRTOS pour les tests sur PC (execution mono-tache). */
+/* EN: Minimal FreeRTOS types needed when running C tests on a PC.
+ * FR: Types FreeRTOS réduits pour les tests PC.
+ */
 #pragma once
 #include <stdint.h>
 

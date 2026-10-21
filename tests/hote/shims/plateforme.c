@@ -1,4 +1,7 @@
 /* Implementation des remplacants : NVS en memoire, mutex neutres, allocations, noms d'erreurs. */
+/* EN: Implement deterministic fake NVS, mutexes and error responses.
+ * FR: Implémente les remplacements NVS et les erreurs simulées.
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

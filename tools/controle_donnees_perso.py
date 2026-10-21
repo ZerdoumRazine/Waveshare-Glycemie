@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# EN: Scans public files, binaries and ZIP contents for known private data.
+# FR: Contrôle les sources, exécutables et ZIP avant publication.
 r"""Controle des donnees personnelles dans ce qui serait publie.
 
 Examine, sans rien modifier :
@@ -53,6 +55,7 @@ def git(*args):
     return out.stdout
 
 
+# Read known local secrets only for comparison; never include them in the report.
 def secrets_reels():
     """Chaines a rechercher, lues dans private/device_secrets.h. Jamais affichees."""
     chemin = os.path.join(ROOT, 'private', 'device_secrets.h')
@@ -123,6 +126,7 @@ def controler_media(nom, data, secrets, trouves, metadonnees=4096):
             trouves.append((nom, libelle + ' (metadonnees)', brut))
 
 
+# Inspect entries inside the archive, not the compressed byte stream.
 def controler_zip(nom, chemin, secrets, trouves):
     """Examine une archive entree par entree.
 
@@ -149,6 +153,7 @@ def controler_zip(nom, chemin, secrets, trouves):
         trouves.append((nom, 'archive illisible', str(err)))
 
 
+# Search a built binary for sensitive strings before considering it distributable.
 def controler_binaire(nom, data, secrets, trouves):
     for cle, valeur in secrets.items():
         for encodage in ('utf-8', 'utf-16-le'):

@@ -1,3 +1,7 @@
+/*
+ * Renders and updates a single priority alert overlay without changing the alert engine.
+ * Affiche un panneau d'alerte prioritaire sans modifier les règles d'alerte.
+ */
 #include "ui_alert.h"
 
 #include "i18n.h"
@@ -56,6 +60,7 @@ static void alert_colors(alert_type_t style, lv_color_t *bg, lv_color_t *text)
     }
 }
 
+/* Display the highest-priority pending alert above regular pages. */
 static void show_panel(void)
 {
     lv_obj_remove_flag(s_overlay, LV_OBJ_FLAG_HIDDEN);
@@ -70,6 +75,7 @@ static void hide_panel(void)
     s_panel_visible = false;
 }
 
+/* Refresh only the visible alert content when data or language changes. */
 static void refresh_panel(const alert_view_t *v)
 {
     if (v->style != s_panel_style) {
@@ -124,6 +130,7 @@ static void refresh_indicator(const alert_view_t *v)
     lv_obj_remove_flag(s_pill, LV_OBJ_FLAG_HIDDEN);
 }
 
+/* Acknowledge the displayed event in the alert engine, not in glucose history. */
 static void on_ok(lv_event_t *e)
 {
     (void)e;
@@ -132,6 +139,7 @@ static void on_ok(lv_event_t *e)
     hide_panel();
 }
 
+/* Apply the alert's defined snooze policy instead of dismissing it permanently. */
 static void on_snooze(lv_event_t *e)
 {
     (void)e;
@@ -231,6 +239,7 @@ void ui_alert_create_indicator(lv_obj_t *parent)
     lv_obj_add_flag(s_pill, LV_OBJ_FLAG_HIDDEN);
 }
 
+/* Keep banner and overlay consistent with the engine's current event. */
 void ui_alert_update(void)
 {
     alert_view_t v;

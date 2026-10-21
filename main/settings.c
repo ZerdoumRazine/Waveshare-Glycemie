@@ -1,3 +1,7 @@
+/*
+ * Validates UI options loaded from NVS and batches non-urgent writes.
+ * Valide les réglages enregistrés et évite les écritures NVS inutiles.
+ */
 #include "settings.h"
 
 #include <inttypes.h>
@@ -71,6 +75,7 @@ int settings_level_volume(volume_level_t level)
     }
 }
 
+/* Clamp persisted values so an invalid record cannot break a control. */
 static void sanitize(settings_t *s)
 {
     if (s->volume_pct > 100) {
@@ -100,6 +105,7 @@ static void sanitize(settings_t *s)
     }
 }
 
+/* Keep the night interval and brightness within allowed ranges. */
 static void sanitize_night(night_settings_t *n)
 {
     n->enabled = n->enabled != 0;
@@ -115,6 +121,7 @@ static void sanitize_night(night_settings_t *n)
     }
 }
 
+/* Save changes outside the UI callback to keep touch input responsive. */
 static void saver_task(void *arg)
 {
     (void)arg;

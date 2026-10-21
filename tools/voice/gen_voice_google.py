@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# EN: Builds spoken WAV banks locally from project phrases using Google Cloud TTS.
+# FR: Génère des banques WAV à partir des textes du projet avec Google Cloud.
 """Banque vocale Google Cloud Text-to-Speech pour glycemie_display, en six langues.
 
 Meme timbre partout (Chirp 3 HD "Aoede") : francais, anglais, espagnol, allemand, italien,
@@ -84,6 +86,7 @@ RELEASE_S = 0.100
 MIN_DURATION_S = 0.4
 MAX_DURATION_S = 6.0
 
+# Generate the fixed alerts and number phrases for the selected language.
 def phrases():
     """(nom de fichier, texte) dans l'ordre de generation, pour la langue configuree."""
     return langues_voix.phrases(LANG)
@@ -133,6 +136,7 @@ def db(value):
     return 20.0 * math.log10(max(float(value), 1e-9))
 
 
+# Convert the service output to the sample rate required by the ESP32 codec.
 def resample(x, rate_in, rate_out):
     """Reechantillonnage polyphase (insertion de zeros, filtre passe-bas Kaiser, decimation)."""
     if rate_in == rate_out:
@@ -185,6 +189,7 @@ def active_rms(x, rate):
     return float(np.sqrt(np.mean(energy))) if len(energy) else 0.0
 
 
+# Keep decoded audio in a safe amplitude range to reduce clipping.
 def limit(x, rate):
     """Limiteur a anticipation (meme principe que pack_voice.py) : |sortie| <= plafond, jamais d'ecretage.
 
@@ -262,6 +267,7 @@ def synthesize(tts, client, text):
     return None
 
 
+# Reuse the local cache only when the stored voice and text still match.
 def raw_is_valid(name, text):
     base = os.path.join(RAW_DIR, os.path.splitext(name)[0])
     try:
@@ -287,6 +293,7 @@ def save_raw(name, text, data):
 # ----------------------------------------------------------------------------------------------------------------
 
 
+# Calculate likely billable text length without contacting Google.
 def estimate(items):
     chars = sum(len(text) for _, text in items)
     print('Langue : %s ; voix : %s' % (LANG, VOICE_NAME))
@@ -312,6 +319,7 @@ def check():
     return True
 
 
+# Generate only missing or requested files, preserving the existing bank when possible.
 def generate(items, only):
     os.makedirs(RAW_DIR, exist_ok=True)
     os.makedirs(OUT_DIR, exist_ok=True)

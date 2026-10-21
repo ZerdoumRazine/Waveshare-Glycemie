@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# EN: Checks board revision, partition layout and binary headers before flashing.
+# FR: Vérifie révision, partitions et binaires avant installation.
 r"""Verifications automatiques AVANT tout flash de glycemie_display (ESP32-P4 rev1.3).
 
 Lecture seule : ce script n'accede pas a la carte. A lancer dans l'environnement ESP-IDF du projet :
@@ -63,6 +65,7 @@ def size_to_int(text):
     return int(text, 0) * mult
 
 
+# Read chip revision metadata from the built image, not the filename.
 def image_revisions(path):
     # esptool 4.x (environnement ESP-IDF 5.5) : l'en-tete etendu n'est affiche qu'avec --version 2
     out = subprocess.run([sys.executable, '-m', 'esptool', '--chip', 'esp32p4', 'image_info', '--version', '2', path],
@@ -73,6 +76,7 @@ def image_revisions(path):
     return (mini.group(1) if mini else None, maxi.group(1) if maxi else None, text)
 
 
+# Reject an incompatible or incomplete build; the check never flashes hardware.
 def main():
     # 1. sdkconfig resolu
     cfg = json.load(open(os.path.join(BUILD, 'config', 'sdkconfig.json'), encoding='utf-8'))

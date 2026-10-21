@@ -3,6 +3,10 @@
  * et maintient un cache des 24 dernieres heures (lectures incrementales, sans reauthentification).
  * Les identifiants jamais valides ne declenchent qu'UNE tentative, sur autorisation explicite.
  */
+/* Public interface / Interface publique
+ * EN: Polling, demo mode and uncommitted setup-test public APIs.
+ * FR: Services de lecture, démonstration et test de connexion.
+ */
 #pragma once
 
 #include <stdint.h>

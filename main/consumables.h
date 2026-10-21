@@ -9,6 +9,10 @@
  * Catheter : intervalle 72 h par defaut (48 h possible), un seul rappel a usage unique 2 h avant l'echeance, puis
  * "A CHANGER" a l'echeance. C'est un rappel configure par l'utilisateur, pas une recommandation therapeutique.
  */
+/* Public interface / Interface publique
+ * EN: Catheter dates, reminders and their persistence contract.
+ * FR: Dates, rappels et sauvegarde du cathéter.
+ */
 #pragma once
 
 #include <stdbool.h>

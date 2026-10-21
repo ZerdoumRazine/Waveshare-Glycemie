@@ -5,6 +5,10 @@
  * Une tache dediee joue des sequences (tonalites synthetisees, extraits PCM) sans bloquer l'appelant.
  * Le codec n'est ouvert que pendant la lecture (amplificateur coupe au repos).
  */
+/* Public interface / Interface publique
+ * EN: Non-blocking audio requests and codec diagnostic controls.
+ * FR: Requêtes audio et contrôles du codec.
+ */
 #pragma once
 
 #include <stdbool.h>

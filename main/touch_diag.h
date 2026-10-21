@@ -4,6 +4,10 @@
  * la lecture reste celle de l'adaptateur (esp_lcd_touch_read_data + esp_lcd_touch_get_data).
  * Journal uniquement sur changement d'etat (appui, relachement, clic), active par la console.
  */
+/* Public interface / Interface publique
+ * EN: Touchscreen diagnostics, event mapping and synthetic input testing.
+ * FR: Diagnostics des appuis et essais tactiles simulés.
+ */
 #pragma once
 
 #include <stdbool.h>

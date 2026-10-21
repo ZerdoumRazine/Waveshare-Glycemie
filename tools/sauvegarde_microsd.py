@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# EN: Makes a verified file copy from removable media without writing to the card.
+# FR: Copie et vérifie la microSD sans jamais la modifier.
 r"""Copier et VERIFIER le contenu de la microSD, sans jamais la modifier.
 
 La carte n'est que LUE : aucun fichier n'y est ecrit, deplace ou efface, et elle n'est jamais
@@ -31,6 +33,7 @@ SAUVEGARDES = os.path.join(ROOT, 'private', 'sauvegardes')
 BLOC = 1 << 20
 
 
+# List candidate media; the user must identify the correct card.
 def lecteurs_amovibles():
     """[(lettre, nom, taille_Go, libre_Go, systeme_de_fichiers, amovible)] vus par Windows."""
     if sys.platform != 'win32':
@@ -55,6 +58,7 @@ def lecteurs_amovibles():
     return lecteurs
 
 
+# Compare hashes rather than assuming that matching file sizes mean identical data.
 def empreinte(chemin):
     h = hashlib.sha256()
     with open(chemin, 'rb') as f:
@@ -63,6 +67,7 @@ def empreinte(chemin):
     return h.hexdigest()
 
 
+# Walk files read-only and preserve their relative names.
 def parcourir(racine):
     """[(chemin relatif, taille)] de tous les fichiers, en lecture seule."""
     fichiers = []

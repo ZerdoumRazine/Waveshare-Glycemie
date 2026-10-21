@@ -1,3 +1,7 @@
+/*
+ * Keeps the glucose value visually dominant and indicates trend and data freshness.
+ * Met en avant la valeur, sa tendance et l'ancienneté de la donnée.
+ */
 #include "i18n.h"
 #include "ui_pages.h"
 
@@ -293,6 +297,7 @@ static const char *waiting_message(const ui_data_t *d)
     }
 }
 
+/* Show the trend reported by Dexcom without extrapolating a new medical prediction. */
 static void set_arrow(uint8_t trend, lv_color_t color)
 {
     if (trend != s_arrow_trend || !lv_color_eq(color, s_arrow_color)) {
@@ -354,6 +359,7 @@ static void set_last_font(const lv_font_t *font)
     }
 }
 
+/* Keep date, time and status legible without adding redundant connectivity indicators. */
 static void update_header(const ui_data_t *d)
 {
     char buf[64];
@@ -388,6 +394,7 @@ static void update_header(const ui_data_t *d)
 }
 
 /* Anneau : progression vers la prochaine mesure (a jour), orange en RETARD, rouge plein si DONNEES ANCIENNES */
+/* Use colors and halo intensity as presentation only, never as a treatment recommendation. */
 static void update_ring(const ui_data_t *d)
 {
     if (d->count == 0 || d->age_s < 0) {
@@ -409,6 +416,7 @@ static void update_ring(const ui_data_t *d)
     }
 }
 
+/* Update the central glucose value together with age and trend context. */
 static void update_hero(const ui_data_t *d)
 {
     char buf[48];

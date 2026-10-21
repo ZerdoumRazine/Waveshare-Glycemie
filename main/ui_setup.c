@@ -1,3 +1,7 @@
+/*
+ * Guides first-time Wi-Fi and Dexcom configuration with a reversible connection trial.
+ * Guide la configuration initiale en protégeant les accès existants.
+ */
 #include "ui_pages.h"
 
 #include <stdio.h>
@@ -83,6 +87,7 @@ static void scan_task(void *arg)
     vTaskDelete(NULL);
 }
 
+/* Search nearby networks in a worker task so the keyboard remains responsive. */
 static void lancer_scan(void)
 {
     if (s_scan_en_cours) {
@@ -172,6 +177,7 @@ static void on_afficher_mdp(lv_event_t *e)
 /* Les acces saisis sont ESSAYES : les precedents restent enregistres jusqu'a la confirmation. */
 static bool s_saisie_refusee; /* ne jamais afficher un ancien test comme reussi */
 
+/* Reject invalid fields and test the temporary account before offering to save it. */
 static void essayer(void)
 {
     s_saisie_refusee = false;
@@ -267,6 +273,7 @@ static void on_retour(lv_event_t *e)
     }
 }
 
+/* Advance only after the current step has collected valid input. */
 static void on_suivant(lv_event_t *e)
 {
     (void)e;
@@ -513,6 +520,7 @@ void ui_setup_create(void)
     lv_obj_add_flag(s_kb, LV_OBJ_FLAG_HIDDEN);
 }
 
+/* Enter the wizard without modifying the persisted configuration. */
 void ui_setup_open(bool premier_demarrage)
 {
     s_premier = premier_demarrage;

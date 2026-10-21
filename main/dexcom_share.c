@@ -1,3 +1,8 @@
+/*
+ * Handles the Share HTTPS protocol, response parsing and refusal/network classification.
+ * Gère le protocole HTTPS Share et distingue erreurs réseau et refus du compte.
+ * This is a supplementary display: official Dexcom alarms remain authoritative.
+ */
 #include "dexcom_share.h"
 
 #include <ctype.h>
@@ -92,6 +97,7 @@ static void append(char *out, size_t size, size_t *pos, const char *text, size_t
 }
 
 /* Message Dexcom sans identifiant, mot de passe, adresse e-mail ni UUID */
+/* Remove sensitive account fragments before an error is shown in logs. */
 static void sanitize_message(const dexcom_client_t *c, const char *in, char *out, size_t size)
 {
     char tmp[256];
@@ -448,6 +454,7 @@ void dexcom_invalidate_session(dexcom_client_t *c)
     memset(c->session_id, 0, sizeof(c->session_id));
 }
 
+/* Check TLS reachability before attributing a failure to user credentials. */
 dex_result_t dexcom_probe_tls(dexcom_client_t *c, int *http_status)
 {
     *http_status = 0;
@@ -474,6 +481,7 @@ dex_result_t dexcom_probe_tls(dexcom_client_t *c, int *http_status)
     return DEX_OK;
 }
 
+/* Authenticate only with the user's selected Share region and account. */
 dex_result_t dexcom_login(dexcom_client_t *c)
 {
     if (!dexcom_client_configured(c)) {

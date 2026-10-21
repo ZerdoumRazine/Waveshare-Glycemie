@@ -12,6 +12,10 @@
  *
  * Ce fichier remplace voice_cmd.c : meme interface, aucune ecoute, aucun micro ouvert, aucun modele charge.
  */
+/*
+ * Public-build stubs keep touch and audio features while disabling voice-command listening.
+ * Remplacements de compilation publique : pas d'écoute des commandes vocales.
+ */
 #include "voice_cmd.h"
 
 #include <stdio.h>
@@ -20,6 +24,7 @@
 
 static const char *TAG = "voixcmd";
 
+/* Report unavailable recognition without opening microphone hardware. */
 esp_err_t voice_cmd_init(void)
 {
     ESP_LOGI(TAG, "Commandes vocales absentes de cette compilation : micros jamais ouverts");
@@ -35,6 +40,7 @@ bool voice_cmd_running(void)
     return false;
 }
 
+/* Tell the UI that voice commands are unavailable in this build. */
 const char *voice_cmd_status_text(void)
 {
     return tr(S_UNAVAILABLE);

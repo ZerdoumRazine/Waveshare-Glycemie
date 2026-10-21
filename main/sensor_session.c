@@ -1,3 +1,7 @@
+/*
+ * Keeps sensor insertion time, expected expiration and one-time reminder flags.
+ * Suit la date de pose du capteur et les rappels déjà délivrés.
+ */
 #include "sensor_session.h"
 
 #include <string.h>
@@ -19,6 +23,7 @@ static int64_t s_start_s;       /* 0 = aucun capteur */
 static uint8_t s_done_mask;
 static volatile uint32_t s_revision;
 
+/* Compute an alert from the recorded insertion time, not from a reboot time. */
 static int64_t reminder_time(int reminder, int64_t start_s)
 {
     const int64_t due = start_s + SENSOR_SESSION_S;
@@ -32,6 +37,7 @@ static int64_t reminder_time(int reminder, int64_t start_s)
     }
 }
 
+/* Write session changes to NVS only after a user-confirmed update. */
 static esp_err_t persist(void)
 {
     s_revision++;
@@ -54,6 +60,7 @@ static esp_err_t persist(void)
 }
 
 /* Rappels deja depasses a l'enregistrement : marques comme faits (pas de rafale de rappels perimes) */
+/* Avoid generating a burst of expired reminders after a clock adjustment. */
 static void mark_past_reminders(int64_t now_s)
 {
     s_done_mask = 0;
