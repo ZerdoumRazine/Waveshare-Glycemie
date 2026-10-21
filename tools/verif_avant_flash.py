@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Checks firmware build settings before any device flash.
+# FR: Contrôle la compilation avant tout flash matériel.
+# Design note: Target revision and partition offsets must match the actual board.
 # EN: Checks board revision, partition layout and binary headers before flashing.
 # FR: Vérifie révision, partitions et binaires avant installation.
 r"""Verifications automatiques AVANT tout flash de glycemie_display (ESP32-P4 rev1.3).
