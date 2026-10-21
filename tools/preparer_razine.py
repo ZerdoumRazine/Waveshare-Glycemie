@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Exports a shareable source copy without rewriting Git history.
+# FR: Exporte une copie des sources sans réécrire l'historique Git.
+# Design note: Refuse to overwrite an existing repository or folder.
 # EN: Exports a safe tracked-file snapshot without overwriting an existing repository.
 # FR: Exporte une copie sûre sans écraser un dépôt déjà existant.
 r"""Prepare la copie publiable du projet (dossier Razine) a partir de ce que Git suit reellement.
