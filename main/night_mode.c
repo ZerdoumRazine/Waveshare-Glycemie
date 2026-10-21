@@ -1,4 +1,10 @@
 /*
+ * night_mode.c: Scheduled dim display and temporary wake-up.
+ * FR: Écran atténué la nuit et réveil temporaire.
+ * Design note: Urgent alerts still take priority in night mode.
+ */
+
+/*
  * Controls the night display, brightness transitions and temporary touch previews.
  * Pilote le mode nuit, la luminosité et les aperçus tactiles.
  */
