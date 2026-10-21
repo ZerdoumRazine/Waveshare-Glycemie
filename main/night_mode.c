@@ -1,3 +1,7 @@
+/*
+ * Controls the night display, brightness transitions and temporary touch previews.
+ * Pilote le mode nuit, la luminosité et les aperçus tactiles.
+ */
 #include "night_mode.h"
 
 #include "i18n.h"
@@ -116,6 +120,7 @@ static bool wakes_screen(alert_type_t style)
            style == ALERT_HIGH;
 }
 
+/* Interpret schedules correctly when the end time is on the next day. */
 static bool in_night_period(const night_settings_t *n, const ui_data_t *d)
 {
     if (!n->enabled || !d->time_ok || n->start_min == n->end_min) {
@@ -330,6 +335,7 @@ static void on_screen_pressed(lv_event_t *e)
     } else if (preview) {
         ESP_LOGI(TAG, "Apercu du mode nuit quitte par un toucher");
     }
+/* Let an important alert take precedence over the quiet night view. */
     evaluate(&g_ui, true);
 }
 
@@ -440,17 +446,20 @@ void night_mode_update(const ui_data_t *d)
     default:
         break;
     }
+/* Let an important alert take precedence over the quiet night view. */
     evaluate(d, immediate);
 }
 
 void night_mode_brightness_changed(void)
 {
+/* Let an important alert take precedence over the quiet night view. */
     evaluate(&g_ui, true);
 }
 
 void night_mode_preview(void)
 {
     start_preview();
+/* Let an important alert take precedence over the quiet night view. */
     evaluate(&g_ui, false);
 }
 

@@ -1,3 +1,7 @@
+/*
+ * Owns the codec and serialises tones, alerts and spoken clips through one worker task.
+ * Pilote le codec et sérialise les sons dans une tâche dédiée.
+ */
 #include "audio_out.h"
 
 #include <inttypes.h>
@@ -99,6 +103,7 @@ static volatile bool s_stop;
 static volatile bool s_busy;
 static int16_t s_buf[CHUNK_FRAMES * 2];
 
+/* Prepare the codec before submitting samples to its audio path. */
 static esp_err_t codec_open(int volume)
 {
     if (!s_open) {
@@ -210,6 +215,7 @@ static void play_pattern(audio_pattern_t pattern)
     }
 }
 
+/* Handle the audio queue in one place to avoid overlapping writes to the codec. */
 static void audio_task(void *arg)
 {
     (void)arg;
@@ -246,6 +252,7 @@ static void audio_task(void *arg)
     }
 }
 
+/* Submit a request asynchronously instead of blocking the UI or glucose service. */
 static esp_err_t enqueue(const audio_req_t *req)
 {
     if (s_queue == NULL) {
@@ -305,18 +312,21 @@ esp_err_t audio_out_play_pattern(audio_pattern_t pattern, int volume_pct)
         return ESP_ERR_INVALID_ARG;
     }
     const audio_req_t req = {.type = REQ_PATTERN, .volume = volume_pct, .pattern = pattern};
+/* Submit a request asynchronously instead of blocking the UI or glucose service. */
     return enqueue(&req);
 }
 
 esp_err_t audio_out_play_tone(int freq_hz, int duration_ms, int volume_pct)
 {
     const audio_req_t req = {.type = REQ_TONE, .volume = volume_pct, .freq = freq_hz, .ms = duration_ms};
+/* Submit a request asynchronously instead of blocking the UI or glucose service. */
     return enqueue(&req);
 }
 
 esp_err_t audio_out_play_pcm(const int16_t *samples, size_t count, int volume_pct)
 {
     const audio_req_t req = {.type = REQ_PCM, .volume = volume_pct, .samples = samples, .count = count};
+/* Submit a request asynchronously instead of blocking the UI or glucose service. */
     return enqueue(&req);
 }
 
@@ -326,6 +336,7 @@ esp_err_t audio_out_play_render(audio_render_fn_t fn, int a, int b, int volume_p
         return ESP_ERR_INVALID_ARG;
     }
     const audio_req_t req = {.type = REQ_RENDER, .volume = volume_pct, .render = fn, .a = a, .b = b};
+/* Submit a request asynchronously instead of blocking the UI or glucose service. */
     return enqueue(&req);
 }
 
@@ -425,6 +436,7 @@ static int16_t *mic_buffer(void)
     return s_rx;
 }
 
+/* Measure speaker test signals; this diagnostic does not certify alarm audibility. */
 static double measure(int freq, int chunks)
 {
     int16_t *rx = mic_buffer();
@@ -484,6 +496,7 @@ esp_err_t audio_out_selftest(int volume_pct, bool *detected, float *gain_db)
     }
     esp_codec_dev_set_in_gain(s_mic, 30.0f);
 
+/* Measure speaker test signals; this diagnostic does not certify alarm audibility. */
     measure(1000, 2); /* stabilisation */
     const double silence = measure(1000, 3);
     audio_out_play_tone(1000, 1000, volume_pct);

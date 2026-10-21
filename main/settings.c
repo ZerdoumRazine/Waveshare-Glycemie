@@ -1,3 +1,7 @@
+/*
+ * Validates UI options loaded from NVS and batches non-urgent writes.
+ * Valide les réglages enregistrés et évite les écritures NVS inutiles.
+ */
 #include "settings.h"
 
 #include <inttypes.h>
@@ -71,6 +75,7 @@ int settings_level_volume(volume_level_t level)
     }
 }
 
+/* Clamp persisted values so an invalid record cannot break a control. */
 static void sanitize(settings_t *s)
 {
     if (s->volume_pct > 100) {
@@ -100,6 +105,7 @@ static void sanitize(settings_t *s)
     }
 }
 
+/* Keep the night interval and brightness within allowed ranges. */
 static void sanitize_night(night_settings_t *n)
 {
     n->enabled = n->enabled != 0;
@@ -115,6 +121,7 @@ static void sanitize_night(night_settings_t *n)
     }
 }
 
+/* Save changes outside the UI callback to keep touch input responsive. */
 static void saver_task(void *arg)
 {
     (void)arg;
@@ -190,7 +197,9 @@ esp_err_t settings_init(void)
         }
         nvs_close(h);
     }
+/* Clamp persisted values so an invalid record cannot break a control. */
     sanitize(&s_settings);
+/* Keep the night interval and brightness within allowed ranges. */
     sanitize_night(&s_night);
     s_vcmd.enabled = s_vcmd.enabled != 0;
     s_vcmd.wake_word = s_vcmd.wake_word != 0;
@@ -215,6 +224,7 @@ void settings_get(settings_t *out)
 void settings_set(const settings_t *in)
 {
     settings_t copy = *in;
+/* Clamp persisted values so an invalid record cannot break a control. */
     sanitize(&copy);
     xSemaphoreTake(s_mutex, portMAX_DELAY);
     s_settings = copy;
@@ -235,6 +245,7 @@ void settings_night_get(night_settings_t *out)
 void settings_night_set(const night_settings_t *in)
 {
     night_settings_t copy = *in;
+/* Keep the night interval and brightness within allowed ranges. */
     sanitize_night(&copy);
     xSemaphoreTake(s_mutex, portMAX_DELAY);
     s_night = copy;

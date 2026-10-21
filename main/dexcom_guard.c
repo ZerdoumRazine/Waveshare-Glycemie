@@ -1,3 +1,7 @@
+/*
+ * Persists one authentication outcome per account to prevent repeated rejected logins.
+ * Mémorise le résultat de connexion pour éviter de bloquer le compte Dexcom.
+ */
 #include "dexcom_guard.h"
 
 #include <string.h>
@@ -17,6 +21,7 @@ static uint8_t s_cred_tag[CRED_TAG_LEN];
 static dex_guard_state_t s_state = DEX_GUARD_UNKNOWN;
 static char s_info[128];
 
+/* Use an account fingerprint to match guard state without storing the password in this record. */
 static void compute_tag(const char *region, const char *username, const char *password, uint8_t out[CRED_TAG_LEN])
 {
     uint8_t digest[32];
@@ -34,8 +39,10 @@ static void compute_tag(const char *region, const char *username, const char *pa
     memset(digest, 0, sizeof(digest));
 }
 
+/* Recover the prior state only when the selected account has the same fingerprint. */
 esp_err_t dex_guard_init(const char *region, const char *username, const char *password)
 {
+/* Use an account fingerprint to match guard state without storing the password in this record. */
     compute_tag(region, username, password, s_cred_tag);
     s_state = DEX_GUARD_UNKNOWN;
     s_info[0] = '\0';
@@ -76,6 +83,7 @@ const char *dex_guard_info(void)
     return s_info;
 }
 
+/* Commit the guard state before subsequent network attempts are allowed. */
 esp_err_t dex_guard_set(dex_guard_state_t state, const char *info)
 {
     nvs_handle_t h;

@@ -1,3 +1,7 @@
+/*
+ * Combines stored PCM WAV clips for six languages with a French and then beep fallback.
+ * Assemble les annonces WAV des six langues avec un repli audio.
+ */
 #include "voice.h"
 
 #include "i18n.h"
@@ -89,6 +93,7 @@ void voice_lang_changed(void)
     s_lang_missing_logged = false;
 }
 
+/* Look in the selected language folder; missing recordings must not crash the display. */
 static bool load_voice_file(const char *name, int slot, voice_pcm_t *out)
 {
     if (s_file_buf == NULL) {
@@ -427,6 +432,7 @@ static int number_words(int n, voice_clip_id_t *out, int max)
     return k;
 }
 
+/* Read pre-generated number clips; speech is not synthesized on the board. */
 static void say_number(int n, int volume)
 {
     voice_clip_id_t words[MAX_WORDS];
@@ -449,22 +455,27 @@ void voice_old_announce(alert_type_t type, int value, int volume_pct)
     switch (type) {
     case ALERT_VERY_LOW:
         say(VOICE_P_TRES_BASSE, volume_pct);
+/* Read pre-generated number clips; speech is not synthesized on the board. */
         say_number(value, volume_pct);
         break;
     case ALERT_LOW:
         say(VOICE_P_BASSE, volume_pct);
+/* Read pre-generated number clips; speech is not synthesized on the board. */
         say_number(value, volume_pct);
         break;
     case ALERT_HIGH:
         say(VOICE_P_ELEVEE, volume_pct);
+/* Read pre-generated number clips; speech is not synthesized on the board. */
         say_number(value, volume_pct);
         break;
     case ALERT_VERY_HIGH:
         say(VOICE_P_TRES_ELEVEE, volume_pct);
+/* Read pre-generated number clips; speech is not synthesized on the board. */
         say_number(value, volume_pct);
         break;
     case ALERT_NO_DATA:
         say(VOICE_P_AUCUNE_DONNEE, volume_pct);
+/* Read pre-generated number clips; speech is not synthesized on the board. */
         say_number(value, volume_pct);
         say(VOICE_P_MINUTES, volume_pct);
         break;

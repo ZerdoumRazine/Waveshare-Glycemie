@@ -5,6 +5,10 @@
  * AVERTISSEMENT : afficheur familial complementaire. Ce n'est pas un dispositif medical ;
  * il ne doit pas servir a prendre des decisions therapeutiques.
  */
+/*
+ * Brings up the board, background services and USB maintenance console in a defined order.
+ * Démarre les services matériels et la console de maintenance USB.
+ */
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -606,6 +610,7 @@ static void console_task(void *arg)
     }
 }
 
+/* Initialise storage and settings before services that depend on them; do not erase NVS to hide an error. */
 void app_main(void)
 {
     log_system_info();
@@ -705,6 +710,7 @@ void app_main(void)
         if (display != NULL) {
             const int64_t ui_age_ms = ui_heartbeat_age_ms();
             if (ui_age_ms > 5000 && (ui_freeze_reported_ms == 0 || ui_age_ms - ui_freeze_reported_ms >= 20000)) {
+/* Record display stalls so a UI fault can be diagnosed separately from glucose polling. */
                 report_ui_freeze(ui_age_ms);
                 ui_freeze_reported_ms = ui_age_ms;
             } else if (ui_age_ms < 3000 && ui_freeze_reported_ms != 0) {
