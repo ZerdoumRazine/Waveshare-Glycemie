@@ -1,3 +1,7 @@
+/* Adapts firmware code for a desktop C compiler.
+ * FR: Adapte le firmware au compilateur C du PC.
+ * Test and configuration interface only; no live patient data is included.
+ */
 /*
  * Compatibilite du compilateur hote pour les tests sur PC.
  * Inclus de force par tests/run_tests.py (option /FI avec MSVC, -include avec gcc/clang).
