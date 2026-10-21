@@ -75,7 +75,6 @@ bool gm_delta_current(const glucose_point_t *pts, int count, int64_t age_s, int 
     if (count < 2 || age_s < 0 || age_s >= (int64_t)GLY_AGE_STALE_MIN * 60) {
         return false;
     }
-/* Only compare readings separated by a meaningful elapsed interval. */
     return gm_delta_between(&pts[0], &pts[1], delta);
 }
 
