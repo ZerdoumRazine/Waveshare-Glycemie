@@ -1,3 +1,7 @@
+/*
+ * Calculates and renders today's statistics using local midnight and available readings.
+ * Calcule les statistiques du jour à partir de minuit local.
+ */
 #include "i18n.h"
 #include "ui_pages.h"
 
@@ -346,6 +350,7 @@ static void set_tile(tile_id_t id, const char *value, lv_color_t color)
     ui_set_text_color(s_tiles[id].value, color);
 }
 
+/* Refresh summaries when the day changes or a new measurement arrives. */
 void ui_today_update(const ui_data_t *d, bool force)
 {
     if (!force && !d->history_changed && !d->minute_changed) {
@@ -362,6 +367,7 @@ void ui_today_update(const ui_data_t *d, bool force)
 
     today_t t;
     uint8_t slots[SLOTS];
+/* Use only available samples; incomplete coverage must remain visible. */
     compute_today(d, local_midnight_ms(&d->now_tm), &t, slots);
     const int32_t now_pos = (int32_t)((d->now_tm.tm_hour * 60 + d->now_tm.tm_min) * 1000 / (24 * 60));
     if (memcmp(slots, s_slots, sizeof(slots)) != 0 || now_pos != s_now_pos) {

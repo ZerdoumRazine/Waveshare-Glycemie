@@ -1,3 +1,7 @@
+/*
+ * Owns the graph page controls and coordinates range selection with the chart widget.
+ * Pilote la page graphique et les durées sélectionnées.
+ */
 #include "i18n.h"
 #include "ui_pages.h"
 
@@ -27,6 +31,7 @@ static int range_index(int hours)
     return 1;
 }
 
+/* Change the plotted time window without editing glucose history. */
 static void on_range_changed(lv_event_t *e)
 {
     lv_obj_t *btnm = lv_event_get_target_obj(e);
@@ -69,6 +74,7 @@ void ui_graph_print_explore(void)
     ui_chart_explore_print(&s_chart);
 }
 
+/* Pass current data to the chart and keep the exploration state coherent. */
 void ui_graph_update(const ui_data_t *d, bool force)
 {
     const int hours = ui_chart_hours();

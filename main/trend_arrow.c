@@ -1,3 +1,7 @@
+/*
+ * Draws a trend icon and halo using LVGL primitives shared with the home view.
+ * Dessine l'icône de tendance et son halo lumineux.
+ */
 #include "trend_arrow.h"
 
 #include <math.h>
@@ -82,22 +86,29 @@ static void on_draw(lv_event_t *e)
 
     switch (ctx->trend) {
     case TREND_DOUBLE_UP:
+/* Draw the symbol after child objects to preserve legibility. */
         draw_arrow(layer, ctx, cx - s * 0.20f, cy, 90.0f, s * 0.64f);
+/* Draw the symbol after child objects to preserve legibility. */
         draw_arrow(layer, ctx, cx + s * 0.20f, cy, 90.0f, s * 0.64f);
         break;
     case TREND_SINGLE_UP:
+/* Draw the symbol after child objects to preserve legibility. */
         draw_arrow(layer, ctx, cx, cy, 90.0f, s * 0.70f);
         break;
     case TREND_FORTY_FIVE_UP:
+/* Draw the symbol after child objects to preserve legibility. */
         draw_arrow(layer, ctx, cx, cy, 45.0f, s * 0.70f);
         break;
     case TREND_FLAT:
+/* Draw the symbol after child objects to preserve legibility. */
         draw_arrow(layer, ctx, cx, cy, 0.0f, s * 0.70f);
         break;
     case TREND_FORTY_FIVE_DOWN:
+/* Draw the symbol after child objects to preserve legibility. */
         draw_arrow(layer, ctx, cx, cy, -45.0f, s * 0.70f);
         break;
     case TREND_SINGLE_DOWN:
+/* Draw the symbol after child objects to preserve legibility. */
         draw_arrow(layer, ctx, cx, cy, -90.0f, s * 0.70f);
         break;
     default: /* TREND_DOUBLE_DOWN */
@@ -138,6 +149,7 @@ lv_obj_t *trend_arrow_create(lv_obj_t *parent, int32_t size, const lv_font_t *fa
     return cont;
 }
 
+/* Choose the icon shape from the received trend value. */
 void trend_arrow_set(lv_obj_t *arrow, uint8_t trend, lv_color_t color)
 {
     arrow_ctx_t *ctx = lv_obj_get_user_data(arrow);
@@ -162,6 +174,7 @@ void trend_arrow_set(lv_obj_t *arrow, uint8_t trend, lv_color_t color)
     lv_obj_invalidate(arrow);
 }
 
+/* Adjust glow as a visual cue only; it does not change alert thresholds. */
 void trend_arrow_set_glow(lv_obj_t *arrow, lv_opa_t opa)
 {
     arrow_ctx_t *ctx = lv_obj_get_user_data(arrow);

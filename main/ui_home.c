@@ -1,3 +1,7 @@
+/*
+ * Keeps the glucose value visually dominant and indicates trend and data freshness.
+ * Met en avant la valeur, sa tendance et l'ancienneté de la donnée.
+ */
 #include "i18n.h"
 #include "ui_pages.h"
 
@@ -293,6 +297,7 @@ static const char *waiting_message(const ui_data_t *d)
     }
 }
 
+/* Show the trend reported by Dexcom without extrapolating a new medical prediction. */
 static void set_arrow(uint8_t trend, lv_color_t color)
 {
     if (trend != s_arrow_trend || !lv_color_eq(color, s_arrow_color)) {
@@ -354,6 +359,7 @@ static void set_last_font(const lv_font_t *font)
     }
 }
 
+/* Keep date, time and status legible without adding redundant connectivity indicators. */
 static void update_header(const ui_data_t *d)
 {
     char buf[64];
@@ -409,9 +415,11 @@ static void update_ring(const ui_data_t *d)
     }
 }
 
+/* Update the central glucose value together with age and trend context. */
 static void update_hero(const ui_data_t *d)
 {
     char buf[48];
+/* Use colors and halo intensity as presentation only, never as a treatment recommendation. */
     update_ring(d);
     if (d->count == 0) {
         set_value_text("---");
@@ -421,6 +429,7 @@ static void update_hero(const ui_data_t *d)
         set_mood(UI_G_STALE);
         set_value_opa(LV_OPA_60);
         s_fast_trend = false;
+/* Show the trend reported by Dexcom without extrapolating a new medical prediction. */
         set_arrow(TREND_NONE, UI_G_STALE);
         set_breathing(false);
         ui_set_text(s_delta, "");
@@ -456,6 +465,7 @@ static void update_hero(const ui_data_t *d)
         ui_set_text_color(s_note, UI_G_CRIT);
         return;
     }
+/* Show the trend reported by Dexcom without extrapolating a new medical prediction. */
     set_arrow(p->trend, value_color);
     set_breathing(p->trend >= TREND_DOUBLE_UP && p->trend <= TREND_DOUBLE_DOWN && home_visible());
     if (d->delta_ok) {
@@ -483,5 +493,6 @@ void ui_home_update(const ui_data_t *d, bool force)
         return;
     }
     update_header(d);
+/* Update the central glucose value together with age and trend context. */
     update_hero(d);
 }

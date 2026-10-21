@@ -1,3 +1,7 @@
+/*
+ * Shares typography, colors, layout primitives and formatting across the five pages.
+ * Centralise polices, couleurs, composants et formats de l'interface.
+ */
 #include "ui_common.h"
 
 #include <inttypes.h>
@@ -34,6 +38,7 @@ lv_font_t *ui_font_create(bool bold, int32_t px)
     return make_font(bold, px);
 }
 
+/* Load the fonts once before any page creates text objects. */
 void ui_fonts_init(void)
 {
     g_fonts.value = make_font(true, 320);
@@ -108,6 +113,7 @@ lv_color_t ui_glucose_color(int mgdl)
     return UI_G_CRIT;
 }
 
+/* Distinguish a delayed reading from a freshly received one. */
 lv_color_t ui_freshness_color(gm_freshness_t fresh)
 {
     switch (fresh) {
@@ -415,6 +421,7 @@ void ui_format_duration(int64_t seconds, bool compact, char *buf, size_t size)
     }
 }
 
+/* Express reading age clearly so a stale number is not mistaken for a live value. */
 void ui_format_age(int64_t age_s, char *buf, size_t size)
 {
     const int64_t min = age_s / 60;

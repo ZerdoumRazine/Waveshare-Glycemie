@@ -1,3 +1,7 @@
+/*
+ * Guides first-time Wi-Fi and Dexcom configuration with a reversible connection trial.
+ * Guide la configuration initiale en protégeant les accès existants.
+ */
 #include "ui_pages.h"
 
 #include <stdio.h>
@@ -83,6 +87,7 @@ static void scan_task(void *arg)
     vTaskDelete(NULL);
 }
 
+/* Search nearby networks in a worker task so the keyboard remains responsive. */
 static void lancer_scan(void)
 {
     if (s_scan_en_cours) {
@@ -225,6 +230,7 @@ static void on_reseau(lv_event_t *e)
 static void on_rescan(lv_event_t *e)
 {
     (void)e;
+/* Search nearby networks in a worker task so the keyboard remains responsive. */
     lancer_scan();
     afficher_etape(ETAPE_WIFI);
 }
@@ -267,11 +273,13 @@ static void on_retour(lv_event_t *e)
     }
 }
 
+/* Advance only after the current step has collected valid input. */
 static void on_suivant(lv_event_t *e)
 {
     (void)e;
     switch (s_etape) {
     case ETAPE_LANGUE:
+/* Search nearby networks in a worker task so the keyboard remains responsive. */
         lancer_scan();
         afficher_etape(ETAPE_WIFI);
         break;
@@ -298,6 +306,7 @@ static void on_suivant(lv_event_t *e)
         }
         if (s_user[0] != '\0' && s_mdp_dex[0] != '\0') {
             afficher_etape(ETAPE_VERIF);
+/* Reject invalid fields and test the temporary account before offering to save it. */
             essayer();
         }
         break;
@@ -315,6 +324,7 @@ static void on_suivant(lv_event_t *e)
                 ui_set_text_color(s_verif_txt, UI_G_CRIT);
             }
         } else {
+/* Reject invalid fields and test the temporary account before offering to save it. */
             essayer(); /* bouton "Réessayer" */
             afficher_etape(ETAPE_VERIF);
         }
@@ -513,6 +523,7 @@ void ui_setup_create(void)
     lv_obj_add_flag(s_kb, LV_OBJ_FLAG_HIDDEN);
 }
 
+/* Enter the wizard without modifying the persisted configuration. */
 void ui_setup_open(bool premier_demarrage)
 {
     s_premier = premier_demarrage;

@@ -1,3 +1,7 @@
+/*
+ * Owns the LVGL event loop, the page switcher and capture/diagnostic entry points.
+ * Coordonne LVGL, la navigation entre pages et les captures.
+ */
 #include "ui_main.h"
 
 #include <inttypes.h>
@@ -161,6 +165,7 @@ static int64_t now_epoch_ms(void)
     return (int64_t)tv.tv_sec * 1000 + tv.tv_usec / 1000;
 }
 
+/* Take a coherent snapshot of shared state before rendering a frame. */
 static void collect_data(void)
 {
     ui_data_t *d = &g_ui;
@@ -306,6 +311,7 @@ static void stress_timer_cb(lv_timer_t *timer)
     }
 }
 
+/* Keep display work on the LVGL task; other services only request updates. */
 static void ui_timer_cb(lv_timer_t *timer)
 {
     (void)timer;
@@ -323,6 +329,7 @@ static void ui_timer_cb(lv_timer_t *timer)
         esp_task_wdt_reset();
     }
 
+/* Take a coherent snapshot of shared state before rendering a frame. */
     collect_data();
     update_top_bar();
 
@@ -360,6 +367,7 @@ static void ui_timer_cb(lv_timer_t *timer)
     if (s_requested_lang >= 0) {
         const lang_t lang = (lang_t)s_requested_lang;
         s_requested_lang = -1;
+/* Rebuild translated page labels outside the callback of the control being destroyed. */
         apply_language(lang);
     }
     if (s_requested_page >= 0) {
@@ -505,6 +513,7 @@ void ui_test_set_age_offset(int minutes)
     s_test_age_offset_min = minutes;
 }
 
+/* Queue a navigation request instead of modifying widgets from another task. */
 void ui_request_page(int page)
 {
     if (page >= 0 && page < UI_PAGE_COUNT) {
@@ -639,6 +648,7 @@ void ui_snapshot_dump(void)
                 raw[raw_len++] = (uint8_t)(run_color >> 8);
                 run_len = 0;
                 if (raw_len >= SNAP_RAW_CHUNK) {
+/* Capture the visible composition for documentation and diagnostics. */
                     snapshot_flush(raw, &raw_len, false);
                 }
             }
@@ -652,6 +662,7 @@ void ui_snapshot_dump(void)
         raw[raw_len++] = (uint8_t)(run_color & 0xFF);
         raw[raw_len++] = (uint8_t)(run_color >> 8);
     }
+/* Capture the visible composition for documentation and diagnostics. */
     snapshot_flush(raw, &raw_len, true);
     printf("SNAP_END\n");
     fflush(stdout);
