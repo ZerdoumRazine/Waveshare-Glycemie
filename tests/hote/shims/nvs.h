@@ -1,3 +1,7 @@
+/* Simulated NVS persistence and failure injection.
+ * FR: Stockage NVS simulé et injection de pannes.
+ * Used exclusively by hardware-independent regression tests.
+ */
 /* NVS simulee en memoire : permet de verifier la persistance et de simuler un redemarrage. */
 /* EN: In-memory NVS interface plus explicit fault injection for regression tests.
  * FR: Simulation NVS en mémoire avec injection de pannes.
