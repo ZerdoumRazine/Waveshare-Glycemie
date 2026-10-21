@@ -1,3 +1,6 @@
+# Stages public firmware and tools apart from personal builds.
+# FR: Prépare le firmware public hors des versions personnelles.
+# Design note: Never ship a build containing Wi-Fi or Dexcom secrets.
 # EN: Legacy local firmware packaging route; never ship an image containing personal secrets.
 # FR: Ancienne procédure locale : aucun binaire contenant des identifiants personnels ne doit partir.
 <#
