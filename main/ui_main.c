@@ -233,6 +233,7 @@ static void update_top_bar(void)
  * le callback d'un bouton, puisque les objets qui portent ce callback sont detruits ici.
  * Seules les pages sont reconstruites : le bandeau, la barre de navigation, l'ecran nuit et la
  * fenetre d'alerte sont conserves et simplement remis a jour. */
+/* Rebuild translated page labels outside the callback of the control being destroyed. */
 static void apply_language(lang_t lang)
 {
     settings_lang_set(lang); /* applique la langue puis demande l'enregistrement NVS differe */
@@ -329,7 +330,6 @@ static void ui_timer_cb(lv_timer_t *timer)
         esp_task_wdt_reset();
     }
 
-/* Take a coherent snapshot of shared state before rendering a frame. */
     collect_data();
     update_top_bar();
 
@@ -367,7 +367,6 @@ static void ui_timer_cb(lv_timer_t *timer)
     if (s_requested_lang >= 0) {
         const lang_t lang = (lang_t)s_requested_lang;
         s_requested_lang = -1;
-/* Rebuild translated page labels outside the callback of the control being destroyed. */
         apply_language(lang);
     }
     if (s_requested_page >= 0) {
@@ -589,6 +588,7 @@ void ui_print_stats(void)
 static uint8_t *s_snap_raw;      /* PSRAM, alloue a la premiere capture */
 static unsigned char *s_snap_b64;
 
+/* Capture the visible composition for documentation and diagnostics. */
 static void snapshot_flush(uint8_t *raw, size_t *raw_len, bool final)
 {
     size_t usable = final ? *raw_len : (*raw_len / 3) * 3;
@@ -648,7 +648,6 @@ void ui_snapshot_dump(void)
                 raw[raw_len++] = (uint8_t)(run_color >> 8);
                 run_len = 0;
                 if (raw_len >= SNAP_RAW_CHUNK) {
-/* Capture the visible composition for documentation and diagnostics. */
                     snapshot_flush(raw, &raw_len, false);
                 }
             }
@@ -662,7 +661,6 @@ void ui_snapshot_dump(void)
         raw[raw_len++] = (uint8_t)(run_color & 0xFF);
         raw[raw_len++] = (uint8_t)(run_color >> 8);
     }
-/* Capture the visible composition for documentation and diagnostics. */
     snapshot_flush(raw, &raw_len, true);
     printf("SNAP_END\n");
     fflush(stdout);
