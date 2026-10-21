@@ -1,3 +1,7 @@
+/* ui_pages.h: Declarations for the five application pages.
+ * FR: Déclarations des cinq pages de l'application.
+ * Shared definitions for the firmware implementation.
+ */
 /*
  * Pages de l'interface : ACCUEIL, GRAPHIQUE, AUJOURD'HUI, CONSOMMABLES, REGLAGES.
  * Toutes les fonctions s'executent dans la tache LVGL.
