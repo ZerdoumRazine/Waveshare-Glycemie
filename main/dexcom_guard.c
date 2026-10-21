@@ -42,7 +42,6 @@ static void compute_tag(const char *region, const char *username, const char *pa
 /* Recover the prior state only when the selected account has the same fingerprint. */
 esp_err_t dex_guard_init(const char *region, const char *username, const char *password)
 {
-/* Use an account fingerprint to match guard state without storing the password in this record. */
     compute_tag(region, username, password, s_cred_tag);
     s_state = DEX_GUARD_UNKNOWN;
     s_info[0] = '\0';
