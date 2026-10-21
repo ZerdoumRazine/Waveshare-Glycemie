@@ -1,3 +1,6 @@
+# Builds firmware using the designated ESP-IDF environment.
+# FR: Compile le firmware avec l'environnement ESP-IDF prévu.
+# Design note: Build from clean settings to prevent stale optional voice settings.
 # EN: Build firmware in a compatible ASCII-only path, with explicit voice-recognition options.
 # FR: Compile le firmware depuis un chemin compatible avec ESP-IDF.
 #Requires -Version 5.1
