@@ -1,4 +1,10 @@
 /*
+ * touch_diag.c: Touch-screen diagnostics and calibration support.
+ * FR: Diagnostics de l'écran tactile.
+ * Design note: Diagnostic labels aid testing but do not change sensor data.
+ */
+
+/*
  * Provides controlled touch diagnostics and synthetic tap injection for development.
  * Fournit les diagnostics du tactile et l'injection d'appuis de test.
  */
