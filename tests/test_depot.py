@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# EN: Check tracked paths, third-party notices and public-source invariants.
+# FR: Vérifie les chemins suivis, les licences et les protections du dépôt.
 r"""Controles du depot avant publication : coherence du projet et absence de donnees privees.
 
 Ne compile rien et n'accede pas a la carte. A lancer depuis la racine du projet :
@@ -25,6 +27,7 @@ def check(nom, ok, detail=''):
     resultats.append((nom, bool(ok), detail))
 
 
+# Use the tracked Git file list, not arbitrary temporary build output.
 def fichiers_versionnes():
     """Ce que Git publierait reellement ; a defaut (pas de depot Git), tout l'arbre sauf les exclusions."""
     try:
@@ -56,6 +59,7 @@ def lire(path):
         return ''
 
 
+# Treat unsafe file types or missing expected notices as release blockers.
 def main():
     tous = list(fichiers_versionnes())
     textes = {rel: lire(p) for rel, p in tous if os.path.splitext(rel)[1].lower() in TEXTE}

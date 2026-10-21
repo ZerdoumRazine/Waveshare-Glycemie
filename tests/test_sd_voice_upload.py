@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# EN: Test read-only verification and audio transfer using a simulated serial device.
+# FR: Teste la vérification sans écriture et les transferts audio simulés.
 """Controles de l'outil de copie de la banque vocale (tools/voice/sd_voice_upload.py).
 
 Le plus important : en mode --verify-only, l'outil ne doit JAMAIS ecrire sur la carte, dans aucune des
@@ -31,6 +33,7 @@ def check(nom, ok, detail=''):
     resultats.append((nom, bool(ok), detail))
 
 
+# Use short synthetic clips instead of the real WAV files.
 def banque_temporaire(dossier):
     """Petite banque locale (3 fichiers) + manifeste, a la place de la vraie banque."""
     voice = os.path.join(dossier, 'voice')
@@ -182,6 +185,7 @@ class LienSimule:
         pass
 
 
+# Replace the serial transport so a regression test cannot write to a physical microSD.
 def executer(carte, lang, verify_only):
     """Lance l'outil sur une carte simulee ; retourne (code de sortie, lien)."""
     dossier = tempfile.mkdtemp(prefix='banque_')
@@ -206,6 +210,7 @@ def contenu_identique(entrees):
     return {nom: (taille, crc) for nom, taille, crc in entrees}
 
 
+# Cover complete, missing, mismatched and older-firmware behaviours.
 def main():
     _, entrees = banque_temporaire(tempfile.mkdtemp(prefix='reference_'))
     conforme = contenu_identique(entrees)

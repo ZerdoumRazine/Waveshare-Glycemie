@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# EN: Compile actual firmware C modules against host stubs before executing their tests.
+# FR: Compile les modules C réels avec des remplacements pour les tester sur PC.
 r"""Compile et execute les tests unitaires du firmware sur le PC (sans carte ESP32).
 
 Les tests compilent le VRAI code C de main/ : glucose_math.c, app_state.c, sensor_session.c,
@@ -56,6 +58,7 @@ INCLUDES = [MAIN, HOTE, SHIMS]
 FORCE_INCLUDE = os.path.join(SHIMS, 'compat_hote.h')
 
 
+# Detect the Visual Studio toolchain when GCC and Clang are unavailable.
 def trouver_msvc():
     """Renvoie (environnement, chemin de cl.exe) pour MSVC, ou (None, None)."""
     vswhere = os.path.join(os.environ.get('ProgramFiles(x86)', r'C:\Program Files (x86)'),
@@ -87,6 +90,7 @@ def trouver_msvc():
     return None, None
 
 
+# Fail the suite on compilation errors, not just assertion failures.
 def compiler_et_lancer(nom, sources, env, kind, cc):
     os.makedirs(OUT, exist_ok=True)
     exe = os.path.join(OUT, nom + ('.exe' if os.name == 'nt' else ''))
@@ -112,6 +116,7 @@ def compiler_et_lancer(nom, sources, env, kind, cc):
     return run.returncode
 
 
+# Run all independent C suites and report a nonzero code for any failure.
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--liste', action='store_true', help='afficher les suites sans compiler')

@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# EN: Verify a private audio package only contains the expected six banks and provenance.
+# FR: Vérifie les banques vocales et la notice de provenance.
 """Tests sans vrai son ni matériel des gardes-fous de l'archive vocale."""
 from __future__ import annotations
 
@@ -16,6 +18,7 @@ sys.path.insert(0, str(ROOT / "tools"))
 import release_voice_archive as va  # noqa: E402
 
 
+# Generate harmless artificial audio for tests; no real voice files are needed.
 def tiny_wav() -> bytes:
     out = io.BytesIO()
     with wave.open(out, "wb") as w:
@@ -26,6 +29,7 @@ def tiny_wav() -> bytes:
     return out.getvalue()
 
 
+# Build a six-language fixture matching the expected archive structure.
 def make_source(path: Path, unexpected: bool = False) -> None:
     names = sorted(va.expected_names())
     with zipfile.ZipFile(path, "w", compression=zipfile.ZIP_DEFLATED) as dest:
@@ -38,6 +42,7 @@ def make_source(path: Path, unexpected: bool = False) -> None:
             dest.writestr("glycemie/logs/mesures-personnelles.csv", "ne pas diffuser")
 
 
+# Confirm that a private CSV log in the input archive causes an explicit refusal.
 def run() -> int:
     with tempfile.TemporaryDirectory() as folder:
         work = Path(folder)

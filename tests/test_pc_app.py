@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# EN: Exercise the Windows Tkinter setup interface with simulated serial devices.
+# FR: Teste l'interface Windows avec des ports série simulés.
 """Controles de l'application Windows (tools/pc_app/glycemie_connexion.pyw), sans appareil branche.
 
 La fenetre est reellement construite (Tk), puis fermee : ces essais verifient la logique de
@@ -23,6 +25,7 @@ def check(nom, ok, detail=''):
     resultats.append((nom, bool(ok), detail))
 
 
+# Import the Windows app code without launching it for a real user.
 def charger():
     spec = importlib.util.spec_from_file_location('glycemie_connexion', SOURCE)
     module = importlib.util.module_from_spec(spec)
@@ -30,6 +33,7 @@ def charger():
     return module
 
 
+# Check password masking and button states while preventing real serial communication.
 def main():
     source = io.open(SOURCE, encoding='utf-8').read()
 
