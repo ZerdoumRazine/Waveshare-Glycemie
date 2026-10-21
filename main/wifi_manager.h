@@ -1,3 +1,7 @@
+/* wifi_manager.h: Wi-Fi scan and connection state interface.
+ * FR: Interface de recherche et de connexion Wi-Fi.
+ * Shared declarations for the implementation.
+ */
 /*
  * Wi-Fi station via l'ESP32-C6 (ESP-Hosted + esp_wifi_remote), d'apres l'exemple
  * officiel Waveshare 05_wifistation. Le firmware du C6 n'est jamais modifie.
