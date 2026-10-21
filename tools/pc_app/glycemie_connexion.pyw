@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Windows configuration interface for the connected display.
+# FR: Interface Windows de configuration de l'écran.
+# Design note: Do not display, log or persist account passwords on the PC.
 # EN: Provides the Windows USB setup interface; credential changes remain a confirmable trial.
 # FR: Interface Windows de configuration USB avec essai réversible des accès.
 """Configuration de l'ecran WaveShare Glycemie depuis le PC (fenetre graphique Windows).
