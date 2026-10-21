@@ -1,4 +1,10 @@
 /*
+ * dexcom_guard.c: Persistent guard against repeated Dexcom authentication failures.
+ * FR: Protection contre les échecs d'authentification répétés.
+ * Design note: Record an attempt before sending requests to prevent restart loops.
+ */
+
+/*
  * dexcom_guard.c: Keeps a persistent guard against repeated Dexcom authentication failures.
  * FR: Évite les tentatives d'authentification Dexcom répétées.
  * Design decision: Write the attempt state before making network calls to prevent restart loops.
