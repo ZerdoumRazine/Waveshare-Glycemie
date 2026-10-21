@@ -1,3 +1,7 @@
+/* app_secrets.h: Optional private-build secret integration.
+ * FR: Intégration facultative des accès personnels.
+ * Public distribution must never embed a user's credentials.
+ */
 /*
  * Acces aux identifiants prives.
  *
