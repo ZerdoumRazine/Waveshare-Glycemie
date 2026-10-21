@@ -1,3 +1,7 @@
+/* app_config.h: Build-time application constants and defaults.
+ * FR: Constantes et valeurs par défaut de compilation.
+ * Keep this header focused on the contracts used by other modules.
+ */
 /*
  * glycemie_display - constantes de l'application.
  * Afficheur familial complementaire : ce n'est pas un dispositif medical.
