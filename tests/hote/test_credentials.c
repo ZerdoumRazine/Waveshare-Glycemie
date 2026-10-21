@@ -1,3 +1,7 @@
+/* Exercises credential persistence and simulated NVS failures.
+ * FR: Teste les accès et les erreurs NVS simulées.
+ * Host tests use simulated dependencies, never personal readings.
+ */
 /*
  * Controles du module d'identifiants (main/credentials.c), compile tel quel sur le PC.
  *
