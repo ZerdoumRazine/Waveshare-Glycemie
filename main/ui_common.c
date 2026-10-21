@@ -1,4 +1,10 @@
 /*
+ * ui_common.c: Shared visual widgets, fonts and layout helpers.
+ * FR: Composants visuels, polices et mise en page communs.
+ * Design note: Consistent styles make the display legible from a distance.
+ */
+
+/*
  * Shares typography, colors, layout primitives and formatting across the five pages.
  * Centralise polices, couleurs, composants et formats de l'interface.
  */
