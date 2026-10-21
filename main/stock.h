@@ -1,3 +1,7 @@
+/* stock.h: Stock counts and replacement bookkeeping interface.
+ * FR: Interface de comptage et gestion des stocks.
+ * The declarations below are shared with other firmware modules.
+ */
 /*
  * Stock local des consommables : capteurs Dexcom G7 et catheters (sites de perfusion).
  *
