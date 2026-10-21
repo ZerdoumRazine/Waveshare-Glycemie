@@ -1,4 +1,10 @@
 /*
+ * voice.c: Playback of prerecorded WAV announcements by language.
+ * FR: Lecture des annonces WAV selon la langue.
+ * Design note: Without the voice bank, the alert beeps remain available.
+ */
+
+/*
  * voice.c: Plays prerecorded announcements from the microSD.
  * FR: Lit les annonces préenregistrées sur microSD.
  * Design decision: Alert beeps must remain available without language files.
