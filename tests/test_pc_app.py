@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Checks the Windows configuration interface without hardware.
+# FR: Vérifie l'application Windows sans matériel.
+# These tests use simulations; they do not connect to a patient's device.
 # EN: Exercise the Windows Tkinter setup interface with simulated serial devices.
 # FR: Teste l'interface Windows avec des ports série simulés.
 """Controles de l'application Windows (tools/pc_app/glycemie_connexion.pyw), sans appareil branche.
