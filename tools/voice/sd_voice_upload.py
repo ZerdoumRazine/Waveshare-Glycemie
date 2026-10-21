@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# EN: Copies existing WAV banks over USB with CRC32 checks and a read-only verification mode.
+# FR: Copie les voix par USB avec CRC32 et vérification sans écriture.
 """Copie la banque vocale (tools/voice/bank) sur la microSD du Waveshare par le cable USB-serie, sans retirer la
 carte et sans reseau. Outil temporaire : commandes console vrx_* du firmware (main/voice_rx.c).
 
@@ -34,6 +36,7 @@ BANK = os.path.join(HERE, 'bank', 'voice')
 MANIFEST = os.path.join(HERE, 'bank', 'manifest.csv')
 
 
+# Select either a developer bank or the public ZIP extracted to a folder.
 def configure(lang, sd_root=None):
     """Banque depuis les fichiers de travail ou depuis le ZIP microSD extrait.
 
@@ -128,6 +131,7 @@ class Link:
         self.log.close()
 
 
+# Use the reviewed manifest or calculate CRC32 from the extracted WAVs.
 def load_manifest():
     entries = []
     if MANIFEST is None:
@@ -154,6 +158,7 @@ def load_manifest():
     return entries
 
 
+# Negotiate the serial session without erasing the card.
 def begin(link):
     link.send('')
     time.sleep(0.3)
@@ -181,6 +186,7 @@ def begin(link):
     return SLOW_BAUD
 
 
+# Send each file in bounded chunks and wait for device acknowledgement.
 def put_file(link, name, size, crc, data):
     link.send('vrx_put %s %d %s' % (name, size, crc))
     m = link.expect(r'VRX (SKIP|READY) (\S+)', 15)
@@ -217,6 +223,7 @@ def choisir_dossier(link, lang, lecture):
     return True
 
 
+# Compare names, sizes and CRCs through read-only device commands.
 def verify(link, entries, lang='fr'):
     """Verification en LECTURE SEULE : seule la commande vrx_list est envoyee."""
     link.send('vrx_list crc')
@@ -271,6 +278,7 @@ def verify(link, entries, lang='fr'):
 LINK = Link  # remplacable par les tests (transport simule, aucune liaison serie)
 
 
+# Never write in --verify-only mode, even when the remote bank is incomplete.
 def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument('--port', default='COM7')

@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# EN: Provides the Windows USB setup interface; credential changes remain a confirmable trial.
+# FR: Interface Windows de configuration USB avec essai réversible des accès.
 """Configuration de l'ecran WaveShare Glycemie depuis le PC (fenetre graphique Windows).
 
 Ce programme sert a renseigner, essayer, enregistrer ou effacer les acces de l'ecran (reseau Wi-Fi et
@@ -43,6 +45,7 @@ AIDE_DEXCOM = ("Utilisez le compte Dexcom qui PARTAGE les mesures (celui de l'ap
 
 
 class Fenetre(object):
+    # Build controls with passwords hidden by default.
     def __init__(self, racine):
         self.racine = racine
         self.file = queue.Queue()        # messages venant du fil de discussion avec l'appareil
@@ -168,6 +171,7 @@ class Fenetre(object):
         self.journal.see('end')
         self.journal.configure(state='disabled')
 
+    # List detected serial ports without probing or resetting the user's device.
     def rafraichir_ports(self):
         self.ports = ac.lister_ports()
         libelles = ['%s — %s' % (nom, description or 'port série') for nom, description in self.ports]
@@ -214,6 +218,7 @@ class Fenetre(object):
         self.btn_enregistrer.configure(state='normal' if actifs and self.essai_reussi else 'disabled')
         self.btn_annuler.configure(state='normal' if actifs and self.essai_reussi else 'disabled')
 
+    # Keep serial I/O off the Tkinter thread so the interface remains responsive.
     def lancer(self, travail, titre):
         """Execute 'travail(app, dire)' dans un fil separe : la fenetre ne se figer jamais."""
         if self.occupe:
@@ -249,6 +254,7 @@ class Fenetre(object):
 
         threading.Thread(target=fil, daemon=True).start()
 
+    # Render worker results on the main Tkinter thread only.
     def _vider_file(self):
         try:
             while True:
@@ -301,6 +307,7 @@ class Fenetre(object):
                      "appuyé sur « Enregistrer ».")
         self.lancer(travail, "Lecture de l'état")
 
+    # Test new details on the screen before enabling the Save button.
     def essayer(self):
         ssid, mdp_wifi = self.ssid.get().strip(), self.mdp_wifi.get()
         user, mdp_dex = self.user.get().strip(), self.mdp_dex.get()
@@ -366,6 +373,7 @@ class Fenetre(object):
             app.lire(2, 'IDENT annule')
         self.lancer(travail, 'Essai des accès')
 
+    # Persist only a successfully tested configuration, after confirmation.
     def enregistrer(self):
         if not self.essai_reussi:
             messagebox.showinfo(TITRE, "Faites d'abord un essai réussi : on n'enregistre jamais des "
@@ -398,6 +406,7 @@ class Fenetre(object):
             self.file.put(('essai', False))
         self.lancer(travail, "Abandon de l'essai")
 
+    # Do not report deletion as successful until the device acknowledges it.
     def effacer(self):
         if not messagebox.askyesno(TITRE, "Effacer le réseau Wi-Fi et le compte Dexcom de l'écran ?\n\n"
                                           "L'assistant tactile reprendra au prochain démarrage. "

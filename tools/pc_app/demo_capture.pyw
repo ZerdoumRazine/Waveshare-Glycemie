@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# EN: Launches a demonstration of the Windows configuration UI without a real device.
+# FR: Ouvre une démonstration de l'interface Windows sans écran réel.
 """Ouvre l'application avec des DONNEES FICTIVES, le temps d'en faire une capture pour le tutoriel.
 
 Aucun port serie n'est ouvert, aucun appareil n'est touche : la liste des ports et le journal sont
@@ -22,6 +24,7 @@ spec.loader.exec_module(app)
 PORTS_FICTIFS = [('COM7', 'USB-Enhanced-SERIAL CH343 (WaveShare)'), ('COM3', 'Port série')]
 
 
+# Populate the window with examples for screenshots instead of live Dexcom data.
 def main():
     app.ac.lister_ports = lambda: list(PORTS_FICTIFS)
     app.ac.trouver_port = lambda: 'COM7'

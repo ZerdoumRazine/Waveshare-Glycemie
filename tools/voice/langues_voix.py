@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# EN: Defines fixed spoken phrases and grammar-aware number words in six languages.
+# FR: Contient les phrases fixes et les nombres prononcés dans six langues.
 """Textes de la banque vocale, langue par langue (francais, anglais, espagnol, allemand, italien, portugais).
 
 Utilise par gen_voice_google.py. Chaque langue fournit :
@@ -37,6 +39,7 @@ def _fr_below_100(n):
     return 'quatre-vingts' if n == 80 else 'quatre-vingt-' + _fr_below_100(n - 80)
 
 
+# Spell a French number with the language-specific tens and hundreds rules.
 def number_fr(n):
     """Orthographe traditionnelle : soixante-dix-huit, deux cents, cent un."""
     if n < 100:
@@ -58,6 +61,7 @@ def _en_below_100(n):
     return _EN_TENS[tens] if unit == 0 else _EN_TENS[tens] + '-' + _EN_UNITS[unit]
 
 
+# Express number words in US English for the matching voice bank.
 def number_en(n):
     """Usage courant pour une mesure : one hundred twenty, two hundred, four hundred."""
     if n < 100:
@@ -82,6 +86,7 @@ def _es_below_100(n):
     return _ES_TENS[tens] if unit == 0 else _ES_TENS[tens] + ' y ' + _ES_UNITS[unit]
 
 
+# Handle Spanish hundreds and the cien/ciento distinction.
 def number_es(n):
     """cien pour 100 tout seul, ciento veinte, doscientos, cuatrocientos."""
     if n < 100:
@@ -108,6 +113,7 @@ def _de_below_100(n):
     return ('ein' if unit == 1 else _DE_UNITS[unit]) + 'und' + _DE_TENS[tens]
 
 
+# Use German unit-before-ten forms when building compound numbers.
 def number_de(n):
     """einhundertzwanzig, zweihundert, vierhundert ; un seul mot, comme en allemand courant."""
     if n < 100:
@@ -136,6 +142,7 @@ def _it_below_100(n):
     return base + _IT_UNITS[unit]
 
 
+# Handle Italian elisions around compound numbers.
 def number_it(n):
     """centoventi, duecento, quattrocento ; un seul mot."""
     if n < 100:
@@ -164,6 +171,7 @@ def _pt_below_100(n):
     return _PT_TENS[tens] if unit == 0 else _PT_TENS[tens] + ' e ' + _PT_UNITS[unit]
 
 
+# Use Brazilian Portuguese wording for the installed Portuguese voice.
 def number_pt(n):
     """cem tout seul, cento e vinte, duzentos, quatrocentos."""
     if n < 100:
@@ -444,6 +452,7 @@ GLUCOSE_MIN = 40
 GLUCOSE_MAX = 400
 
 
+# Return stable clip filenames and spoken text for a single language.
 def phrases(lang):
     """[(nom de fichier, texte)] dans l'ordre de generation, pour la langue demandee."""
     if lang not in FIXES:
