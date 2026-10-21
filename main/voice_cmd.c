@@ -1,3 +1,7 @@
+/*
+ * Optional experimental voice-command recognizer; excluded from the public firmware.
+ * Reconnaissance vocale expérimentale, absente du firmware distribué.
+ */
 #include "voice_cmd.h"
 
 #include <inttypes.h>
@@ -226,6 +230,7 @@ static void reply(voice_reply_t r)
     voice_reply(r, volume());
 }
 
+/* Discard unconfirmed requests rather than persisting an accidental detection. */
 static void cancel_pending(const char *why, bool announce)
 {
     if (s_pending != VOICE_CMD_NONE) {
@@ -271,6 +276,7 @@ static bool detection_accepted(int mn_id, float prob)
     return true;
 }
 
+/* Handle confirmation as a distinct step before changing consumable dates. */
 static void handle_command(voice_cmd_id_t cmd, float prob, int64_t now_us)
 {
     if (cmd < VOICE_CMD_GLUCOSE || cmd > VOICE_CMD_CATHETER) {
@@ -295,6 +301,7 @@ static void handle_command(voice_cmd_id_t cmd, float prob, int64_t now_us)
         return;
     }
     if (s_pending != VOICE_CMD_NONE && s_pending != cmd) {
+/* Discard unconfirmed requests rather than persisting an accidental detection. */
         cancel_pending("autre commande", false);
     }
     /* premiere detection : rien n'est modifie */
@@ -321,6 +328,7 @@ static void sensor_register(int64_t now_us)
         return;
     }
     if (s_pending != VOICE_CMD_NONE) {
+/* Discard unconfirmed requests rather than persisting an accidental detection. */
         cancel_pending("autre commande", false);
     }
     s_pending = VOICE_CMD_SENSOR;
@@ -371,9 +379,11 @@ static bool on_detection(int mn_id, float prob, const char *phonemes, int64_t no
     switch (mn_id) {
     case VOICE_CMD_GLUCOSE:
     case MN_ID_GLUCOSE_Z:
+/* Handle confirmation as a distinct step before changing consumable dates. */
         handle_command(VOICE_CMD_GLUCOSE, prob, now_us);
         break;
     case VOICE_CMD_CATHETER:
+/* Handle confirmation as a distinct step before changing consumable dates. */
         handle_command(VOICE_CMD_CATHETER, prob, now_us);
         break;
     case MN_ID_SENSOR_REGISTER:
@@ -565,6 +575,7 @@ static bool load_models(bool with_wakenet, const esp_wn_iface_t **wn, model_ifac
     return true;
 }
 
+/* Process microphone frames only in builds where voice recognition is explicitly enabled. */
 static void voice_task(void *arg)
 {
     (void)arg;

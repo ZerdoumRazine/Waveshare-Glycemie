@@ -1,8 +1,13 @@
+/*
+ * Provides pure, host-testable calculations for reading age, freshness, cadence and delta.
+ * Rassemble les calculs testables de fraîcheur, cadence et variation.
+ */
 #include "glucose_math.h"
 
 #include <stdlib.h>
 #include <string.h>
 
+/* Return an unknown age when time is not synchronized or no measurement is available. */
 int64_t gm_age_s(const glucose_point_t *pts, int count, int64_t now_ms, bool time_ok)
 {
     if (count <= 0 || !time_ok) {
@@ -12,6 +17,7 @@ int64_t gm_age_s(const glucose_point_t *pts, int count, int64_t now_ms, bool tim
     return age_ms > 0 ? age_ms / 1000 : 0;
 }
 
+/* Distinguish current, late and stale readings without altering their glucose values. */
 gm_freshness_t gm_freshness(int64_t age_s)
 {
     if (age_s < 0) {
@@ -33,6 +39,7 @@ static int cmp_int32(const void *a, const void *b)
     return (x > y) - (x < y);
 }
 
+/* Estimate the observed sampling interval from reasonable timestamp gaps. */
 int32_t gm_cadence_s(const glucose_point_t *pts, int count)
 {
     int32_t intervals[16];
@@ -51,6 +58,7 @@ int32_t gm_cadence_s(const glucose_point_t *pts, int count)
     return intervals[n / 2];
 }
 
+/* Only compare readings separated by a meaningful elapsed interval. */
 bool gm_delta_between(const glucose_point_t *newer, const glucose_point_t *older, int *delta)
 {
     int64_t dt = (newer->wt_ms - older->wt_ms) / 1000;
@@ -61,11 +69,13 @@ bool gm_delta_between(const glucose_point_t *newer, const glucose_point_t *older
     return true;
 }
 
+/* Never show a reassuring delta calculated from stale values. */
 bool gm_delta_current(const glucose_point_t *pts, int count, int64_t age_s, int *delta)
 {
     if (count < 2 || age_s < 0 || age_s >= (int64_t)GLY_AGE_STALE_MIN * 60) {
         return false;
     }
+/* Only compare readings separated by a meaningful elapsed interval. */
     return gm_delta_between(&pts[0], &pts[1], delta);
 }
 

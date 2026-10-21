@@ -1,3 +1,7 @@
+/*
+ * Transfers pre-generated WAV files through a bounded serial protocol to microSD.
+ * Transfère les banques WAV par USB-série avec contrôles d'intégrité.
+ */
 #include "voice_rx.h"
 
 #include <inttypes.h>
@@ -84,6 +88,7 @@ static void set_baud(uint32_t baud)
     }
 }
 
+/* Restore the console baud rate and release temporary transfer buffers. */
 static void end_session(const char *why)
 {
     s_session = false;
@@ -97,6 +102,7 @@ static void end_session(const char *why)
              sd_storage_voice_files());
 }
 
+/* Verify microSD readiness and negotiate a temporary faster serial baud rate. */
 static void cmd_begin(const char *args)
 {
     s_subdir[0] = '\0'; /* chaque session repart de la banque francaise (racine) */
@@ -232,6 +238,7 @@ static void cmd_dir(const char *args)
     reply("VRX DIR %s\n", code);
 }
 
+/* Check file size and CRC before committing a received WAV. */
 static void cmd_put(const char *args)
 {
     char name[48];
@@ -289,6 +296,7 @@ static void list_file(const char *name, long size, void *arg)
     }
 }
 
+/* List the requested language directory with CRCs for read-only verification. */
 static void cmd_list(const char *args)
 {
     list_ctx_t ctx = {.crc = strcmp(args, "crc") == 0};
@@ -319,20 +327,24 @@ bool voice_rx_command(const char *line)
     const char *args = strchr(line, ' ');
     args = args != NULL ? args + 1 : "";
     if (strncmp(line, "vrx_begin", 9) == 0) {
+/* Verify microSD readiness and negotiate a temporary faster serial baud rate. */
         cmd_begin(args);
     } else if (strcmp(line, "vrx_ping") == 0) {
         reply("VRX PONG\n");
     } else if (strncmp(line, "vrx_dir ", 8) == 0) {
         cmd_dir(args);
     } else if (strncmp(line, "vrx_put ", 8) == 0) {
+/* Check file size and CRC before committing a received WAV. */
         cmd_put(args);
     } else if (strncmp(line, "vrx_list", 8) == 0) {
+/* List the requested language directory with CRCs for read-only verification. */
         cmd_list(args);
     } else if (strncmp(line, "vrx_inject ", 11) == 0) {
         cmd_inject(args);
     } else if (strcmp(line, "vrx_end") == 0) {
         reply("VRX END\n");
         if (s_session) {
+/* Restore the console baud rate and release temporary transfer buffers. */
             end_session("vrx_end");
         }
     } else {
@@ -344,6 +356,7 @@ bool voice_rx_command(const char *line)
 void voice_rx_idle(void)
 {
     if (s_session && esp_timer_get_time() - s_last_us > IDLE_END_US) {
+/* Restore the console baud rate and release temporary transfer buffers. */
         end_session("30 s sans commande");
     }
 }
