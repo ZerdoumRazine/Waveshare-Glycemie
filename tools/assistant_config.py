@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Configures the screen over USB without requiring a firmware rebuild.
+# FR: Configure l'écran par USB sans recompiler.
+# Design note: Passwords are sent to the device, not stored in a PC configuration file.
 # EN: Configures the device by USB when touchscreen entry is inconvenient.
 # FR: Configure le Waveshare par USB lorsque la saisie tactile est difficile.
 r"""Assistant de configuration par le cable USB (solution de secours a l'assistant de l'ecran tactile).

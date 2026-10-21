@@ -1,3 +1,7 @@
+/* night_mode.h: Night display settings and schedule API.
+ * FR: Réglages et horaires de l'écran de nuit.
+ * The declarations below are shared with other firmware modules.
+ */
 /*
  * Mode nuit : ECRAN NUIT MINIMALISTE (heure, glycemie tres grande, fleche, statut, derniere mesure) sur fond noir,
  * a la luminosite nuit. LVGL, Dexcom, Wi-Fi, microSD, historique, alertes, son et voix continuent normalement ;

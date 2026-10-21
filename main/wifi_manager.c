@@ -1,4 +1,10 @@
 /*
+ * wifi_manager.c: Wi-Fi scan, association and reconnection.
+ * FR: Recherche Wi-Fi, connexion et reprise.
+ * Design note: Network failure must not destroy the saved configuration.
+ */
+
+/*
  * Coordinates the ESP32-C6 network driver, reconnection and Wi-Fi scanning.
  * Coordonne le pilote Wi-Fi, ses reconnexions et la recherche de réseaux.
  */

@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Captures the Windows configuration app for documentation.
+# FR: Capture l'application Windows pour la documentation.
+# Design note: Show fictitious examples instead of personal credentials or glucose history.
 # EN: Captures the Windows configuration window for screenshots without changing device data.
 # FR: Capture la fenêtre Windows pour la documentation sans modifier l'appareil.
 r"""Capture la fenetre de l'application Windows, pour les tutoriels (jamais le bureau autour).

@@ -1,3 +1,7 @@
+/* sd_storage.h: microSD storage and history access interface.
+ * FR: Interface de stockage et d'historique microSD.
+ * The declarations below are shared with other firmware modules.
+ */
 /*
  * Carte microSD (optionnelle) : historique CSV quotidien et journal d'evenements.
  *

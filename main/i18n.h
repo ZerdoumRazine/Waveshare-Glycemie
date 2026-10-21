@@ -1,3 +1,7 @@
+/* i18n.h: Identifiers and language selection for UI translations.
+ * FR: Identifiants et sélection des traductions.
+ * The declarations below are shared with other firmware modules.
+ */
 /*
  * Langue de l'interface (6 langues europeennes).
  *

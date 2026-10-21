@@ -1,4 +1,18 @@
 /*
+ * glucose_service.c: Refresh, data age, and presentation of glucose readings.
+ * FR: Actualisation, ancienneté et diffusion des mesures.
+ * Design note: Expose stale readings rather than treating them as current.
+ */
+
+/*
+ * glucose_service.c: Coordinates refreshing, ageing, and presenting glucose data.
+ * FR: Coordonne l'actualisation, l'âge et la diffusion des mesures.
+ * Design decision: Display the age of a reading instead of pretending it is current.
+ *
+ * Experimental supplementary display; official monitoring remains authoritative.
+ */
+
+/*
  * Polls Dexcom Share, deduplicates readings, and serves both live and demo modes.
  * Interroge Dexcom Share, évite les doublons et fournit le mode démonstration.
  * This is a supplementary display: official Dexcom alarms remain authoritative.
@@ -775,6 +789,9 @@ static void test_task(void *arg)
     vTaskDelete(NULL);
 }
 
+/* Perform the connection check without replacing saved credentials prematurely.
+ * FR: Tester la connexion sans remplacer prématurément les accès enregistrés.
+ */
 void glucose_service_test_request(void)
 {
     if (s_test == GLY_TEST_EN_COURS) {

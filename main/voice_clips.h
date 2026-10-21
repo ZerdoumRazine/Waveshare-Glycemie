@@ -1,3 +1,7 @@
+/* voice_clips.h: Identifiers for prerecorded audio clips.
+ * FR: Identifiants des extraits audio.
+ * Shared declarations for the implementation.
+ */
 /* Genere par tools/voice/pack_voice.py a partir des extraits WAV (voix Windows fr-FR) - ne pas modifier */
 #pragma once
 

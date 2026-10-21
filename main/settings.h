@@ -1,3 +1,7 @@
+/* settings.h: Persistent user preferences and threshold contracts.
+ * FR: Paramètres utilisateurs et seuils persistants.
+ * The declarations below are shared with other firmware modules.
+ */
 /*
  * Reglages utilisateur persistants (NVS, espace "settings") : volume, voix, alertes, seuils, luminosite.
  * Les modifications sont enregistrees en differe (2 s) par une tache dediee : jamais depuis l'interface.

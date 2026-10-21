@@ -1,3 +1,7 @@
+/* ui_main.h: Main UI lifecycle and data update interface.
+ * FR: Cycle de vie et mise à jour de l'interface.
+ * Shared definitions for the firmware implementation.
+ */
 /*
  * Interface 1024x600 (LVGL 9.5) : bandeau d'etat, 5 pages et barre de navigation tactile.
  */

@@ -1,3 +1,7 @@
+/* Provides simulated NVS, allocations and synchronization for host tests.
+ * FR: Simule NVS, la mémoire et la synchronisation sur PC.
+ * Tests only: this is not hardware logic shipped in the firmware.
+ */
 /* Implementation des remplacants : NVS en memoire, mutex neutres, allocations, noms d'erreurs. */
 /* EN: Implement deterministic fake NVS, mutexes and error responses.
  * FR: Implémente les remplacements NVS et les erreurs simulées.

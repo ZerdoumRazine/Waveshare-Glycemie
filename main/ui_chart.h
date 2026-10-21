@@ -1,3 +1,7 @@
+/* ui_chart.h: Chart drawing and selected time-window contracts.
+ * FR: Tracé des courbes et fenêtres temporelles.
+ * Shared definitions for the firmware implementation.
+ */
 /*
  * Graphique de glycemie reutilisable (accueil et page GRAPHIQUE) :
  * zone cible, seuils, courbe par creneaux de 5 min, axe horaire, derniere valeur.

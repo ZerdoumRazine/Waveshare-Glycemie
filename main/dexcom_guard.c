@@ -1,4 +1,18 @@
 /*
+ * dexcom_guard.c: Persistent guard against repeated Dexcom authentication failures.
+ * FR: Protection contre les échecs d'authentification répétés.
+ * Design note: Record an attempt before sending requests to prevent restart loops.
+ */
+
+/*
+ * dexcom_guard.c: Keeps a persistent guard against repeated Dexcom authentication failures.
+ * FR: Évite les tentatives d'authentification Dexcom répétées.
+ * Design decision: Write the attempt state before making network calls to prevent restart loops.
+ *
+ * Experimental supplementary display; official monitoring remains authoritative.
+ */
+
+/*
  * Persists one authentication outcome per account to prevent repeated rejected logins.
  * Mémorise le résultat de connexion pour éviter de bloquer le compte Dexcom.
  */
@@ -40,6 +54,9 @@ static void compute_tag(const char *region, const char *username, const char *pa
 }
 
 /* Recover the prior state only when the selected account has the same fingerprint. */
+/* Bind the authentication history to the current account without storing its password in the guard.
+ * FR: Associer le verrou au compte courant sans y enregistrer le mot de passe.
+ */
 esp_err_t dex_guard_init(const char *region, const char *username, const char *password)
 {
     compute_tag(region, username, password, s_cred_tag);
@@ -83,6 +100,9 @@ const char *dex_guard_info(void)
 }
 
 /* Commit the guard state before subsequent network attempts are allowed. */
+/* Commit a new attempt state to NVS before reporting it as active.
+ * FR: Confirmer le nouvel état dans NVS avant de l'annoncer actif.
+ */
 esp_err_t dex_guard_set(dex_guard_state_t state, const char *info)
 {
     nvs_handle_t h;

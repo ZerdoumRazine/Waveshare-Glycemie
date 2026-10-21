@@ -1,3 +1,7 @@
+/* No-hardware replacement for firmware logging.
+ * FR: Remplacement des journaux ESP pour les tests.
+ * Used exclusively by hardware-independent regression tests.
+ */
 /* Journalisation neutralisee pour les tests sur PC (definir TEST_LOGS=1 pour voir les messages). */
 /* EN: Suppress device logging dependencies in the host test build.
  * FR: Remplace les journaux ESP-IDF pendant les tests.

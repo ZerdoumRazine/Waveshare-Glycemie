@@ -1,4 +1,10 @@
 /*
+ * ui_setup.c: Touchscreen wizard for initial Wi-Fi and Dexcom setup.
+ * FR: Assistant tactile de première configuration.
+ * Design note: Trial values are not persisted until validated and confirmed.
+ */
+
+/*
  * Guides first-time Wi-Fi and Dexcom configuration with a reversible connection trial.
  * Guide la configuration initiale en protégeant les accès existants.
  */
@@ -178,6 +184,9 @@ static void on_afficher_mdp(lv_event_t *e)
 static bool s_saisie_refusee; /* ne jamais afficher un ancien test comme reussi */
 
 /* Reject invalid fields and test the temporary account before offering to save it. */
+/* Validate both fields before testing connectivity; invalid input must never be saved.
+ * FR: Valider les deux accès avant le test réseau ; ne jamais sauvegarder une saisie refusée.
+ */
 static void essayer(void)
 {
     s_saisie_refusee = false;

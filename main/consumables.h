@@ -1,3 +1,7 @@
+/* consumables.h: Consumables lifecycle and reminders interface.
+ * FR: Interface de suivi et rappel des consommables.
+ * Keep this header focused on the contracts used by other modules.
+ */
 /*
  * Consommables : capteur Dexcom G7 (suivi dans sensor_session.c) et site de perfusion / catheter.
  *

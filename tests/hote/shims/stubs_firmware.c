@@ -1,3 +1,7 @@
+/* Minimal firmware stubs for isolated consumables tests.
+ * FR: Fonctions fictives pour les tests isolés de consommables.
+ * Tests only: this is not hardware logic shipped in the firmware.
+ */
 /* Bouchons des modules non testes ici (reseau, microSD) : aucune ecriture reelle. */
 /* EN: Stub unrelated firmware dependencies during targeted module tests.
  * FR: Remplace les services non testés par des fonctions factices.

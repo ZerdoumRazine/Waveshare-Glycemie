@@ -1,4 +1,10 @@
 /*
+ * stock.c: Consumable stock counting and one-time decrements.
+ * FR: Comptage des consommables et décréments uniques.
+ * Design note: Repeated UI events must not consume the same item twice.
+ */
+
+/*
  * Tracks local stock levels and signals low quantities without creating negative values.
  * Suit les consommables en stock et prévient quand ils deviennent rares.
  */

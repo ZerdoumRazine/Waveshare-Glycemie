@@ -1,4 +1,10 @@
 /*
+ * alerts.c: Supplemental glucose alerts and acknowledgement timing.
+ * FR: Alertes complémentaires et acquittements.
+ * Design note: This display does not replace official Dexcom alarms.
+ */
+
+/*
  * Schedules alert priorities and repetitions; acknowledgements are stored separately from readings.
  * Planifie les priorités, répétitions et acquittements des alertes.
  */

@@ -1,4 +1,10 @@
 /*
+ * glucose_math.c: Pure glucose statistics and conversion helpers.
+ * FR: Calculs et statistiques glycémiques sans matériel.
+ * Design note: Side-effect-free calculations make boundary cases easier to test.
+ */
+
+/*
  * Provides pure, host-testable calculations for reading age, freshness, cadence and delta.
  * Rassemble les calculs testables de fraîcheur, cadence et variation.
  */

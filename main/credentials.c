@@ -1,4 +1,18 @@
 /*
+ * credentials.c: Wi-Fi/Dexcom settings, trial changes and persistence.
+ * FR: Accès Wi-Fi/Dexcom, essais et sauvegarde.
+ * Design note: Do not overwrite working credentials until the replacement passes verification.
+ */
+
+/*
+ * credentials.c: Manages validated Wi-Fi and Dexcom settings, trial changes and NVS storage.
+ * FR: Gère les accès Wi-Fi et Dexcom, les essais et le stockage NVS.
+ * Design decision: Never replace working credentials until the replacement was tested and confirmed.
+ *
+ * Experimental supplementary display; official monitoring remains authoritative.
+ */
+
+/*
  * Manages saved Wi-Fi/Dexcom access separately from unconfirmed trial settings.
  * Sépare les identifiants enregistrés des nouveaux accès non confirmés.
  * This is a supplementary display: official Dexcom alarms remain authoritative.
@@ -85,6 +99,9 @@ static esp_err_t persist(void)
 }
 
 /* Restore saved settings without reapplying obsolete defaults when a valid record exists. */
+/* Load the saved configuration first; fall back to optional build defaults only when no saved block exists.
+ * FR: Relire les accès enregistrés avant d'utiliser d'éventuelles valeurs de compilation.
+ */
 esp_err_t credentials_init(void)
 {
     if (s_mutex == NULL) {
@@ -291,6 +308,9 @@ void credentials_trial_cancel(void)
 }
 
 /* Store an explicitly empty record before removing auxiliary account state. */
+/* Persist an explicitly empty configuration before removing the old Dexcom guard state.
+ * FR: Enregistrer une configuration vide avant de nettoyer l'ancien verrou Dexcom.
+ */
 esp_err_t credentials_clear(void)
 {
     /* Supprimer en premier les identifiants du stockage NVS. Le verrou

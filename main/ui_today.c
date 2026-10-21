@@ -1,4 +1,10 @@
 /*
+ * ui_today.c: Daily statistics starting at local midnight.
+ * FR: Statistiques quotidiennes depuis minuit.
+ * Design note: Show incomplete coverage honestly in daily summaries.
+ */
+
+/*
  * Calculates and renders today's statistics using local midnight and available readings.
  * Calcule les statistiques du jour à partir de minuit local.
  */

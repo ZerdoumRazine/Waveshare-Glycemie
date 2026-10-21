@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Checks repository integrity and release safety rules.
+# FR: Contrôle la structure et la confidentialité du dépôt.
+# Design note: Catch unintentional binaries and secrets before a public release.
 # EN: Check tracked paths, third-party notices and public-source invariants.
 # FR: Vérifie les chemins suivis, les licences et les protections du dépôt.
 r"""Controles du depot avant publication : coherence du projet et absence de donnees privees.

@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Organizes and validates speech clips for the device.
+# FR: Organise et vérifie les annonces sonores.
+# Design note: Keep generated audio separate from code copyright and user data.
 # EN: Processes a legacy Windows voice into short PCM clips for local use only.
 # FR: Prépare les anciens extraits PCM Windows sans autoriser leur redistribution.
 """Assemble les extraits vocaux WAV en un bloc PCM integre au firmware.

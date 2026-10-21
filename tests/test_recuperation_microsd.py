@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Checks serial microSD recovery against damaged transfers.
+# FR: Vérifie les récupérations microSD incomplètes.
+# These tests use simulations; they do not connect to a patient's device.
 # EN: Validate CRC and interrupted-transfer handling with artificial microSD data.
 # FR: Vérifie CRC et transmissions interrompues sur des données simulées.
 """Controles de la recuperation de la microSD par le cable (tools/recuperer_microsd.py).

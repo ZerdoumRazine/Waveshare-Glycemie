@@ -1,3 +1,7 @@
+/* dexcom_share.h: Read-only Dexcom Share client API.
+ * FR: API en lecture seule du client Dexcom Share.
+ * The declarations below are shared with other firmware modules.
+ */
 /*
  * Client Dexcom Share natif ESP-IDF (esp_http_client + TLS verifie par le bundle de certificats).
  *

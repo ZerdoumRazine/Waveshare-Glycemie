@@ -1,4 +1,18 @@
 /*
+ * ui_settings.c: Settings controls and connection confirmation.
+ * FR: Réglages et confirmations de connexion.
+ * Design note: Never announce successful credential removal after an NVS failure.
+ */
+
+/*
+ * ui_settings.c: Builds settings controls and connection confirmation dialogs.
+ * FR: Construit les réglages et les confirmations de connexion.
+ * Design decision: A failed deletion must not be reported as successful.
+ *
+ * Experimental supplementary display; official monitoring remains authoritative.
+ */
+
+/*
  * Presents user options and the touchscreen connection wizard without printing passwords.
  * Affiche les réglages et l'assistant de connexion sans révéler les mots de passe.
  */
@@ -121,6 +135,9 @@ static void on_effacer_annuler(lv_event_t *e)
 }
 
 /* Confirm that NVS accepted an empty account before restarting the device. */
+/* Only restart the device when credential removal has actually succeeded.
+ * FR: Ne redémarrer qu'après confirmation effective de l'effacement des accès.
+ */
 static void on_effacer_confirmer(lv_event_t *e)
 {
     (void)e;

@@ -1,3 +1,7 @@
+/* audio_out.h: Audio playback settings and alert tone API.
+ * FR: API audio, volume et bips d'alerte.
+ * Keep this header focused on the contracts used by other modules.
+ */
 /*
  * Sortie audio : codec ES8311 + I2S + amplificateur de la carte, exclusivement via le BSP Waveshare
  * (bsp_audio_codec_speaker_init) et esp_codec_dev. Aucune broche definie ici.

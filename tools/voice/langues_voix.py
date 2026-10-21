@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Defines voice phrases and spoken number forms for six languages.
+# FR: Définit les phrases et nombres parlés dans six langues.
+# Design note: The WAV file names must match the firmware's expected clips.
 # EN: Defines fixed spoken phrases and grammar-aware number words in six languages.
 # FR: Contient les phrases fixes et les nombres prononcés dans six langues.
 """Textes de la banque vocale, langue par langue (francais, anglais, espagnol, allemand, italien, portugais).

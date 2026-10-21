@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Assembles delivery resources and verifies their contents.
+# FR: Assemble et contrôle les ressources distribuées.
+# Design note: Only documented public resources should enter a release.
 # EN: Builds the deliverable folders from clean sources, not from a personal device backup.
 # FR: Prépare le paquet complet sans reprendre une sauvegarde personnelle.
 r"""Assemble le dossier a remettre : sources, application Windows, installation, microSD, tutoriels.

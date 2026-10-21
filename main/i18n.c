@@ -1,4 +1,10 @@
 /*
+ * i18n.c: Six-language interface text catalog.
+ * FR: Catalogue des textes d'interface en six langues.
+ * Design note: String IDs must remain stable even when translations change.
+ */
+
+/*
  * Maps stable text IDs to French, English, Spanish, German, Italian and Portuguese.
  * Associe des identifiants de texte aux six langues de l'interface.
  */

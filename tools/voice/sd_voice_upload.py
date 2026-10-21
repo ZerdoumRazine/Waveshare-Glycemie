@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Copies speech files to the microSD over USB serial.
+# FR: Copie les voix par USB-série sur la microSD.
+# Design note: Verification-only mode must not create or overwrite files.
 # EN: Copies existing WAV banks over USB with CRC32 checks and a read-only verification mode.
 # FR: Copie les voix par USB avec CRC32 et vérification sans écriture.
 """Copie la banque vocale (tools/voice/bank) sur la microSD du Waveshare par le cable USB-serie, sans retirer la

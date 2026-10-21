@@ -1,4 +1,10 @@
 /*
+ * audio_out.c: Audio playback and alert tones.
+ * FR: Lecture audio et bips d'alerte.
+ * Design note: The audible beep fallback works without prerecorded WAVs.
+ */
+
+/*
  * Owns the codec and serialises tones, alerts and spoken clips through one worker task.
  * Pilote le codec et sérialise les sons dans une tâche dédiée.
  */

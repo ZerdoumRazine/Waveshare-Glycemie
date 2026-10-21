@@ -1,3 +1,7 @@
+/* touch_diag.h: Touch diagnostics and visual hit-area markers.
+ * FR: Diagnostics tactiles et repères de zones.
+ * The declarations below are shared with other firmware modules.
+ */
 /*
  * Diagnostic du tactile (developpement) : GT911 -> coordonnees brutes -> miroir/inversion (esp_lcd_touch)
  * -> LVGL -> objet touche -> clic. Branche par l'API officielle esp_lv_adapter_set_touch_callbacks :

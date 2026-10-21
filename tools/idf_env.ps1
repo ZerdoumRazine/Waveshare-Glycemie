@@ -1,3 +1,6 @@
+# Loads the ESP-IDF build environment.
+# FR: Charge l'environnement ESP-IDF.
+# Design note: Keep the toolchain separate from released source files.
 # EN: Locate and activate the exact ESP-IDF toolchain needed by this project.
 # FR: Active la chaîne d'outils ESP-IDF utilisée par le projet.
 # Environnement ESP-IDF v5.5.5 pour glycemie_display.

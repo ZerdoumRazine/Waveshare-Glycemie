@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Tests that voice verification never writes to microSD.
+# FR: Vérifie que le contrôle vocal n'écrit pas sur microSD.
+# These tests use simulations; they do not connect to a patient's device.
 # EN: Test read-only verification and audio transfer using a simulated serial device.
 # FR: Teste la vérification sans écriture et les transferts audio simulés.
 """Controles de l'outil de copie de la banque vocale (tools/voice/sd_voice_upload.py).

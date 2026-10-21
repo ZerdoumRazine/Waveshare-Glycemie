@@ -1,4 +1,10 @@
 /*
+ * trend_arrow.c: Maps Dexcom trend states to arrow rendering.
+ * FR: Convertit les tendances Dexcom en flèches.
+ * Design note: Unknown trend is not the same as a stable trend.
+ */
+
+/*
  * Draws a trend icon and halo using LVGL primitives shared with the home view.
  * Dessine l'icône de tendance et son halo lumineux.
  */

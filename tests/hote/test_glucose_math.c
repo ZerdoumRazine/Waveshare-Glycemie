@@ -1,3 +1,7 @@
+/* Covers glucose arithmetic and its boundary values.
+ * FR: Teste les calculs glycémiques et leurs limites.
+ * Host tests use simulated dependencies, never personal readings.
+ */
 /*
  * Tests du calcul glycemique reel (main/glucose_math.c et main/app_state.c compiles tels quels) :
  * age et fraicheur, cadence, variation entre mesures, prochaine mesure, noms de tendance, historique.

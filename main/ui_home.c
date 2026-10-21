@@ -1,4 +1,10 @@
 /*
+ * ui_home.c: Home page showing the latest glucose value and its age.
+ * FR: Accueil affichant la glycémie et son ancienneté.
+ * Design note: A large number must not hide that a reading is stale.
+ */
+
+/*
  * Keeps the glucose value visually dominant and indicates trend and data freshness.
  * Met en avant la valeur, sa tendance et l'ancienneté de la donnée.
  */

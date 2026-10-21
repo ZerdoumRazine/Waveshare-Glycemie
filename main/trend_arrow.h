@@ -1,3 +1,7 @@
+/* trend_arrow.h: Trend arrow rendering and mapping interface.
+ * FR: Interface d'affichage des flèches de tendance.
+ * The declarations below are shared with other firmware modules.
+ */
 /*
  * Icone de tendance 2.5D dessinee avec les primitives LVGL (lisible a distance, aucune image ni police requise).
  */

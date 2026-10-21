@@ -1,3 +1,7 @@
+/* voice_cmd.h: Experimental voice-command recognition API.
+ * FR: API de reconnaissance vocale expérimentale.
+ * Shared declarations for the implementation.
+ */
 /*
  * Commandes vocales LOCALES avec les micros ES7210 de la carte (ESP-SR 2.5.3 d'Espressif, aucune reconnaissance dans
  * le cloud, aucune connexion).

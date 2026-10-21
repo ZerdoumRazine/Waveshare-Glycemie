@@ -1,3 +1,7 @@
+/* Host substitutes for FreeRTOS synchronization.
+ * FR: Substituts de synchronisation FreeRTOS.
+ * Used exclusively by hardware-independent regression tests.
+ */
 /* Mutex sans effet : les tests sont mono-tache. */
 /* EN: Simulate the mutex interface without real scheduling.
  * FR: Simule les mutex sans ordonnanceur matériel.
