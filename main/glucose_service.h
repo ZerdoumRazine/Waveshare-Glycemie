@@ -1,3 +1,7 @@
+/* glucose_service.h: Lifecycle and freshness of glucose requests.
+ * FR: Cycle de vie et ancienneté des mesures.
+ * The declarations below are shared with other firmware modules.
+ */
 /*
  * Service glycemie : planifie les lectures Dexcom Share, gere session, erreurs et delais,
  * et maintient un cache des 24 dernieres heures (lectures incrementales, sans reauthentification).
