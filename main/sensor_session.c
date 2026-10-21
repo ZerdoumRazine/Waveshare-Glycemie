@@ -60,6 +60,7 @@ static esp_err_t persist(void)
 }
 
 /* Rappels deja depasses a l'enregistrement : marques comme faits (pas de rafale de rappels perimes) */
+/* Avoid generating a burst of expired reminders after a clock adjustment. */
 static void mark_past_reminders(int64_t now_s)
 {
     s_done_mask = 0;
@@ -121,7 +122,6 @@ esp_err_t sensor_session_start(int64_t start_s, int64_t now_s)
 {
     xSemaphoreTake(s_mutex, portMAX_DELAY);
     s_start_s = start_s;
-/* Avoid generating a burst of expired reminders after a clock adjustment. */
     mark_past_reminders(now_s);
     esp_err_t err = persist();
     xSemaphoreGive(s_mutex);
@@ -145,7 +145,6 @@ esp_err_t sensor_session_adjust(int64_t delta_s, int64_t now_s)
         start = now_s - (SENSOR_SESSION_S + SENSOR_GRACE_S);
     }
     s_start_s = start;
-/* Avoid generating a burst of expired reminders after a clock adjustment. */
     mark_past_reminders(now_s);
     esp_err_t err = persist();
     xSemaphoreGive(s_mutex);
@@ -192,7 +191,6 @@ void sensor_session_mark_reminder_done(int reminder)
     }
     if (mask != s_done_mask) {
         s_done_mask = mask;
-/* Write session changes to NVS only after a user-confirmed update. */
         persist();
         ESP_LOGI(TAG, "Rappel %s du capteur signale : memorise en NVS (rappels 0x%02x)",
                  reminder == SENSOR_REMIND_24H ? "24 h" : "2 h", mask);
@@ -204,7 +202,6 @@ void sensor_session_reset_reminders(void)
 {
     xSemaphoreTake(s_mutex, portMAX_DELAY);
     s_done_mask = 0;
-/* Write session changes to NVS only after a user-confirmed update. */
     persist();
     xSemaphoreGive(s_mutex);
 }
