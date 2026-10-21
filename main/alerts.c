@@ -122,6 +122,7 @@ static void build_view(alert_type_t type, int value, alert_view_t *v)
 }
 
 /* type : type sonore (pour l'alerte de test simulee, le type simule) ; test : trace marquee comme test */
+/* Choose the matching audio pattern; a simulated alert is not a live glucose alarm. */
 static void sound(alert_type_t type, int value, const settings_t *cfg, int repeats, bool test)
 {
     const bool may_sound = cfg->alerts || (type == ALERT_VERY_LOW && cfg->very_low_always);
@@ -276,7 +277,6 @@ static void alerts_task(void *arg)
             const bool allowed = c->max_repeats == 0 || slot->repeats < c->max_repeats;
             if (due && allowed && !audio_out_busy()) {
                 const bool test = current == ALERT_TEST;
-/* Choose the matching audio pattern; a simulated alert is not a live glucose alarm. */
                 sound(test ? s_test_as : current, value[current], &cfg, slot->repeats, test);
                 slot->last_sound_us = now_us;
                 slot->repeats++;
@@ -286,7 +286,6 @@ static void alerts_task(void *arg)
             }
         }
         const int presented_value = presented == ALERT_NONE ? -1 : value[presented];
-/* Translate the current alert into the title, value and buttons seen on screen. */
         build_view(current, current == ALERT_NONE ? 0 : value[current], &s_view);
         s_view.ongoing = ongoing;
         s_view.ongoing_test = ongoing_test;
@@ -346,7 +345,6 @@ void alerts_acknowledge(void)
         if (t != ALERT_TEST) {
             sd_storage_log_event("Alerte acquittee : %s", tr_fr(k_cfg[t].title_id));
         }
-/* Translate the current alert into the title, value and buttons seen on screen. */
         build_view(ALERT_NONE, 0, &s_view);
     }
     xSemaphoreGive(s_mutex);
@@ -379,7 +377,6 @@ void alerts_snooze(int minutes)
         if (t != ALERT_TEST) {
             sd_storage_log_event("Alerte reportee %d min : %s", minutes, tr_fr(k_cfg[t].title_id));
         }
-/* Translate the current alert into the title, value and buttons seen on screen. */
         build_view(ALERT_NONE, 0, &s_view);
     }
     xSemaphoreGive(s_mutex);
@@ -399,7 +396,6 @@ void alerts_test_sound(alert_type_t type, int value)
     settings_t cfg;
     settings_get(&cfg);
     cfg.alerts = true;
-/* Choose the matching audio pattern; a simulated alert is not a live glucose alarm. */
     sound(type, value, &cfg, 0, true);
 }
 
