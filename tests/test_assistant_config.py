@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Simulates serial configuration and credential failures.
+# FR: Simule la configuration série et ses échecs.
+# These tests use simulations; they do not connect to a patient's device.
 # EN: Simulate USB setup to prove passwords never appear in logs and failed trials are reversible.
 # FR: Simule l'assistant USB pour vérifier les secrets et l'annulation des essais.
 """Controles de l'assistant de configuration par USB (tools/assistant_config.py).
