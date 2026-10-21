@@ -1,3 +1,7 @@
+/* Template for optional local credentials; never put real passwords in Git.
+ * FR: Modèle d'accès locaux : ne jamais versionner de vrais mots de passe.
+ * Test and configuration interface only; no live patient data is included.
+ */
 /*
  * MODELE - a copier en <racine du projet>/private/device_secrets.h puis a completer.
  * Sous Windows :  copy main\device_secrets.example.h private\device_secrets.h
