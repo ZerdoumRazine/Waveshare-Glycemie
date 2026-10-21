@@ -1,3 +1,7 @@
+/* sensor_session.h: Sensor insertion and replacement date API.
+ * FR: Dates de pose et renouvellement du capteur.
+ * The declarations below are shared with other firmware modules.
+ */
 /*
  * Suivi LOCAL de la duree du capteur Dexcom G7 (aucune source automatique fiable disponible) :
  * l'heure de pose est enregistree en NVS par NOUVEAU CAPTEUR (bouton ou voix), puis
