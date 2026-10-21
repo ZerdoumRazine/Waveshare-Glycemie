@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Builds source archives from a controlled Git snapshot.
+# FR: Construit des archives depuis un état Git contrôlé.
+# Design note: Never archive the personal working directory indiscriminately.
 # EN: Exports only tracked Git files and rejects unsafe publication artefacts.
 # FR: Archive uniquement les fichiers Git suivis et refuse les ressources privées.
 r"""Fabrique et controle l'archive publique du depot, a partir de ce que Git suit reellement.
