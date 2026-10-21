@@ -135,6 +135,9 @@ static void on_effacer_annuler(lv_event_t *e)
 }
 
 /* Confirm that NVS accepted an empty account before restarting the device. */
+/* Only restart the device when credential removal has actually succeeded.
+ * FR: Ne redémarrer qu'après confirmation effective de l'effacement des accès.
+ */
 static void on_effacer_confirmer(lv_event_t *e)
 {
     (void)e;
