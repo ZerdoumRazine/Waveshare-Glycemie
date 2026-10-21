@@ -271,6 +271,7 @@ static int64_t local_midnight_ms(const struct tm *now_tm)
 }
 
 /* Statistiques depuis minuit et etat de chaque creneau de 15 min */
+/* Use only available samples; incomplete coverage must remain visible. */
 static void compute_today(const ui_data_t *d, int64_t midnight_ms, today_t *t, uint8_t *slots)
 {
     memset(t, 0, sizeof(*t));
@@ -367,7 +368,6 @@ void ui_today_update(const ui_data_t *d, bool force)
 
     today_t t;
     uint8_t slots[SLOTS];
-/* Use only available samples; incomplete coverage must remain visible. */
     compute_today(d, local_midnight_ms(&d->now_tm), &t, slots);
     const int32_t now_pos = (int32_t)((d->now_tm.tm_hour * 60 + d->now_tm.tm_min) * 1000 / (24 * 60));
     if (memcmp(slots, s_slots, sizeof(slots)) != 0 || now_pos != s_now_pos) {
