@@ -525,6 +525,7 @@ static FILE *open_csv(const char *path)
 
 /* Ecrit une seule fois chaque mesure plus recente que la derniere ligne du CSV, de la plus ancienne a la plus
  * recente. Un seul fclose (vidage et mise a jour de la FAT) par lot : environ une ecriture toutes les 5 minutes. */
+/* Merge delayed readings with the last stored day and avoid duplicate CSV rows. */
 static void sync_history(void)
 {
     xSemaphoreTake(s_snapshot_mutex, portMAX_DELAY);
@@ -1000,13 +1001,11 @@ static void sd_task(void *arg)
         const int64_t now_us = esp_timer_get_time();
         if (s_req_repair) {
             s_req_repair = false;
-/* Repair known CSV defects conservatively; keep a separate backup of the card. */
             repair_history();
             s_snapshot_pending = s_mounted;
         }
         if (s_mounted) {
             if (s_snapshot_pending) {
-/* Merge delayed readings with the last stored day and avoid duplicate CSV rows. */
                 sync_history();
             }
             if (s_mounted && !write_events()) {
@@ -1031,7 +1030,6 @@ static void sd_task(void *arg)
 
         if (s_req_check) {
             s_req_check = false;
-/* Report consistency errors rather than assuming that old data can be discarded. */
             check_card();
         }
     }
