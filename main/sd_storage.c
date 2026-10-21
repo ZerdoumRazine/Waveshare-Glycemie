@@ -1,4 +1,12 @@
 /*
+ * sd_storage.c: Handles the microSD history files and supporting storage operations.
+ * FR: Gère l'historique microSD et les opérations de stockage.
+ * Design decision: Never automatically format a card containing user history.
+ *
+ * Experimental supplementary display; official monitoring remains authoritative.
+ */
+
+/*
  * Mounts FAT32 microSD storage and manages append-only glucose history with repair tools.
  * Gère la microSD FAT32, l'historique CSV et les contrôles de cohérence.
  */
