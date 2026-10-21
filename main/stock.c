@@ -43,6 +43,7 @@ static int clamp_qty(int value)
 }
 
 /* Verrou pris */
+/* Persist the item that changed without resetting other stock counters. */
 static esp_err_t persist(stock_item_t item)
 {
     s_revision++;
@@ -68,6 +69,7 @@ static esp_err_t persist(stock_item_t item)
 }
 
 /* Verrou pris : evenement local si le stock renseigne vient de passer au niveau faible */
+/* Raise a stock reminder separately from medical glucose alerts. */
 static void push_low_event(stock_item_t item)
 {
     if (s_qty[item] == STOCK_UNKNOWN || s_qty[item] > s_low[item]) {
@@ -148,7 +150,6 @@ esp_err_t stock_set(stock_item_t item, int value)
     const bool changed = s_qty[item] != value;
     if (changed) {
         s_qty[item] = value;
-/* Raise a stock reminder separately from medical glucose alerts. */
         push_low_event(item);
         err = persist(item);
     }
@@ -195,10 +196,8 @@ bool stock_consume(stock_item_t item, int64_t change_s)
         if (before > 0) {
             s_qty[item] = before - 1;
             consumed = true;
-/* Raise a stock reminder separately from medical glucose alerts. */
             push_low_event(item);
         }
-/* Persist the item that changed without resetting other stock counters. */
         persist(item);
     }
     const int after = s_qty[item];
@@ -245,7 +244,6 @@ esp_err_t stock_set_low_threshold(stock_item_t item, int value)
     esp_err_t err = ESP_OK;
     if (s_low[item] != value) {
         s_low[item] = value;
-/* Raise a stock reminder separately from medical glucose alerts. */
         push_low_event(item);
         err = persist(item);
     }
