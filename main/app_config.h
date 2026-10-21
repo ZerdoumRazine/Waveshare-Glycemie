@@ -2,6 +2,10 @@
  * glycemie_display - constantes de l'application.
  * Afficheur familial complementaire : ce n'est pas un dispositif medical.
  */
+/* Public interface / Interface publique
+ * EN: Shared timing, network, history and freshness constants.
+ * FR: Constantes de délai, réseau, historique et fraîcheur.
+ */
 #pragma once
 
 #define GLY_APP_NAME                "glycemie_display"

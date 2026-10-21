@@ -1,6 +1,10 @@
 /*
  * Services reseau : heure (SNTP, fuseau France), test DNS + HTTPS neutre, RSSI.
  */
+/* Public interface / Interface publique
+ * EN: Internet probing and clock synchronization service.
+ * FR: Vérification d'Internet et synchronisation de l'horloge.
+ */
 #pragma once
 
 #include <stdbool.h>

@@ -3,6 +3,10 @@
  * Les taches publient sous mutex ; l'interface lit une copie une fois par seconde.
  * L'historique (jusqu'a 24 h) est stocke a part et n'est recopie que lorsqu'il change.
  */
+/* Public interface / Interface publique
+ * EN: Thread-safe snapshots of link state, glucose data and history.
+ * FR: État partagé des liaisons et des mesures, protégé entre tâches.
+ */
 #pragma once
 
 #include <stdbool.h>

@@ -10,6 +10,10 @@
  * La langue est enregistree dans la NVS (espace "settings", cle "lang" : un seul octet,
  * separe du bloc "v1" des autres reglages qui n'est donc jamais invalide).
  */
+/* Public interface / Interface publique
+ * EN: Language IDs and text lookup across the six supported UI languages.
+ * FR: Identifiants de traduction des six langues.
+ */
 #pragma once
 
 #include <stdbool.h>

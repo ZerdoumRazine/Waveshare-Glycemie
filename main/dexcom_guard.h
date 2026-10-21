@@ -9,6 +9,10 @@
  * - Seul l'etat VALIDE autorise les connexions automatiques (redemarrage, session expiree).
  * Le verrou est lie a une empreinte des identifiants : de nouveaux identifiants repartent de INCONNU.
  */
+/* Public interface / Interface publique
+ * EN: Saved authentication decisions prevent repeated attempts against a blocked account.
+ * FR: Contrôle des tentatives d'authentification Dexcom.
+ */
 #pragma once
 
 #include "esp_err.h"

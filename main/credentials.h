@@ -11,6 +11,10 @@
  * - Compatibilite : si la NVS est vide et que le firmware a ete compile avec private/device_secrets.h,
  *   ces valeurs servent de depart (l'appareil d'origine continue de fonctionner sans rien saisir).
  */
+/* Public interface / Interface publique
+ * EN: Read, mask, trial, confirm and erase user credentials with explicit error results.
+ * FR: Lecture, essai, validation et effacement contrôlé des accès.
+ */
 #pragma once
 
 #include <stdbool.h>

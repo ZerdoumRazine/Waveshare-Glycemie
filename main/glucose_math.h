@@ -3,6 +3,10 @@
  * age et fraicheur, delta entre mesures consecutives, cadence reelle, prochaine mesure, statistiques.
  * Les tableaux sont tries de la mesure la plus recente a la plus ancienne.
  */
+/* Public interface / Interface publique
+ * EN: Pure calculations of freshness and deltas; safe for host tests.
+ * FR: Calculs purs de fraîcheur et de variation.
+ */
 #pragma once
 
 #include <stdbool.h>

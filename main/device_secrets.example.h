@@ -6,6 +6,10 @@
  * dans un journal. Les valeurs sont compilees dans le firmware : ne jamais publier
  * non plus le dossier build/ ni les binaires produits.
  */
+/* Public interface / Interface publique
+ * EN: Example values for developers only; the public build is configured on the device.
+ * FR: Exemple réservé aux développeurs ; la version publique se configure à l'écran.
+ */
 #pragma once
 
 #define GLY_WIFI_SSID        ""       /* reseau Wi-Fi 2,4 GHz */
