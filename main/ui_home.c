@@ -394,6 +394,7 @@ static void update_header(const ui_data_t *d)
 }
 
 /* Anneau : progression vers la prochaine mesure (a jour), orange en RETARD, rouge plein si DONNEES ANCIENNES */
+/* Use colors and halo intensity as presentation only, never as a treatment recommendation. */
 static void update_ring(const ui_data_t *d)
 {
     if (d->count == 0 || d->age_s < 0) {
@@ -419,7 +420,6 @@ static void update_ring(const ui_data_t *d)
 static void update_hero(const ui_data_t *d)
 {
     char buf[48];
-/* Use colors and halo intensity as presentation only, never as a treatment recommendation. */
     update_ring(d);
     if (d->count == 0) {
         set_value_text("---");
@@ -429,7 +429,6 @@ static void update_hero(const ui_data_t *d)
         set_mood(UI_G_STALE);
         set_value_opa(LV_OPA_60);
         s_fast_trend = false;
-/* Show the trend reported by Dexcom without extrapolating a new medical prediction. */
         set_arrow(TREND_NONE, UI_G_STALE);
         set_breathing(false);
         ui_set_text(s_delta, "");
@@ -465,7 +464,6 @@ static void update_hero(const ui_data_t *d)
         ui_set_text_color(s_note, UI_G_CRIT);
         return;
     }
-/* Show the trend reported by Dexcom without extrapolating a new medical prediction. */
     set_arrow(p->trend, value_color);
     set_breathing(p->trend >= TREND_DOUBLE_UP && p->trend <= TREND_DOUBLE_DOWN && home_visible());
     if (d->delta_ok) {
@@ -493,6 +491,5 @@ void ui_home_update(const ui_data_t *d, bool force)
         return;
     }
     update_header(d);
-/* Update the central glucose value together with age and trend context. */
     update_hero(d);
 }
