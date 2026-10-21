@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Compiles and runs hardware-independent C regression tests.
+# FR: Compile et lance les tests C sans matériel.
+# Design note: Simulated components are not a substitute for hardware validation.
 # EN: Compile actual firmware C modules against host stubs before executing their tests.
 # FR: Compile les modules C réels avec des remplacements pour les tester sur PC.
 r"""Compile et execute les tests unitaires du firmware sur le PC (sans carte ESP32).
