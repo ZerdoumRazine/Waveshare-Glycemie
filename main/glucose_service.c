@@ -789,6 +789,9 @@ static void test_task(void *arg)
     vTaskDelete(NULL);
 }
 
+/* Perform the connection check without replacing saved credentials prematurely.
+ * FR: Tester la connexion sans remplacer prématurément les accès enregistrés.
+ */
 void glucose_service_test_request(void)
 {
     if (s_test == GLY_TEST_EN_COURS) {
