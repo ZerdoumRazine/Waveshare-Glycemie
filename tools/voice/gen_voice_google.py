@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Generates optional language recordings with Google Cloud TTS.
+# FR: Génère les annonces via Google Cloud TTS.
+# Design note: Generation may incur API fees; avoid running it accidentally.
 # EN: Builds spoken WAV banks locally from project phrases using Google Cloud TTS.
 # FR: Génère des banques WAV à partir des textes du projet avec Google Cloud.
 """Banque vocale Google Cloud Text-to-Speech pour glycemie_display, en six langues.
