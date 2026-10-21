@@ -1,3 +1,7 @@
+/* app_state.h: Application-wide glucose and connection snapshots.
+ * FR: États partagés des mesures et connexions.
+ * Keep this header focused on the contracts used by other modules.
+ */
 /*
  * Etat partage entre les taches (reseau, Dexcom, stockage, audio, alertes) et l'interface.
  * Les taches publient sous mutex ; l'interface lit une copie une fois par seconde.
