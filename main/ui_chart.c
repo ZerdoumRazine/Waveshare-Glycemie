@@ -1,4 +1,10 @@
 /*
+ * ui_chart.c: Chart rendering for the selected glucose time window.
+ * FR: Tracé de la courbe selon la période.
+ * Design note: Missing readings must not be presented as measured values.
+ */
+
+/*
  * Draws historical glucose curves with touch exploration and variable time windows.
  * Trace les courbes de glycémie et gère l'exploration tactile.
  */
