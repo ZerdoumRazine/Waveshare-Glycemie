@@ -146,7 +146,6 @@ void ui_chart_create(ui_chart_t *c, lv_obj_t *parent, int32_t x, int32_t y, int3
         lv_obj_set_pos(c->range_label, x + w + 8, y - 4);
     }
 
-/* Position target bands and glucose scale consistently across time ranges. */
     layout_references(c);
 }
 
@@ -252,6 +251,7 @@ static void explore_select(ui_chart_t *c, int n)
 }
 
 /* Mesure reelle la plus proche horizontalement du doigt */
+/* Find the closest historical point to a touch rather than inventing an interpolated reading. */
 static void explore_select_at(ui_chart_t *c, int32_t x)
 {
     int best = -1;
@@ -298,7 +298,6 @@ static void explore_event(lv_event_t *e)
     lv_obj_get_coords(c->box, &area);
     c->last_move_ms = lv_tick_get();
     c->release_ms = 0;
-/* Find the closest historical point to a touch rather than inventing an interpolated reading. */
     explore_select_at(c, point.x - area.x1);
     if (code == LV_EVENT_PRESSED && c->selected >= 0) {
         const int hist_index = c->pt_index[c->selected];
@@ -403,7 +402,6 @@ void ui_chart_update(ui_chart_t *c, const ui_data_t *d, int hours)
         }
     }
     c->y_max = y_max;
-/* Position target bands and glucose scale consistently across time ranges. */
     layout_references(c);
 
     lv_chart_set_point_count(c->chart, (uint32_t)slots);
