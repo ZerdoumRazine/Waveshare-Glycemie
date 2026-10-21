@@ -177,6 +177,7 @@ static void on_afficher_mdp(lv_event_t *e)
 /* Les acces saisis sont ESSAYES : les precedents restent enregistres jusqu'a la confirmation. */
 static bool s_saisie_refusee; /* ne jamais afficher un ancien test comme reussi */
 
+/* Reject invalid fields and test the temporary account before offering to save it. */
 static void essayer(void)
 {
     s_saisie_refusee = false;
@@ -230,7 +231,6 @@ static void on_reseau(lv_event_t *e)
 static void on_rescan(lv_event_t *e)
 {
     (void)e;
-/* Search nearby networks in a worker task so the keyboard remains responsive. */
     lancer_scan();
     afficher_etape(ETAPE_WIFI);
 }
@@ -279,7 +279,6 @@ static void on_suivant(lv_event_t *e)
     (void)e;
     switch (s_etape) {
     case ETAPE_LANGUE:
-/* Search nearby networks in a worker task so the keyboard remains responsive. */
         lancer_scan();
         afficher_etape(ETAPE_WIFI);
         break;
@@ -306,7 +305,6 @@ static void on_suivant(lv_event_t *e)
         }
         if (s_user[0] != '\0' && s_mdp_dex[0] != '\0') {
             afficher_etape(ETAPE_VERIF);
-/* Reject invalid fields and test the temporary account before offering to save it. */
             essayer();
         }
         break;
@@ -324,7 +322,6 @@ static void on_suivant(lv_event_t *e)
                 ui_set_text_color(s_verif_txt, UI_G_CRIT);
             }
         } else {
-/* Reject invalid fields and test the temporary account before offering to save it. */
             essayer(); /* bouton "Réessayer" */
             afficher_etape(ETAPE_VERIF);
         }
