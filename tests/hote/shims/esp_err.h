@@ -1,3 +1,7 @@
+/* Mock ESP-IDF error codes used by host tests.
+ * FR: Codes d'erreur ESP-IDF simulés pour les tests.
+ * Test and configuration interface only; no live patient data is included.
+ */
 /* Remplacant minimal d'esp_err.h pour les tests sur PC (aucun ESP-IDF requis). */
 /* EN: Subset of ESP-IDF error codes required by isolated tests.
  * FR: Codes d'erreur nécessaires aux tests simulés.
