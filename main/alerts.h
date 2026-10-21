@@ -1,3 +1,7 @@
+/* alerts.h: Public controls and types for supplementary alerts.
+ * FR: Types et commandes publiques des alertes.
+ * Keep this header focused on the contracts used by other modules.
+ */
 /*
  * Gestionnaire d'alertes : glycemie tres basse / basse / elevee / tres elevee, absence de donnees,
  * rappels du capteur. Anti-repetition : acquittement, rappel differe (snooze), repetitions limitees,
