@@ -1,3 +1,7 @@
+/* net_services.h: Network time and service initialization declarations.
+ * FR: Déclarations des services réseau et horaires.
+ * The declarations below are shared with other firmware modules.
+ */
 /*
  * Services reseau : heure (SNTP, fuseau France), test DNS + HTTPS neutre, RSSI.
  */
