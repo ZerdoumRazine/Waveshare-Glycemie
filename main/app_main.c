@@ -99,6 +99,7 @@ static void play_test_voice(int volume_pct)
 }
 
 /* Interface figee : etat des taches utiles (le watchdog de taches produira ensuite le core dump) */
+/* Record display stalls so a UI fault can be diagnosed separately from glucose polling. */
 static void report_ui_freeze(int64_t age_ms)
 {
     static const char *const k_tasks[] = {"lvgl", "swdraw", "alertes", "audio", "reglages", "console", "glycemie",
@@ -710,7 +711,6 @@ void app_main(void)
         if (display != NULL) {
             const int64_t ui_age_ms = ui_heartbeat_age_ms();
             if (ui_age_ms > 5000 && (ui_freeze_reported_ms == 0 || ui_age_ms - ui_freeze_reported_ms >= 20000)) {
-/* Record display stalls so a UI fault can be diagnosed separately from glucose polling. */
                 report_ui_freeze(ui_age_ms);
                 ui_freeze_reported_ms = ui_age_ms;
             } else if (ui_age_ms < 3000 && ui_freeze_reported_ms != 0) {
