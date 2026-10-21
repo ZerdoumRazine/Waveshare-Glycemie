@@ -1,4 +1,10 @@
 /*
+ * app_main.c: Startup of the ESP32-P4 and service initialization.
+ * FR: Démarrage ESP32-P4 et initialisation des services.
+ * Design note: Load persistent settings before starting the user interface.
+ */
+
+/*
  * app_main.c: Initializes the ESP32-P4 and starts services in dependency order.
  * FR: Initialise l'ESP32-P4 et démarre les services dans l'ordre requis.
  * Design decision: Persistent settings must be loaded before the interface is started.
