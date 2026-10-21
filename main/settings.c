@@ -197,9 +197,7 @@ esp_err_t settings_init(void)
         }
         nvs_close(h);
     }
-/* Clamp persisted values so an invalid record cannot break a control. */
     sanitize(&s_settings);
-/* Keep the night interval and brightness within allowed ranges. */
     sanitize_night(&s_night);
     s_vcmd.enabled = s_vcmd.enabled != 0;
     s_vcmd.wake_word = s_vcmd.wake_word != 0;
@@ -224,7 +222,6 @@ void settings_get(settings_t *out)
 void settings_set(const settings_t *in)
 {
     settings_t copy = *in;
-/* Clamp persisted values so an invalid record cannot break a control. */
     sanitize(&copy);
     xSemaphoreTake(s_mutex, portMAX_DELAY);
     s_settings = copy;
@@ -245,7 +242,6 @@ void settings_night_get(night_settings_t *out)
 void settings_night_set(const night_settings_t *in)
 {
     night_settings_t copy = *in;
-/* Keep the night interval and brightness within allowed ranges. */
     sanitize_night(&copy);
     xSemaphoreTake(s_mutex, portMAX_DELAY);
     s_night = copy;
