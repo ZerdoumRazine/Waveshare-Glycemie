@@ -1,4 +1,10 @@
 /*
+ * voice_rx.c: Serial transfer of WAV files to the microSD.
+ * FR: Transfert série des fichiers WAV vers la microSD.
+ * Design note: Verify-only operations must never write to the card.
+ */
+
+/*
  * Transfers pre-generated WAV files through a bounded serial protocol to microSD.
  * Transfère les banques WAV par USB-série avec contrôles d'intégrité.
  */
