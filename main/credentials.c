@@ -99,6 +99,9 @@ static esp_err_t persist(void)
 }
 
 /* Restore saved settings without reapplying obsolete defaults when a valid record exists. */
+/* Load the saved configuration first; fall back to optional build defaults only when no saved block exists.
+ * FR: Relire les accès enregistrés avant d'utiliser d'éventuelles valeurs de compilation.
+ */
 esp_err_t credentials_init(void)
 {
     if (s_mutex == NULL) {
@@ -305,6 +308,9 @@ void credentials_trial_cancel(void)
 }
 
 /* Store an explicitly empty record before removing auxiliary account state. */
+/* Persist an explicitly empty configuration before removing the old Dexcom guard state.
+ * FR: Enregistrer une configuration vide avant de nettoyer l'ancien verrou Dexcom.
+ */
 esp_err_t credentials_clear(void)
 {
     /* Supprimer en premier les identifiants du stockage NVS. Le verrou
