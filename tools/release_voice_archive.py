@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Repackages validated speech WAVs and their provenance.
+# FR: Reconditionne les WAV vérifiés et leur provenance.
+# Design note: Reject unrelated files such as logs or personal histories.
 # EN: Validates original six-language WAVs and writes an audio-only release ZIP.
 # FR: Vérifie les six banques WAV et crée une archive sans données privées.
 """Controle et repaquette uniquement les WAV nécessaires à la microSD du projet.
