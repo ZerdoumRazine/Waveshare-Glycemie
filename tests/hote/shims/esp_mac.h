@@ -1,4 +1,7 @@
 /* Adresse MAC simulee pour les tests sur PC : valeur fixe, donc resultats reproductibles. */
+/* EN: Provide a fixed fake MAC address for repeatable test data.
+ * FR: Fournit une adresse MAC fictive et stable pour les tests.
+ */
 #pragma once
 #include "esp_err.h"
 #include <stdint.h>

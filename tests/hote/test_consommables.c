@@ -6,6 +6,9 @@
  * La NVS est simulee en memoire (tests/hote/shims) : un "redemarrage" consiste a rappeler les fonctions
  * d'initialisation sans effacer la NVS, exactement comme au demarrage de la carte.
  */
+/* EN: Verify sensor/catheter dates, reminders and stock after simulated restart.
+ * FR: Vérifie les dates, rappels et stocks après un redémarrage simulé.
+ */
 #include <stdio.h>
 #include <string.h>
 

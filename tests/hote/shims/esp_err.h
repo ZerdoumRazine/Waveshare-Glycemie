@@ -1,4 +1,7 @@
 /* Remplacant minimal d'esp_err.h pour les tests sur PC (aucun ESP-IDF requis). */
+/* EN: Subset of ESP-IDF error codes required by isolated tests.
+ * FR: Codes d'erreur nécessaires aux tests simulés.
+ */
 #pragma once
 #include <stdint.h>
 

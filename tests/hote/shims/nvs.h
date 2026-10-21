@@ -1,4 +1,7 @@
 /* NVS simulee en memoire : permet de verifier la persistance et de simuler un redemarrage. */
+/* EN: In-memory NVS interface plus explicit fault injection for regression tests.
+ * FR: Simulation NVS en mémoire avec injection de pannes.
+ */
 #pragma once
 #include "esp_err.h"
 #include <stddef.h>

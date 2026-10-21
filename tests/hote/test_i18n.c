@@ -6,6 +6,9 @@
  * inexistant sur la carte. Ces tests comparent donc, pour chaque texte, la suite exacte des
  * specificateurs de toutes les langues avec celle du francais.
  */
+/* EN: Check translation coverage and language-specific formatting.
+ * FR: Vérifie les traductions et formats dans les six langues.
+ */
 #include <stdio.h>
 #include <string.h>
 

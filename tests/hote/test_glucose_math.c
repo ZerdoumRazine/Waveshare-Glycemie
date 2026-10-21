@@ -2,6 +2,9 @@
  * Tests du calcul glycemique reel (main/glucose_math.c et main/app_state.c compiles tels quels) :
  * age et fraicheur, cadence, variation entre mesures, prochaine mesure, noms de tendance, historique.
  */
+/* EN: Verify reading age, cadence and delta using controlled sample timestamps.
+ * FR: Teste les calculs d'ancienneté et de variation des mesures.
+ */
 #include <stdio.h>
 #include <string.h>
 
