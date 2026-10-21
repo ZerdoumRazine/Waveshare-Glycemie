@@ -455,27 +455,22 @@ void voice_old_announce(alert_type_t type, int value, int volume_pct)
     switch (type) {
     case ALERT_VERY_LOW:
         say(VOICE_P_TRES_BASSE, volume_pct);
-/* Read pre-generated number clips; speech is not synthesized on the board. */
         say_number(value, volume_pct);
         break;
     case ALERT_LOW:
         say(VOICE_P_BASSE, volume_pct);
-/* Read pre-generated number clips; speech is not synthesized on the board. */
         say_number(value, volume_pct);
         break;
     case ALERT_HIGH:
         say(VOICE_P_ELEVEE, volume_pct);
-/* Read pre-generated number clips; speech is not synthesized on the board. */
         say_number(value, volume_pct);
         break;
     case ALERT_VERY_HIGH:
         say(VOICE_P_TRES_ELEVEE, volume_pct);
-/* Read pre-generated number clips; speech is not synthesized on the board. */
         say_number(value, volume_pct);
         break;
     case ALERT_NO_DATA:
         say(VOICE_P_AUCUNE_DONNEE, volume_pct);
-/* Read pre-generated number clips; speech is not synthesized on the board. */
         say_number(value, volume_pct);
         say(VOICE_P_MINUTES, volume_pct);
         break;
