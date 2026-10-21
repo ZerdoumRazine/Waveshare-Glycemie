@@ -1,3 +1,6 @@
+# Checks hashes and hardware before USB firmware installation.
+# FR: Vérifie les empreintes et le matériel avant installation USB.
+# Design note: Do not flash until the user explicitly confirms.
 # EN: Before USB flash, verify the firmware checksums, board revision and user confirmation.
 # FR: Vérifie les empreintes, la puce et l'accord de l'utilisateur avant installation.
 <#
