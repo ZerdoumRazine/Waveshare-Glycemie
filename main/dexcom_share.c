@@ -97,6 +97,7 @@ static void append(char *out, size_t size, size_t *pos, const char *text, size_t
 }
 
 /* Message Dexcom sans identifiant, mot de passe, adresse e-mail ni UUID */
+/* Remove sensitive account fragments before an error is shown in logs. */
 static void sanitize_message(const dexcom_client_t *c, const char *in, char *out, size_t size)
 {
     char tmp[256];
@@ -258,7 +259,6 @@ static dex_result_t classify_http_error(dexcom_client_t *c, const resp_buf_t *rb
 
     if (code_s != NULL) {
         strlcpy(c->last_error.code, code_s, sizeof(c->last_error.code));
-/* Remove sensitive account fragments before an error is shown in logs. */
         sanitize_message(c, msg_s, c->last_error.message, sizeof(c->last_error.message));
         if (strcmp(code_s, "SessionIdNotFound") == 0 || strcmp(code_s, "SessionNotValid") == 0) {
             result = DEX_ERR_SESSION;
