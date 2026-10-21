@@ -159,7 +159,6 @@ static void on_new(lv_event_t *e)
 {
     const consumable_t c = (consumable_t)(intptr_t)lv_event_get_user_data(e);
     ESP_LOGI(TAG, "Bouton %s touche", consumable_name(c));
-/* Open the right replacement dialog while leaving saved dates untouched until confirmation. */
     ui_consumables_open_dialog(c);
 }
 
@@ -548,8 +547,6 @@ void ui_consumables_update(const ui_data_t *d, bool force)
         return;
     }
     const int64_t now_s = d->now_ms / 1000;
-/* Present the sensor countdown from the last recorded installation time. */
     update_sensor(now_s);
-/* Present the catheter deadline according to the selected replacement interval. */
     update_catheter(now_s);
 }
