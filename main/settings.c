@@ -1,4 +1,10 @@
 /*
+ * settings.c: Persistent preferences, thresholds and display options.
+ * FR: Préférences, seuils et options persistantes.
+ * Design note: Updating one setting must not reset unrelated values.
+ */
+
+/*
  * Validates UI options loaded from NVS and batches non-urgent writes.
  * Valide les réglages enregistrés et évite les écritures NVS inutiles.
  */
