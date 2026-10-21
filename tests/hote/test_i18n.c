@@ -1,3 +1,7 @@
+/* Verifies translation IDs and supported languages.
+ * FR: Vérifie les identifiants de texte et les langues.
+ * Host tests use simulated dependencies, never personal readings.
+ */
 /*
  * Tests de la table de traduction (main/i18n.c compile tel quel).
  *
