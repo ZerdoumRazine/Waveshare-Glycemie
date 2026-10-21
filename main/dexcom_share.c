@@ -1,4 +1,10 @@
 /*
+ * dexcom_share.c: Read-only client for the Dexcom Share protocol.
+ * FR: Client en lecture seule du protocole Dexcom Share.
+ * Design note: Failed network calls are not glucose measurements.
+ */
+
+/*
  * dexcom_share.c: Reads Dexcom Share data and interprets its network responses.
  * FR: Lit les données Dexcom Share et interprète les réponses réseau.
  * Design decision: A failed request is not a glucose measurement.
