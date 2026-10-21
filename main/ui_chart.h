@@ -7,6 +7,10 @@
  * (heure, glycemie, tendance et variation seulement si l'historique les contient). Le curseur disparait quelques
  * secondes apres le relachement. Aucune lecture microSD ni allocation pendant le glissement.
  */
+/* Public interface / Interface publique
+ * EN: Graph widget and point exploration from cached glucose history.
+ * FR: Courbe et exploration des mesures historiques.
+ */
 #pragma once
 
 #include "ui_common.h"

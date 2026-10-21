@@ -11,6 +11,10 @@
  *  - seuil de stock faible par consommable (2 et 3 par defaut, modifiables) : etat consultable + evenement local
  *    STOCK_LOW (file en memoire, aucun reseau).
  */
+/* Public interface / Interface publique
+ * EN: Inventory counts and item-level low-stock notifications.
+ * FR: Quantités locales et avertissements de stock faible.
+ */
 #pragma once
 
 #include <stdbool.h>

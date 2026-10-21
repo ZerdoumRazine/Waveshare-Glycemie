@@ -5,6 +5,10 @@
  * ni pour l'echeance, ni pour les rappels : a l'echeance, le capteur est "A CHANGER".
  * Deux rappels a usage unique : 24 h et 2 h avant l'echeance.
  */
+/* Public interface / Interface publique
+ * EN: Sensor insertion sessions, expiry times and reminder state.
+ * FR: Pose du capteur, échéance et rappels.
+ */
 #pragma once
 
 #include <stdbool.h>

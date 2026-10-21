@@ -13,6 +13,10 @@
  * - ancienne banque integree au firmware (voix Windows fr-FR, nombres composes mot a mot) : conservee
  *   temporairement jusqu'a validation de la nouvelle voix, jouee seulement par la console (voice_old).
  */
+/* Public interface / Interface publique
+ * EN: PCM announcement playback and microSD language fallback.
+ * FR: Lecture PCM des annonces et repli de langue.
+ */
 #pragma once
 
 

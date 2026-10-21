@@ -26,6 +26,10 @@
  * - Taches : lecture des micros et detection dans la tache "voixcmd" (pile en PSRAM) ; l'enregistrement NVS est fait
  *   par la tache LVGL (ui_request_consumable_new).
  */
+/* Public interface / Interface publique
+ * EN: Optional experimental recognition API; not enabled in the public firmware.
+ * FR: API expérimentale des commandes vocales, non activée dans la version publique.
+ */
 #pragma once
 
 #include <stdbool.h>

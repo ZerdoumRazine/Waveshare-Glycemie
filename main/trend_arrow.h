@@ -1,6 +1,10 @@
 /*
  * Icone de tendance 2.5D dessinee avec les primitives LVGL (lisible a distance, aucune image ni police requise).
  */
+/* Public interface / Interface publique
+ * EN: Trend symbol drawing; an icon is not a medical prediction.
+ * FR: Affichage de tendance sans prédiction médicale.
+ */
 #pragma once
 
 #include <stdint.h>

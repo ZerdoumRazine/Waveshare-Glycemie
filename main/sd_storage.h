@@ -9,6 +9,10 @@
  * - Dossiers : /glycemie/history (AAAA-MM-JJ.csv), /glycemie/audio (voice : banque vocale WAV),
  *   /glycemie/logs (AAAA-MM-JJ.log).
  */
+/* Public interface / Interface publique
+ * EN: FAT32 history storage, status reporting and strictly scoped maintenance APIs.
+ * FR: Stockage FAT32 de l'historique et maintenance limitée.
+ */
 #pragma once
 
 #include <stdbool.h>
