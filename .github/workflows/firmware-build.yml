@@ -1,3 +1,5 @@
+# EN: Compile and preflight-check the ESP32-P4 firmware without personal credentials.
+# FR: Compile et contrôle le firmware ESP32-P4 sans identifiants personnels.
 name: Compilation ESP-IDF
 
 on:

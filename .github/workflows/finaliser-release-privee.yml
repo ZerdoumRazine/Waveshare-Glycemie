@@ -1,3 +1,5 @@
+# EN: Publish the verified v0.2.0 prerelease without changing repository visibility.
+# FR: Finalise la préversion vérifiée sans modifier la visibilité du dépôt.
 name: Finaliser la préversion privée v0.2.0
 
 on:

@@ -1,3 +1,5 @@
+# EN: Package the tested Windows USB assistant into a standalone executable.
+# FR: Construit l'application Windows autonome de configuration USB.
 <#
 .SYNOPSIS
     Fabrique l'application Windows « WaveShare Glycemie — connexion » (un seul fichier .exe).

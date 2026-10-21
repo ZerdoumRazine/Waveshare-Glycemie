@@ -1,3 +1,5 @@
+# EN: Run host C/Python regression tests and validate the Windows application.
+# FR: Lance les tests C/Python et vérifie l'application Windows.
 name: Tests hors matériel
 
 on:

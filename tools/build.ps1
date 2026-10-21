@@ -1,3 +1,5 @@
+# EN: Build firmware in a compatible ASCII-only path, with explicit voice-recognition options.
+# FR: Compile le firmware depuis un chemin compatible avec ESP-IDF.
 #Requires -Version 5.1
 <#
 .SYNOPSIS

@@ -1,3 +1,5 @@
+# EN: Legacy local firmware packaging route; never ship an image containing personal secrets.
+# FR: Ancienne procédure locale : aucun binaire contenant des identifiants personnels ne doit partir.
 <#
 .SYNOPSIS
     Prepare les fichiers a telecharger : programme PUBLIC de l'ecran + application Windows + empreintes.
