@@ -1,4 +1,10 @@
 /*
+ * ui_alert.c: On-screen alert panel and acknowledgement controls.
+ * FR: Panneau d'alerte et acquittement tactile.
+ * Design note: On-screen alerts are supplementary to official notifications.
+ */
+
+/*
  * Renders and updates a single priority alert overlay without changing the alert engine.
  * Affiche un panneau d'alerte prioritaire sans modifier les règles d'alerte.
  */
