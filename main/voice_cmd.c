@@ -301,7 +301,6 @@ static void handle_command(voice_cmd_id_t cmd, float prob, int64_t now_us)
         return;
     }
     if (s_pending != VOICE_CMD_NONE && s_pending != cmd) {
-/* Discard unconfirmed requests rather than persisting an accidental detection. */
         cancel_pending("autre commande", false);
     }
     /* premiere detection : rien n'est modifie */
@@ -328,7 +327,6 @@ static void sensor_register(int64_t now_us)
         return;
     }
     if (s_pending != VOICE_CMD_NONE) {
-/* Discard unconfirmed requests rather than persisting an accidental detection. */
         cancel_pending("autre commande", false);
     }
     s_pending = VOICE_CMD_SENSOR;
@@ -379,11 +377,9 @@ static bool on_detection(int mn_id, float prob, const char *phonemes, int64_t no
     switch (mn_id) {
     case VOICE_CMD_GLUCOSE:
     case MN_ID_GLUCOSE_Z:
-/* Handle confirmation as a distinct step before changing consumable dates. */
         handle_command(VOICE_CMD_GLUCOSE, prob, now_us);
         break;
     case VOICE_CMD_CATHETER:
-/* Handle confirmation as a distinct step before changing consumable dates. */
         handle_command(VOICE_CMD_CATHETER, prob, now_us);
         break;
     case MN_ID_SENSOR_REGISTER:
