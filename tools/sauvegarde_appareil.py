@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# EN: Reads a complete flash backup before maintenance without changing the device.
+# FR: Sauvegarde la flash avant une intervention sans écrire sur la carte.
 r"""Identifier et SAUVEGARDER l'ecran avant toute mise a jour. Ce programme n'ecrit JAMAIS dans l'appareil.
 
 Il fait trois choses, dans cet ordre :
@@ -89,6 +91,7 @@ def lancer(cmd, args, timeout=900):
     return out.returncode, (out.stdout or '') + (out.stderr or '')
 
 
+# Inspect partition metadata to confirm the hardware layout.
 def lire_partitions(chemin_bin):
     """Analyse une table de partitions brute (0x8000) : [(nom, type, sous-type, adresse, taille)]."""
     entrees = []
@@ -116,6 +119,7 @@ def sha256(chemin):
     return h.hexdigest()
 
 
+# Read the flash and compare checksums before reporting a backup as complete.
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--port', default=None, help='COM7 par exemple ; detecte sinon')

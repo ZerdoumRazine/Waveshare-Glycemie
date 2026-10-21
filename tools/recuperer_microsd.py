@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# EN: Retrieves recoverable microSD data over a read-only serial protocol.
+# FR: Récupère les données microSD par une liaison série en lecture seule.
 r"""Recuperer par le cable USB ce que le programme INSTALLE accepte de relire sur la microSD.
 
 Aucun lecteur de carte n'est necessaire : tout passe par la console serie de l'appareil, en
@@ -38,6 +40,7 @@ import assistant_config as ac  # noqa: E402
 SAUVEGARDES = os.path.join(ROOT, 'private', 'sauvegardes')
 
 
+# Inventory remote files before attempting any copy.
 def inventaire(app, attente=120):
     """sd_check : liste tout, en lecture seule. Renvoie (fichiers, resume_csv, brut)."""
     app.envoyer('sd_check')
@@ -89,6 +92,7 @@ def lire_journal(app, nom, attente=90):
     return contenu, octets
 
 
+# Verify each transferred file before accepting it as a usable backup.
 def dump_fichier(app, chemin, attente=180):
     """sd_dump (K22) : contenu exact en base64 + CRC32. Renvoie (octets, crc) ou (None, raison)."""
     app.envoyer('sd_dump %s' % chemin)
@@ -140,6 +144,7 @@ def voix_de_la_carte(app, attente=120):
     return fichiers
 
 
+# Use remote CRCs to check audio without sending the same WAVs again.
 def comparer_banque(fichiers_carte, dossier_pc):
     """Compare les empreintes de la carte a celles d'une banque deja presente sur le PC."""
     if not fichiers_carte or not dossier_pc or not os.path.isdir(dossier_pc):

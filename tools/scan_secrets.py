@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# EN: Looks for accidentally included credentials without ever echoing secret values.
+# FR: Recherche les identifiants accidentellement publiés sans les afficher.
 """Recherche des identifiants prives dans des fichiers texte (journaux, rapports, sources).
 
 N'affiche JAMAIS les valeurs : seulement le nom du champ et le fichier concerne.
@@ -14,6 +16,7 @@ SECRETS = os.path.join(ROOT, 'private', 'device_secrets.h')
 TEXT_EXT = {'.log', '.txt', '.md', '.c', '.h', '.py', '.json', '.yml', '.yaml', '.csv', '.ps1', ''}
 
 
+# Load private comparison values only for local scanning.
 def load():
     values = {}
     text = open(SECRETS, encoding='utf-8').read()
@@ -23,6 +26,7 @@ def load():
     return values
 
 
+# Inspect the requested source files without including excluded build caches.
 def files(paths):
     for p in paths:
         if os.path.isdir(p):
@@ -34,6 +38,7 @@ def files(paths):
             yield p
 
 
+# Report locations and categories of matches, not the sensitive strings themselves.
 def main():
     secrets = load()
     found = 0

@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# EN: Validates original six-language WAVs and writes an audio-only release ZIP.
+# FR: Vérifie les six banques WAV et crée une archive sans données privées.
 """Controle et repaquette uniquement les WAV nécessaires à la microSD du projet.
 
 Entrée : paquet microSD historique v0.1.0, téléchargé depuis la Release PRIVÉE.
@@ -72,6 +74,7 @@ def digest(path: Path) -> str:
     return h.hexdigest()
 
 
+# Reject an input ZIP whose hash differs from the historical release manifest.
 def check_original_hash(original: Path, manifest: Path) -> None:
     lines = manifest.read_text(encoding="utf-8-sig").splitlines()
     found = [s.split("  ", 1)[0].strip().lower()
@@ -82,6 +85,7 @@ def check_original_hash(original: Path, manifest: Path) -> None:
         raise ValueError("L'archive originale ne correspond pas au SHA-256 historique")
 
 
+# Use the reviewed voice manifest as an allowlist for each language.
 def expected_names() -> set[str]:
     with (ROOT / "assets" / "banque_vocale_manifeste.csv").open(
         "r", encoding="utf-8-sig", newline=""
@@ -92,6 +96,7 @@ def expected_names() -> set[str]:
     return names
 
 
+# Require the PCM format actually supported by the display.
 def check_wav(data: bytes, name: str) -> None:
     try:
         with wave.open(io.BytesIO(data), "rb") as reader:
@@ -103,6 +108,7 @@ def check_wav(data: bytes, name: str) -> None:
         raise ValueError("WAV invalide " + name) from exc
 
 
+# Allow only the expected 2,376 recordings and a freshly written provenance notice.
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--archive", required=True, type=Path)

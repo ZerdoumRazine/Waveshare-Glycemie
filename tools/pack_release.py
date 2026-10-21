@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# EN: Packages exact firmware outputs with checksums and Windows installer.
+# FR: Assemble les fichiers de l'écran, les empreintes et l'installateur Windows.
 """Prépare une archive d'installation vérifiable à partir d'un build ESP-IDF validé.
 
 Aucun compte utilisateur ni accès réseau. Ne prend jamais de fichiers sous private/.
@@ -57,6 +59,7 @@ No private credentials are included in the distributed firmware.
 """
 
 
+# Hash in bounded chunks so the packager handles large firmware safely.
 def sha256(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as stream:
@@ -65,6 +68,7 @@ def sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+# Refuse private credentials and verify every file before writing the release ZIP.
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--build", type=Path, required=True, help="ESP-IDF build/ directory")

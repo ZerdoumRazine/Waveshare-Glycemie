@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# EN: Captures serial diagnostics while redacting known credentials and personal details.
+# FR: Capture les diagnostics série en masquant les données privées.
 """Capture du journal serie de l'ESP32-P4 avec masquage des secrets.
 
 Aucune ecriture en flash : ouverture du port, reset optionnel par RTS (comme esptool hard_reset),
@@ -34,6 +36,7 @@ def load_secrets():
     return sorted(set(values), key=len, reverse=True)
 
 
+# Mask known secrets before a log line reaches disk or console output.
 def redact(line, secrets):
     for s in secrets:
         line = line.replace(s, '[SECRET]')
@@ -53,6 +56,7 @@ def write_png(path, width, height, rgb):
         f.write(chunk(b'IEND', b''))
 
 
+# Decode a board screenshot separately from text logs.
 def decode_snapshot(width, height, b64_lines):
     data = base64.b64decode(''.join(b64_lines))
     rgb = bytearray()
@@ -68,6 +72,7 @@ def decode_snapshot(width, height, b64_lines):
     return bytes(rgb[:expected])
 
 
+# Open the port conservatively and redact every captured diagnostic line.
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--port', default='COM7')

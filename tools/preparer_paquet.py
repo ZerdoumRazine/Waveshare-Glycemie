@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# EN: Builds the deliverable folders from clean sources, not from a personal device backup.
+# FR: Prépare le paquet complet sans reprendre une sauvegarde personnelle.
 r"""Assemble le dossier a remettre : sources, application Windows, installation, microSD, tutoriels.
 
 Organisation produite :
@@ -47,6 +49,7 @@ BANQUES = os.path.join(ROOT, 'dist_voix')
 HORS_CARTE = ('manifest.csv', 'SHA256SUMS.txt', 'PROVENANCE.md', 'LISEZMOI_README.txt')
 
 
+# Fingerprint the exact sources so a binary can be traced back to its build.
 def empreinte_sources(racine):
     """Empreinte du CONTENU de tout ce qui entre dans le firmware : main, components, config, CMake."""
     h = hashlib.sha256()
@@ -79,6 +82,7 @@ def ecrire(chemin, texte):
     io.open(chemin, 'w', encoding='utf-8', newline='\r\n').write(texte)
 
 
+# Write archive members in a stable order to make package contents reproducible.
 def zipper(dossier, archive, base=''):
     """ZIP reproductible : entrees triees, dates fixes."""
     with zipfile.ZipFile(archive, 'w', zipfile.ZIP_DEFLATED) as zf:
@@ -94,6 +98,7 @@ def zipper(dossier, archive, base=''):
                     zf.writestr(info, f.read())
 
 
+# Preserve the one French root directory and five language subfolders expected by firmware.
 def construire_microsd(cible, notices):
     r"""Extrait les six banques publiques aux emplacements attendus par le firmware.
 
