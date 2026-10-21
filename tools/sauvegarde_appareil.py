@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Backs up the firmware flash for recovery purposes.
+# FR: Sauvegarde la mémoire flash en vue d'une restauration.
+# Design note: The backup is private because it may contain Wi-Fi, Dexcom and health data.
 # EN: Reads a complete flash backup before maintenance without changing the device.
 # FR: Sauvegarde la flash avant une intervention sans écrire sur la carte.
 r"""Identifier et SAUVEGARDER l'ecran avant toute mise a jour. Ce programme n'ecrit JAMAIS dans l'appareil.
