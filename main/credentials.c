@@ -1,4 +1,10 @@
 /*
+ * credentials.c: Wi-Fi/Dexcom settings, trial changes and persistence.
+ * FR: Accès Wi-Fi/Dexcom, essais et sauvegarde.
+ * Design note: Do not overwrite working credentials until the replacement passes verification.
+ */
+
+/*
  * credentials.c: Manages validated Wi-Fi and Dexcom settings, trial changes and NVS storage.
  * FR: Gère les accès Wi-Fi et Dexcom, les essais et le stockage NVS.
  * Design decision: Never replace working credentials until the replacement was tested and confirmed.
