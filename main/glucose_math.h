@@ -1,3 +1,7 @@
+/* glucose_math.h: Pure helpers for numerical glucose calculations.
+ * FR: Fonctions pures des calculs glycémiques.
+ * The declarations below are shared with other firmware modules.
+ */
 /*
  * Calculs sur l'historique de glycemie (fonctions pures, sans etat) :
  * age et fraicheur, delta entre mesures consecutives, cadence reelle, prochaine mesure, statistiques.
