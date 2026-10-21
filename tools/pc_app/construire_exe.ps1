@@ -1,3 +1,6 @@
+# Builds the distributable Windows setup application.
+# FR: Construit l'application Windows à distribuer.
+# Design note: Always test the compiled executable before sharing it.
 # EN: Package the tested Windows USB assistant into a standalone executable.
 # FR: Construit l'application Windows autonome de configuration USB.
 <#
