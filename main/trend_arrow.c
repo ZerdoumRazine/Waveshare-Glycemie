@@ -34,6 +34,7 @@ static lv_point_precise_t pt(float x, float y)
 }
 
 /* Fleche centree en (cx, cy), orientee selon angle_deg (0 = droite, 90 = haut), longueur totale length */
+/* Draw the symbol after child objects to preserve legibility. */
 static void draw_arrow(lv_layer_t *layer, const arrow_ctx_t *ctx, float cx, float cy, float angle_deg, float length)
 {
     const float rad = angle_deg * (float)M_PI / 180.0f;
@@ -86,29 +87,22 @@ static void on_draw(lv_event_t *e)
 
     switch (ctx->trend) {
     case TREND_DOUBLE_UP:
-/* Draw the symbol after child objects to preserve legibility. */
         draw_arrow(layer, ctx, cx - s * 0.20f, cy, 90.0f, s * 0.64f);
-/* Draw the symbol after child objects to preserve legibility. */
         draw_arrow(layer, ctx, cx + s * 0.20f, cy, 90.0f, s * 0.64f);
         break;
     case TREND_SINGLE_UP:
-/* Draw the symbol after child objects to preserve legibility. */
         draw_arrow(layer, ctx, cx, cy, 90.0f, s * 0.70f);
         break;
     case TREND_FORTY_FIVE_UP:
-/* Draw the symbol after child objects to preserve legibility. */
         draw_arrow(layer, ctx, cx, cy, 45.0f, s * 0.70f);
         break;
     case TREND_FLAT:
-/* Draw the symbol after child objects to preserve legibility. */
         draw_arrow(layer, ctx, cx, cy, 0.0f, s * 0.70f);
         break;
     case TREND_FORTY_FIVE_DOWN:
-/* Draw the symbol after child objects to preserve legibility. */
         draw_arrow(layer, ctx, cx, cy, -45.0f, s * 0.70f);
         break;
     case TREND_SINGLE_DOWN:
-/* Draw the symbol after child objects to preserve legibility. */
         draw_arrow(layer, ctx, cx, cy, -90.0f, s * 0.70f);
         break;
     default: /* TREND_DOUBLE_DOWN */
