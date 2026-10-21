@@ -43,6 +43,7 @@ static const struct {
 
 /* Brouillage : OU exclusif avec une cle derivee de l'adresse MAC. Ce n'est pas un chiffrement
  * (voir credentials.h) : il evite seulement de lire un mot de passe en clair dans un vidage de flash. */
+/* Obfuscate NVS bytes, but do not mistake this reversible step for encryption. */
 static void scramble(uint8_t *data, size_t len)
 {
     uint8_t mac[6] = {0};
@@ -61,7 +62,6 @@ static esp_err_t persist(void)
     const bool demo = s_demo;
     xSemaphoreGive(s_mutex);
 
-/* Obfuscate NVS bytes, but do not mistake this reversible step for encryption. */
     scramble((uint8_t *)&copy, sizeof(copy));
     nvs_handle_t h;
     esp_err_t err = nvs_open(NVS_NS, NVS_READWRITE, &h);
@@ -104,7 +104,6 @@ esp_err_t credentials_init(void)
         credentials_t stored;
         size_t size = sizeof(stored);
         if (nvs_get_blob(h, NVS_KEY, &stored, &size) == ESP_OK && size == sizeof(stored)) {
-/* Obfuscate NVS bytes, but do not mistake this reversible step for encryption. */
             scramble((uint8_t *)&stored, sizeof(stored));
             /* fins de chaine garanties : une NVS abimee ne doit pas provoquer de lecture hors zone */
             stored.wifi_ssid[sizeof(stored.wifi_ssid) - 1] = '\0';
@@ -181,7 +180,6 @@ esp_err_t credentials_set_wifi(const char *ssid, const char *password)
     s_from_build = false;
     xSemaphoreGive(s_mutex);
     ESP_LOGI(TAG, "Reseau Wi-Fi enregistre (%d caracteres de mot de passe)", (int)strlen(password));
-/* Commit a copy of the active settings to NVS; callers need the real error code. */
     return persist();
 }
 
@@ -198,7 +196,6 @@ esp_err_t credentials_set_dexcom(const char *user, const char *password, const c
     s_from_build = false;
     xSemaphoreGive(s_mutex);
     ESP_LOGI(TAG, "Compte Dexcom enregistre (region %s)", region);
-/* Commit a copy of the active settings to NVS; callers need the real error code. */
     return persist();
 }
 
@@ -383,7 +380,6 @@ esp_err_t credentials_set_demo(bool on)
     s_demo = on;
     xSemaphoreGive(s_mutex);
     ESP_LOGI(TAG, "Mode demonstration %s", on ? "actif au demarrage" : "desactive");
-/* Commit a copy of the active settings to NVS; callers need the real error code. */
     return persist();
 }
 
