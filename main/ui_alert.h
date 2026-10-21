@@ -1,3 +1,7 @@
+/* ui_alert.h: Public controls for the on-screen alert panel.
+ * FR: Commandes du panneau d'alerte à l'écran.
+ * The declarations below are shared with other firmware modules.
+ */
 /*
  * Alertes a l'ecran :
  * - panneau plein ecran (titre, valeur, OK = acquitter, RAPPEL DANS 30 MIN) a chaque nouvelle levee d'alerte,
