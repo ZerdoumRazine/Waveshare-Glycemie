@@ -1,3 +1,8 @@
+/*
+ * Manages saved Wi-Fi/Dexcom access separately from unconfirmed trial settings.
+ * Sépare les identifiants enregistrés des nouveaux accès non confirmés.
+ * This is a supplementary display: official Dexcom alarms remain authoritative.
+ */
 #include "credentials.h"
 
 #include <stdio.h>
@@ -47,6 +52,7 @@ static void scramble(uint8_t *data, size_t len)
     }
 }
 
+/* Commit a copy of the active settings to NVS; callers need the real error code. */
 static esp_err_t persist(void)
 {
     credentials_t copy;
@@ -55,6 +61,7 @@ static esp_err_t persist(void)
     const bool demo = s_demo;
     xSemaphoreGive(s_mutex);
 
+/* Obfuscate NVS bytes, but do not mistake this reversible step for encryption. */
     scramble((uint8_t *)&copy, sizeof(copy));
     nvs_handle_t h;
     esp_err_t err = nvs_open(NVS_NS, NVS_READWRITE, &h);
@@ -77,6 +84,7 @@ static esp_err_t persist(void)
     return err;
 }
 
+/* Restore saved settings without reapplying obsolete defaults when a valid record exists. */
 esp_err_t credentials_init(void)
 {
     if (s_mutex == NULL) {
@@ -96,6 +104,7 @@ esp_err_t credentials_init(void)
         credentials_t stored;
         size_t size = sizeof(stored);
         if (nvs_get_blob(h, NVS_KEY, &stored, &size) == ESP_OK && size == sizeof(stored)) {
+/* Obfuscate NVS bytes, but do not mistake this reversible step for encryption. */
             scramble((uint8_t *)&stored, sizeof(stored));
             /* fins de chaine garanties : une NVS abimee ne doit pas provoquer de lecture hors zone */
             stored.wifi_ssid[sizeof(stored.wifi_ssid) - 1] = '\0';
@@ -172,6 +181,7 @@ esp_err_t credentials_set_wifi(const char *ssid, const char *password)
     s_from_build = false;
     xSemaphoreGive(s_mutex);
     ESP_LOGI(TAG, "Reseau Wi-Fi enregistre (%d caracteres de mot de passe)", (int)strlen(password));
+/* Commit a copy of the active settings to NVS; callers need the real error code. */
     return persist();
 }
 
@@ -188,6 +198,7 @@ esp_err_t credentials_set_dexcom(const char *user, const char *password, const c
     s_from_build = false;
     xSemaphoreGive(s_mutex);
     ESP_LOGI(TAG, "Compte Dexcom enregistre (region %s)", region);
+/* Commit a copy of the active settings to NVS; callers need the real error code. */
     return persist();
 }
 
@@ -244,6 +255,7 @@ esp_err_t credentials_trial_set_dexcom(const char *user, const char *password, c
     return ESP_OK;
 }
 
+/* Replace saved credentials only after a successful connection test. */
 esp_err_t credentials_trial_commit(void)
 {
     if (!s_essai) {
@@ -281,6 +293,7 @@ void credentials_trial_cancel(void)
     ESP_LOGW(TAG, "Essai annule : retour aux acces precedents");
 }
 
+/* Store an explicitly empty record before removing auxiliary account state. */
 esp_err_t credentials_clear(void)
 {
     /* Supprimer en premier les identifiants du stockage NVS. Le verrou
@@ -370,6 +383,7 @@ esp_err_t credentials_set_demo(bool on)
     s_demo = on;
     xSemaphoreGive(s_mutex);
     ESP_LOGI(TAG, "Mode demonstration %s", on ? "actif au demarrage" : "desactive");
+/* Commit a copy of the active settings to NVS; callers need the real error code. */
     return persist();
 }
 

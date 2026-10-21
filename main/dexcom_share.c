@@ -1,3 +1,8 @@
+/*
+ * Handles the Share HTTPS protocol, response parsing and refusal/network classification.
+ * Gère le protocole HTTPS Share et distingue erreurs réseau et refus du compte.
+ * This is a supplementary display: official Dexcom alarms remain authoritative.
+ */
 #include "dexcom_share.h"
 
 #include <ctype.h>
@@ -253,6 +258,7 @@ static dex_result_t classify_http_error(dexcom_client_t *c, const resp_buf_t *rb
 
     if (code_s != NULL) {
         strlcpy(c->last_error.code, code_s, sizeof(c->last_error.code));
+/* Remove sensitive account fragments before an error is shown in logs. */
         sanitize_message(c, msg_s, c->last_error.message, sizeof(c->last_error.message));
         if (strcmp(code_s, "SessionIdNotFound") == 0 || strcmp(code_s, "SessionNotValid") == 0) {
             result = DEX_ERR_SESSION;
@@ -448,6 +454,7 @@ void dexcom_invalidate_session(dexcom_client_t *c)
     memset(c->session_id, 0, sizeof(c->session_id));
 }
 
+/* Check TLS reachability before attributing a failure to user credentials. */
 dex_result_t dexcom_probe_tls(dexcom_client_t *c, int *http_status)
 {
     *http_status = 0;
@@ -474,6 +481,7 @@ dex_result_t dexcom_probe_tls(dexcom_client_t *c, int *http_status)
     return DEX_OK;
 }
 
+/* Authenticate only with the user's selected Share region and account. */
 dex_result_t dexcom_login(dexcom_client_t *c)
 {
     if (!dexcom_client_configured(c)) {
