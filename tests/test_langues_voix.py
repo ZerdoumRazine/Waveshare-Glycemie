@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Checks that speech banks and six-language text tables agree.
+# FR: Contrôle la cohérence entre voix et textes des six langues.
+# Tests use simulated data, not a real user's glucose history.
 # EN: Check that all six language catalogs and audio phrase inventories are consistent.
 # FR: Vérifie la cohérence des six catalogues de phrases vocales.
 """Controles de la banque vocale multilingue (tools/voice/langues_voix.py).
