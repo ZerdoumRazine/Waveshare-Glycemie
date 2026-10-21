@@ -239,6 +239,7 @@ static void show_screen(bool visible, const ui_data_t *d)
 
 /* ------------------------------------------------------------------------- */
 
+/* Let an important alert take precedence over the quiet night view. */
 static void evaluate(const ui_data_t *d, bool immediate)
 {
     const int64_t now = esp_timer_get_time();
@@ -335,7 +336,6 @@ static void on_screen_pressed(lv_event_t *e)
     } else if (preview) {
         ESP_LOGI(TAG, "Apercu du mode nuit quitte par un toucher");
     }
-/* Let an important alert take precedence over the quiet night view. */
     evaluate(&g_ui, true);
 }
 
@@ -446,20 +446,17 @@ void night_mode_update(const ui_data_t *d)
     default:
         break;
     }
-/* Let an important alert take precedence over the quiet night view. */
     evaluate(d, immediate);
 }
 
 void night_mode_brightness_changed(void)
 {
-/* Let an important alert take precedence over the quiet night view. */
     evaluate(&g_ui, true);
 }
 
 void night_mode_preview(void)
 {
     start_preview();
-/* Let an important alert take precedence over the quiet night view. */
     evaluate(&g_ui, false);
 }
 
