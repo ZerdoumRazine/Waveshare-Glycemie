@@ -1,4 +1,10 @@
 /*
+ * consumables.c: Consumable replacement lifecycle and reminders.
+ * FR: Cycle de remplacement et rappels des consommables.
+ * Design note: A reboot does not indicate that a new item was installed.
+ */
+
+/*
  * Maintains infusion-set dates, configurable intervals and reminders in persistent storage.
  * Conserve les dates et rappels du cathéter en mémoire persistante.
  */
