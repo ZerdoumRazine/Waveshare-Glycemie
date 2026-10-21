@@ -1,4 +1,10 @@
 /*
+ * ui_consumables.c: Sensor dates, infusion-set changes and stock controls.
+ * FR: Dates des capteurs, cathéters et gestion des stocks.
+ * Design note: A user action must not decrement an item twice.
+ */
+
+/*
  * Implements touchscreen confirmation for sensor, infusion set and stock changes.
  * Gère les confirmations tactiles des changements et des stocks.
  */
