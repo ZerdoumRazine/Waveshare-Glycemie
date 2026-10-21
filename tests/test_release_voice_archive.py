@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Checks six-language WAV archive integrity and provenance.
+# FR: Contrôle l'archive WAV multilingue et sa provenance.
+# These tests use simulations; they do not connect to a patient's device.
 # EN: Verify a private audio package only contains the expected six banks and provenance.
 # FR: Vérifie les banques vocales et la notice de provenance.
 """Tests sans vrai son ni matériel des gardes-fous de l'archive vocale."""
