@@ -1,4 +1,10 @@
 /*
+ * ui_settings.c: Settings controls and connection confirmation.
+ * FR: Réglages et confirmations de connexion.
+ * Design note: Never announce successful credential removal after an NVS failure.
+ */
+
+/*
  * ui_settings.c: Builds settings controls and connection confirmation dialogs.
  * FR: Construit les réglages et les confirmations de connexion.
  * Design decision: A failed deletion must not be reported as successful.
