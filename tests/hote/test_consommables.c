@@ -1,3 +1,7 @@
+/* Tests sensor dates, consumables and stock updates.
+ * FR: Teste les dates, consommables et stocks.
+ * Host tests use simulated dependencies, never personal readings.
+ */
 /*
  * Tests des consommables sur le vrai code du firmware (main/sensor_session.c, main/consumables.c, main/stock.c
  * compiles tels quels) : echeances, rappels 24 h / 2 h, anti-repetition, persistance NVS apres redemarrage,
