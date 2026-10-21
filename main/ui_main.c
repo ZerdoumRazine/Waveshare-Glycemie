@@ -1,4 +1,10 @@
 /*
+ * ui_main.c: Coordinates the five LVGL pages.
+ * FR: Coordonne les cinq pages LVGL.
+ * Design note: Changing pages must not restart networking or erase state.
+ */
+
+/*
  * Owns the LVGL event loop, the page switcher and capture/diagnostic entry points.
  * Coordonne LVGL, la navigation entre pages et les captures.
  */
