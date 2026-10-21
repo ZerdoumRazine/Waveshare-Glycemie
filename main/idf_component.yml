@@ -1,3 +1,5 @@
+# EN: Pinned firmware component requirements resolved by the ESP-IDF manager.
+# FR: Dépendances du firmware gérées par ESP-IDF.
 ## Dependances gerees - pile officielle Waveshare actuelle (depot waveshareteam, commit 9fcd49a)
 dependencies:
   idf:

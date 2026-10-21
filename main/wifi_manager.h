@@ -2,6 +2,9 @@
  * Wi-Fi station via l'ESP32-C6 (ESP-Hosted + esp_wifi_remote), d'apres l'exemple
  * officiel Waveshare 05_wifistation. Le firmware du C6 n'est jamais modifie.
  */
+/* EN: Wi-Fi state and network scanning; setup requests must not expose passwords.
+ * FR: État du Wi-Fi et recherche de réseaux sans divulguer les mots de passe.
+ */
 #pragma once
 
 #include <stdbool.h>

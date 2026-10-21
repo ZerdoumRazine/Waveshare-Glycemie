@@ -1,3 +1,5 @@
+# EN: Firmware compilation sources, options and optional voice-command stubs.
+# FR: Sources C compilées et variante des commandes vocales.
 # Garde-fou revision : refuser toute configuration resolue incompatible avec l'ESP32-P4 rev1.3.
 if(NOT CMAKE_BUILD_EARLY_EXPANSION)
     if(NOT CONFIG_ESP32P4_SELECTS_REV_LESS_V3 OR NOT CONFIG_ESP32P4_REV_MIN_100 OR CONFIG_ESP32P4_REV_MIN_300)

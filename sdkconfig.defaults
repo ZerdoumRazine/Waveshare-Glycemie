@@ -1,3 +1,5 @@
+# EN: Default compile-time hardware settings for the target ESP32-P4.
+# FR: Réglages matériels de compilation ESP32-P4.
 # glycemie_display - defaults du projet.
 # Base : exemple Waveshare 09_lvgl_demo_v9 (demos retirees) + 05_wifistation.
 # Le profil de revision (config/esp32p4_rev1_3.defaults) est ajoute APRES ce fichier.
