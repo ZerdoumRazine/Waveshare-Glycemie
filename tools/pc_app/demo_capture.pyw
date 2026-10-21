@@ -1,3 +1,6 @@
+# Displays safe demo values for UI screenshots.
+# FR: Affiche des valeurs fictives pour les captures.
+# Design note: Demo screenshots must never reveal real user details.
 #!/usr/bin/env python3
 # EN: Launches a demonstration of the Windows configuration UI without a real device.
 # FR: Ouvre une démonstration de l'interface Windows sans écran réel.
