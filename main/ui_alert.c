@@ -158,7 +158,6 @@ static void on_pill(lv_event_t *e)
     }
     ESP_LOGI(TAG, "Indicateur touche : panneau d'alerte rouvert (%s)", v.title);
     refresh_panel(&v);
-/* Display the highest-priority pending alert above regular pages. */
     show_panel();
 }
 
@@ -252,7 +251,6 @@ void ui_alert_update(void)
         }
         return;
     }
-/* Refresh only the visible alert content when data or language changes. */
     refresh_panel(&v);
     if (v.seq != s_presented_seq[v.type]) {
         /* nouvelle levee : panneau plein ecran */
@@ -279,12 +277,10 @@ alert_type_t ui_alert_panel_style(void)
 
 void ui_alert_acknowledge(void)
 {
-/* Acknowledge the displayed event in the alert engine, not in glucose history. */
     on_ok(NULL);
 }
 
 void ui_alert_snooze(void)
 {
-/* Apply the alert's defined snooze policy instead of dismissing it permanently. */
     on_snooze(NULL);
 }
