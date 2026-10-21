@@ -56,6 +56,7 @@ static int64_t catheter_reminder_time(int reminder, int64_t start_s, int hours)
 }
 
 /* Verrou pris */
+/* Persist a confirmed catheter change so an ordinary reboot preserves the date. */
 static esp_err_t persist_catheter(void)
 {
     s_revision++;
@@ -98,6 +99,7 @@ static esp_err_t persist_logged(consumable_t c)
 }
 
 /* Rappels deja depasses a l'enregistrement : marques comme faits (pas de rafale de rappels perimes) */
+/* Skip overdue historical reminders rather than replaying them after every restart. */
 static void mark_past_catheter_reminders(int64_t now_s)
 {
     s_cath_done = 0;
@@ -181,7 +183,6 @@ esp_err_t consumable_start_now(consumable_t c, const char *source)
     } else {
         xSemaphoreTake(s_mutex, portMAX_DELAY);
         s_cath_start_s = now;
-/* Skip overdue historical reminders rather than replaying them after every restart. */
         mark_past_catheter_reminders(now);
         err = persist_catheter();
         xSemaphoreGive(s_mutex);
@@ -238,10 +239,8 @@ void catheter_set_interval_h(int hours)
     if (hours != s_cath_hours) {
         s_cath_hours = (uint8_t)hours;
         if (s_cath_start_s > 0 && net_time_is_valid()) {
-/* Skip overdue historical reminders rather than replaying them after every restart. */
             mark_past_catheter_reminders((int64_t)time(NULL));
         }
-/* Persist a confirmed catheter change so an ordinary reboot preserves the date. */
         persist_catheter();
         ESP_LOGI(TAG, "Intervalle du catheter : %d h", hours);
     }
@@ -282,7 +281,6 @@ void catheter_mark_reminder_done(int reminder)
     }
     if (mask != s_cath_done) {
         s_cath_done = mask;
-/* Persist a confirmed catheter change so an ordinary reboot preserves the date. */
         persist_catheter();
         ESP_LOGI(TAG, "Rappel 2 h du catheter signale : memorise en NVS (rappels 0x%02x)", mask);
     }
@@ -293,7 +291,6 @@ void catheter_reset_reminders(void)
 {
     xSemaphoreTake(s_mutex, portMAX_DELAY);
     s_cath_done = 0;
-/* Persist a confirmed catheter change so an ordinary reboot preserves the date. */
     persist_catheter();
     xSemaphoreGive(s_mutex);
 }
