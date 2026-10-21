@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Creates and verifies a removable-card backup.
+# FR: Sauvegarde et vérifie la carte microSD.
+# Design note: A backup should be checked, not just copied.
 # EN: Makes a verified file copy from removable media without writing to the card.
 # FR: Copie et vérifie la microSD sans jamais la modifier.
 r"""Copier et VERIFIER le contenu de la microSD, sans jamais la modifier.
