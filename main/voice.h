@@ -1,3 +1,7 @@
+/* voice.h: Speech clip selection and fallback interface.
+ * FR: Choix des annonces et fonctionnement de secours.
+ * Shared definitions for the firmware implementation.
+ */
 /*
  * Annonces vocales francaises LOCALES (aucune dependance Internet, aucun appel Google depuis la carte) :
  *
