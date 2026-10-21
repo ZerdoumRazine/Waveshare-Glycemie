@@ -1,3 +1,7 @@
+/* credentials.h: Contracts for Wi-Fi/Dexcom trials and NVS persistence.
+ * FR: Contrats d'essai et de persistance des accès.
+ * The declarations below are shared with other firmware modules.
+ */
 /*
  * Identifiants de l'utilisateur (Wi-Fi et compte Dexcom Share) saisis SUR L'APPAREIL.
  *
