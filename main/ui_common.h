@@ -1,3 +1,7 @@
+/* ui_common.h: Shared LVGL widgets, fonts and colors.
+ * FR: Éléments LVGL, polices et couleurs communs.
+ * Shared definitions for the firmware implementation.
+ */
 /*
  * Elements communs de l'interface : dimensions, couleurs, polices, donnees calculees
  * une fois par seconde et partagees entre les pages.
