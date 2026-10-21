@@ -1,4 +1,12 @@
 /*
+ * credentials.c: Manages validated Wi-Fi and Dexcom settings, trial changes and NVS storage.
+ * FR: Gère les accès Wi-Fi et Dexcom, les essais et le stockage NVS.
+ * Design decision: Never replace working credentials until the replacement was tested and confirmed.
+ *
+ * Experimental supplementary display; official monitoring remains authoritative.
+ */
+
+/*
  * Manages saved Wi-Fi/Dexcom access separately from unconfirmed trial settings.
  * Sépare les identifiants enregistrés des nouveaux accès non confirmés.
  * This is a supplementary display: official Dexcom alarms remain authoritative.
