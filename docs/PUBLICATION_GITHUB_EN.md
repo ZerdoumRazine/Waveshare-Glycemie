@@ -1,70 +1,37 @@
-# Maintain and prepare WaveShare Glycemia publication
+# Maintaining and publishing WaveShare Glycémie
 
-The project is hosted in a **private deposit** on GitHub:
-[ZerdoumRazine/Waveshare-Glycemie](https://github.com/ZerdoumRazine/Waveshare-Glycemie).
-Its visibility must not be changed without the explicit decision of the owner.
+The repository is owned by **Mohamed-Razine Zerdoum**. Publishing source code, updating a private Release, and making the repository visible to everyone are **three different actions**. Only the owner should change repository visibility.
 
-This guide concerns the **maintenance of the existing repository**. Do not recreate a
-new repository, neither erase its Git history, nor execute an order from
-"force push" to update documentation.
+## Update the repository
 
-## Make a change
+1. In GitHub Desktop, open `ZerdoumRazine/Waveshare-Glycemie` and run **Fetch origin**, then **Pull origin** if offered.
+2. Create a branch for the change. Do not rewrite, delete or recreate the existing Git history.
+3. Edit source, documentation or tests. Check the diff for accidental changes to passwords, histories, generated assets and vendor notices.
+4. Commit and push the branch; open a pull request. Merge only after review and the appropriate GitHub Actions checks.
 
-1. In GitHub Desktop, select repository `ZerdoumRazine/Waveshare-Glycemie`.
-2. Make **Fetch origin**, then **Pull origin** if proposed.
-3. Change the sources or documentation in this copy.
-4. Review changes, create a commit and use **Push origin**.
-5. On GitHub, check the rendering of the README and ties. For a change
-   create a branch and a *pull request* rather than modify the program
-   direct `main`.
+## Prepare a release
 
-Documents [README French](../README.md) et
-[README English](../README.md) must remain consistent.
+Run C/Python regressions, Windows application tests, and the ESP-IDF firmware build. Confirm the target board and revision, the partition layout, absence of embedded personal credentials, and SHA-256 checksums. The installer and ZIP must correspond to the exact tested source commit.
 
-## Check before proposing a new version
+Published Release assets are **snapshots**. A documentation commit does not update an older firmware ZIP. If executable code changes, make a new version rather than silently replacing a tested historical package.
 
-- Run `python tests/run_tests.py`, `python tests/test_depot.py` and
-  Other `tests/` ; check also GitHub Actions results.
-- Software tests and simulations **do not replace** compilation
-  ESP-IDF and equipment testing.
-- Never publish personal flash backup, NVS, glucose history,
-  logbooks, identifiers or captures showing family data.
-- Reread **visibly** each image and verify the license of each image
-  third-party component. Automatic secret search tools have limits.
-- Confirm that the compiled version matches the sources of the commit tested
-  and that the partition table is correct for hardware revision.
-- Before wide distribution, have the regulatory status of the software reviewed,
-  In particular its warnings: a warning does not constitute certification.
+The optional six-language Google-generated WAV bank is distributed separately with provenance notes; do not apply the project's MIT source licence to those recordings. Read [Third-party licences](THIRD_PARTY_LICENSES_EN.md).
 
-## Downloadable files
+## Share a private project
 
-Large files do not belong to the Git history of the code.
-Releases may contain:
-- the programme for **exclusively** the material indicated;
-- `GlycemieConnexion.exe` ;
-- microSD voice banks and their source information;
-- fingerprints SHA-256 files distributed.
+A private repository can be shown to selected GitHub accounts by inviting a collaborator with the minimum required access. Do not send login credentials, repository tokens or private flash backups to a reviewer.
 
-Preversion v0.1.0 already exists. Its code and binaries are **historic**:
-a subsequent firmware correction requires a new build, tests and
-a **new version**; not pretend that the old ZIP was updated.
-GitHub automatically offers the source code for each tag.
-Do not consider ZIP manually added as more recent than the commit.
+## Before switching to public visibility
 
-## Sharing and publication
+Verify all Markdown links, screenshots, credits, licences and Release attachments. Check for personal glucose readings and accounts in **all committed history and binaries**, not only the current visible files. A secret accidentally pushed must be rotated; deleting the file alone is not sufficient.
 
-A **private** deposit is only accessible to authorized persons.
-It is possible to occasionally invite a player from settings
-Deposit. Access is never equivalent to a change in visibility.
+Retain the statements that the project is an experimental supplementary display and that first-time installation on an untouched board was not validated end to end. Do not advertise medical certification.
 
-An opening to the public is not automatic: make a final review of the
-secrets, captures, rights, tests, warnings and links before choosing
-**Settings → General → Change visibility → Public**. Only the owner
-must decide on this action.
+To change visibility, use the owner's GitHub repository settings. **This document does not authorize an automated public release.**
 
-## Not to be done
+## Avoid
 
-- Do not execute `preparer_razine.py --depot-neuf` on an existing repository.
-- Do not delete folder `.git` or rewrite the history for a normal update.
-- Do not promise that a new device installation has been validated without actual testing.
-- Do not make public a program generated from personal secrets.
+- Force-pushing a rewritten Git history for routine comments.
+- Running the old `--depot-neuf` option against an existing repository.
+- Publishing private `device_secrets.h`, NVS, serial logs or actual measurement CSV files.
+- Updating the ESP32-C6 or using erase-flash/eFuse tools as a documentation step.
