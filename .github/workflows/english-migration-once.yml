@@ -1,4 +1,4 @@
-name: English documentation migration
+name: Complete English-only developer documentation
 
 on:
   push:
@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   migrate:
-    name: Convert developer docs and comments offline
+    name: Convert remaining developer comments and docstrings
     runs-on: ubuntu-latest
     timeout-minutes: 50
     steps:
@@ -27,8 +27,8 @@ jobs:
           python-version: "3.12"
       - name: Install offline translation engine
         run: python -m pip install "argostranslate>=1.9,<2.0"
-      - name: Convert documentation without translating UI strings
-        run: python tools/english_docs_migration.py --apply
+      - name: Complete English-only comments and docstrings without touching UI strings
+        run: python tools/finish_english_comments.py --apply
       - name: Check Python syntax and whitespace
         run: |
           python -m compileall -q main tools tests
@@ -45,5 +45,5 @@ jobs:
             echo "No documentation changes."
             exit 1
           fi
-          git commit -m "Standardize developer documentation and comments in English"
+          git commit -m "Translate remaining French comments and Python docstrings to English"
           git push origin HEAD:documentation/english-only-20261024
