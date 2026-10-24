@@ -1,149 +1,42 @@
-# Log of recovery and recovery of the deposit
+# Repository recovery record — 15 October 2026
 
-**Date: October 15, 2026.** This document tells exactly where each file of this file comes from.
-repository: what was recovered identically, what was rewritten, and what was produced
-For the occasion. It is deliberately detailed so that we can verify it.
+**Historical report.** This records how the original K19 project was located and reconstructed into a portable Git repository. Later K20–K22 work, security fixes and the v0.2.0 release were added **after** this recovery. It would be incorrect to describe today's sources as byte-for-byte identical to K19.
 
----
+## What happened
 
-## Starting point
+The historical working directory had been moved and was initially believed to be lost. A search across available local drives for Waveshare, glucose and ESP-IDF filenames found an intact archive directory. Its precise machine path is deliberately excluded from public documentation.
 
-The historical work file had disappeared from its location
-and the project was considered lost.
+The recovered material included all K19 `.c` and `.h` sources; CMake, partition and ESP-IDF configuration; the locally patched Espressif PPA component; 12 historical firmware snapshots; original 32 MB flash backups; diagnostic logs; development screenshots; private account settings; and handover notes.
 
-## What was found
+## How the sources were identified
 
-Search for D:, E:, F: and G: disks with file names
-(`glyc`, `waveshare`, `K17`, `sdkconfig`, `partitions.csv`, `idf_component.yml`, `dexcom`)
-located the **intact** project:
+- The K19 `main/` source tree matched the `K19_VOIX_CAPTEUR_BIN` snapshot in the original recovery comparison.
+- Three original 32 MB flash backups were checked against recorded SHA-256 fingerprints.
+- Historical logs and local development-session notes were used to reconstruct the chronology and previous decisions.
+- The last original K19 diagnostic session was dated September 2026. Subsequent published features came later.
 
-a **archive folder of the same disk**, under its original name
-(the exact location is noted locally: it has no place in a public repository).
+These observations describe the **recovery on 15 October 2026**; they are not new checks against the current v0.2.0 binary.
 
-The file had not been deleted; it had been moved**. It contained:
+## Files incorporated into the initial repository
 
-| Element | State |
-|---|---|
-| `firmware/glycemie_display/main/` | all `.c` / `.h`, last amendment 2026-09-21 |
-| `firmware/glycemie_display/` | `CMakeLists.txt`, `sdkconfig.defaults`, `partitions.csv`, `dependencies.lock`, `config/`, `components/esp_driver_ppa/` |
-| `firmware/snapshots/` | **12 backups**: `V1_STABLE`, `J2_STABLE_BIN`, `K10` à `K19`of which the `K17_ACCUEIL_XXL_BIN` sought |
-| `backup_original/` | 3 copies of the 32 MB factory flash |
-| `tools/` | environment, flash check, serial capture, generation and copy of voice bank, **599 numbered newspapers** (up to 366) and 191 screenshots PNG |
-| `private/device_secrets.h` | actual identifiers (never copied to this repository) |
-| `PASSATION.md`, `README.md` (344 lines) | original technical documentation |
+The original C firmware, dependency lockfile, hardware configuration, font licences, patched PPA driver and applicable build tools were recovered. Machine-specific absolute paths were adjusted so the project could be built elsewhere. Separate `.gitignore`, introductory documents, test suites, release tooling, and demo screenshots were created for the sharable repository.
 
-Integrity checks performed:
+The original private work directory was not intended to be overwritten by the packaging step. Later revisions now use normal Git branches, commits and pull requests rather than recreating publication history.
 
-- the three flash backups give **exactly** the SHA-256 expected
-  `f2ece1fc3dbdfc3bd84db8f3b8a89c40851433f846b819aa8364e813346ce8b8` ;
-- the content of `main/` is **identical**, file by file, to that recorded in the
-  backup `K19_VOIX_CAPTEUR_BIN` : the sources on the disc are those of the last
-  firmware flashed and validated;
-- the last newspaper is No. 366 (`366_K19_etat_final.log`) : **no development
-  place after K19**.
+## What was deliberately excluded
 
-In addition, the local history of development assistance sessions kept on the PC
-(10 sessions,  K19) was used to **cross** the history of the
-versions, decisions and measures. There was no need to rebuild the code: the
-sources of origin were available.
+- Real `private/device_secrets.h` credentials.
+- Raw flash/NVS backups and old executable snapshots that might embed those credentials.
+- Serial logs and measurement history containing real glucose readings.
+- Local virtual environments, installed ESP-IDF toolchains and cloned third-party source trees.
+- Raw voice-generation caches; only documented application audio packages were prepared separately.
 
----
+## Historical verification
 
-## What has been done to establish this deposit
+During the 15 October reconstruction, ESP-IDF 5.5.5 built the recovered K19 sources, pre-flash checks passed, host tests ran, and the five pages were captured on the real display in demo mode. No reflash, NVS write, SD format or eFuse operation was part of that **recovery-only** audit.
 
-The original file has **not** been modified: it has only been read.
+The path containing an accented character caused build-tool failures on Windows. Validation therefore used an ASCII-only build directory. The same constraint is documented for present-day developers in [Installation](INSTALLATION_EN.md).
 
-### Retrieved identically (exact copy)
+## Current source of truth
 
-- `main/` — all files `.c` et `.h`, `fonts/`, `voice/`, `idf_component.yml`
-- `components/esp_driver_ppa/` — the corrective amount PPA and its `CORRECTIF.txt`
-- `config/esp32p4_rev1_3.defaults`
-- `CMakeLists.txt`, `sdkconfig.defaults`, `partitions.csv`, `dependencies.lock`
-- `tools/verif_avant_flash.py`, `tools/serial_capture.py`, `tools/scan_secrets.py`,
-  `tools/voice/gen_voice.ps1`, `gen_voice_google.py`, `pack_voice.py`, `sd_voice_upload.py`
-
-### Modified only to make the project portable
-
-Four files contained the absolute path of the original machine, **in
-comments or docstrings**; they have been rewritten so that they no longer depend on a
-Location:
-
-| File | Amendment |
-|---|---|
-| `main/CMakeLists.txt` | `../../../private` → `../private` (the project is now at the root of the repository) + comment |
-| `main/app_secrets.h` | comment |
-| `main/device_secrets.example.h` | comment + copy command |
-| `components/esp_driver_ppa/CORRECTIF.txt` | origin indicated as `$IDF_PATH/components/esp_driver_ppa` |
-| `tools/verif_avant_flash.py` | docstring, and `PROJECT` tip on the root of the repository |
-| `tools/voice/pack_voice.py` | exit path to `main/` |
-
-**No logic line has been modified.** The compiled code is that of K19.
-
-### Rewritten for filing
-
-- `tools/idf_env.ps1` — rewritten: detects the root of the project from its own position,
-  accept one ESP-IDF installed elsewhere via `IDF_PATH`, does not affect any Windows variable.
-- `.gitignore` — rewritten and expanded (identifiers, binary, flash backups, newspapers,
-  historical glycemic, local environments).
-
-### Created for this delivery
-
-- `README.md` (English), `README.md` (French), `LICENSE`, `CREDITS.md`
-- `docs/` — 11 documents in this file
-- `tests/` — following PC tests (see below) and deposit checks
-- `tools/build.ps1`
-- `assets/banque_vocale_manifeste.csv` — list of voice bank phrases
-- `screenshots/` — five actual catches
-
-### Voluntary **not** copied into repository
-
-| Element | Reason |
-|---|---|
-| `private/device_secrets.h` | real Wi-Fi and Dexcom identifiers |
-| `backup_original/*.bin` (3 × 32 MB) | flash backups, which may contain private data |
-| `firmware/snapshots/**` (binaries and ELF) | firmware compiled: IDs are included |
-| `tools/logs/` (599 files) | development logs containing actual blood glucose levels |
-| `tools/voice/bank/` 23 MB of WAV) | audio generated by a third-party service, too large and licensed separately |
-| `tools/esp-idf-v5.5.5/`, `tools/espressif/`, `.venv/` | tools installed locally |
-| `sources/` | cloned third-party deposits for study |
-
----
-
-## Audits actually executed on 2026-10-15
-
-| Verification | Result |
-|---|---|
-| Compilation ESP-IDF 5.5.5 of reconstituted deposit | **success** — 2,433 targets, `glycemie_display.bin` = 6 129 952 o, 27% of free partition |
-| `tools/verif_avant_flash.py` | **23 / 23 controls OK** — « LOAD TO FLASHER » |
-| Unit tests on PC (`tests/run_tests.py`) | **103 checks, 0 failure** (38 + 65) |
-| Comparison `main/` deposit backup K19 | identical |
-| SHA-256 of the three flash backups | in accordance with expected value |
-| 5 page captures on the real map | obtained by the console `snap`, in demonstration mode |
-
-**Unexecuted**: no flash, no erasure, no writing NVSno formatting of the
-microSD. The map was used only in **reading** (serial console) and in mode
-demonstration, which does not alter anything persistent.
-
----
-
-## Compilation: limit met
-
-The requested delivery file contains a ** accent**.
-ESP-IDF does not support it: the compilation fails successively in `ccache`
-(`Cannot convert character sequence`), in `ldgen.py` (`UnicodeDecodeError` on the exit
-d'`objdump`) and in the link editor (libraries ofESP-SR not found). A junction
-NTFS not enough: Cmake solves the real path.
-
-The validation compilation was therefore done from a **copy of the repository in a path
-ASCII**, which is also the official recommendation of Hope. The files delivered
-are identical. This constraint is indicated in the README and in
-[INSTALLATION_EN.md](INSTALLATION_EN.md).
-
----
-
-## Where the original still stands
-
-The original ** file was not moved, modified or deleted**.
-There remains the reference for everything that is not publishable: flash backups,
-logs, voice bank, identifiers, and 12 binary backups to return
-any earlier version.
+For current behavior, use the `main` branch and the tagged Release rather than relying on this historical report. See [Version history](VERSION_HISTORY_EN.md), [the developer walkthrough](DEVELOPER_WALKTHROUGH.md), and [Known limitations](LIMITATIONS_EN.md). The original private archives are neither included nor required to read the public repository.
