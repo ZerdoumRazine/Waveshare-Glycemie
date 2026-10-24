@@ -1,221 +1,112 @@
-# Installation and compilation (Windows 10 / 11)
+# Building and installing WaveShare Glycémie
 
-Duration: about one hour the first time, including the most important download.
+This guide explains the **developer build from source** on Windows 10/11. Users who only need a working display should follow [the beginner's guide](BEGINNER_TUTORIAL_EN.md) and use the versioned installation ZIP instead of installing a compiler.
 
----
+## Requirements
 
-## 1. Constraints to know before starting
+- **Waveshare ESP32-P4-WIFI6-Touch-LCD-7B**, ESP32-P4 revision v1.3 (pre-v3 build profile).
+- A USB-C **data** cable connected to the board's **UART/CH343** connector.
+- Windows 10 or 11, Git, Python 3, and Espressif **ESP-IDF v5.5.5**.
+- An ASCII-only build path, such as `C:\dev\waveshare-glycemie`. Paths containing accented letters have caused build-tool failures.
+- Enough disk space for ESP-IDF, its toolchains and the generated build directory (several gigabytes).
 
->  ASCII.**
-> ESP-IDF fail otherwise, in three distinct places: `ccache` lift
-> `filesystem error: Cannot convert character sequence`, `ldgen.py` lift
-> `UnicodeDecodeError` by rereading the exit`objdump`, and the link editor finds
-> plus pre-compiled librariesESP-SR. **spaces** in the path are accepted.
->
-> `C:\dev\waveshare-glycemie` appropriate; a folder containing an accent, for example
-> `D:\Projets\Waveshare glycémie`, is not suitable for compiling (the repository may be
-> preserved, but compilation must be done from a copy or clone in a path
-> ASCII). `tools\build.ps1` automatically handle it.
+## 1. Verify the serial port
 
-Other items:
-
-- ESP-IDF and tools (`IDF_TOOLS_PATH`) must also be in a path ASCII.
-- Provide 5 GB for ESP-IDF and the compilation chain, plus 2 GB for the project.
-- No admin fee is required once the serial driver is installed.
-
----
-
-## 2. Serial port driver
-
-The map displays a bridge **WCH CH343** If Windows does not recognize it automatically,
-install the pilot from [wch.cn](https://www.wch.cn/) (pilot CH343SER). Next:
+The board's USB-UART bridge is a **WCH CH343**. Check Windows Device Manager under *Ports (COM & LPT)*, or run:
 
 ```powershell
 Get-CimInstance Win32_PnPEntity | Where-Object { $_.Name -match 'COM\d+' } | Select-Object Name
 ```
 
-Record the number displayed (`USB-Enhanced-SERIAL CH343 (COMx)`) : it will replace `COM7` in
-all orders that follow.
+Find `USB-Enhanced-SERIAL CH343 (COMx)` and note its port number. `COM7` in examples is a placeholder, not a fixed port. If Windows does not recognize the bridge, use the appropriate WCH serial driver.
 
----
+## 2. Install and activate ESP-IDF
 
-## 3. ESP-IDF 5.5.5
+Use the official [ESP-IDF Windows installer](https://dl.espressif.com/dl/esp-idf/) for **v5.5.5** and select the **ESP32-P4** target. Install it to a path without accents, for example `C:\Espressif`. Open the ESP-IDF PowerShell shortcut.
 
-Two possibilities.
-
-### a. Official installer (the simplest)
-
-Download**ESP-IDF Windows Install** on
-[dl.espressif.com](https://dl.espressif.com/dl/esp-idf/) and select the **v5.5.5** version.
-When installing, select target **ESP32-P4** (it avoids downloading
-unnecessary Xtensa strings) and a directory **without accent**, for example
-`C:\Espressif`.
-
-Installer adds shortcut " ESP-IDF 5.5 PowerShell": all controls of this
-document launch from this window.
-
-### b. ESP-IDF installed in the project
-
-The script `tools\idf_env.ps1` automatically detects an installation placed in
-`tools\esp-idf-v5.5.5` (with its tools in `tools\espressif`) and redirect all caches
-in `tools\cache`, without touching Windows environment variables:
-
-```powershell
-. .\tools\idf_env.ps1
-```
-
-Si ESP-IDF is elsewhere, define `IDF_PATH` before the call:
+If ESP-IDF is already installed elsewhere, you can activate it with the included helper:
 
 ```powershell
 $env:IDF_PATH = 'C:\Espressif\frameworks\esp-idf-v5.5.5'
 . .\tools\idf_env.ps1
 ```
 
-> If activation complains of `xtensa-esp-elf` missing is that the installation was
-> made for the target ESP32-P4 only and onlyESP-IDF does not find the recording of
-> this installation. Correct with:
-> `python "$env:IDF_PATH\tools\idf_tools.py" install --targets=esp32p4`
+The script also supports an installation under `tools\esp-idf-v5.5.5`; do not commit a local toolchain or cached dependencies into the source repository.
 
----
-
-## 4. Recover Project
+## 3. Clone the repository
 
 ```powershell
-git clone <url-du-depot> C:\dev\waveshare-glycemie
+git clone https://github.com/ZerdoumRazine/Waveshare-Glycemie.git C:\dev\waveshare-glycemie
 cd C:\dev\waveshare-glycemie
 ```
 
----
+Run from the desired branch or release tag. Do not mix source files from different versions.
 
-## 5. Private identifiers — old optional method
+## 4. Handle credentials safely
 
-**To install the public program, do not enter any secrets in the code.** After installation, the touch assistant or Windows app allows you to enter your own Wi-Fi and Dexcom access without recompilation ([beginner tutorial]](BEGINNER_TUTORIAL_EN.md)).
+**Public builds must not embed passwords.** The touchscreen first-run wizard and the optional `GlycemieConnexion.exe` Windows application collect each user's Wi-Fi and Dexcom Share details after installation.
 
-The instructions below relate only to the**old optional method** of compiling a personal program with its integrated identifiers. Never distribute the resulting binaries.
-
+The legacy private-build option uses `main/device_secrets.example.h` as a template. It is intended for local experimentation only:
 
 ```powershell
-copy main\device_secrets.example.h private\device_secrets.h
+Copy-Item main\device_secrets.example.h private\device_secrets.h
 notepad private\device_secrets.h
 ```
 
-```c
-#define GLY_WIFI_SSID        "MonReseau"      /* Wi-Fi 2,4 GHz */
-#define GLY_WIFI_PASSWORD    "..."
-#define GLY_DEXCOM_USERNAME  "..."            /* compte Dexcom QUI PARTAGE */
-#define GLY_DEXCOM_PASSWORD  "..."
-#define GLY_DEXCOM_REGION    "ous"            /* Europe */
-```
+The `private/` directory is ignored by Git. However, any executable built with this file may contain the credentials: **never distribute that firmware, flash backup or build directory**. Leave the file absent when building for someone else.
 
-The folder `private/` is ignored by Git. These values are **compiled in firmware**:
-never publish `build/` or `.bin` product.
-
-Dexcom account details : [DEXCOM_SETUP_EN.md](DEXCOM_SETUP_EN.md).
-Without Dexcom account, leave the Dexcom fields empty: the device starts and the **mode
-demonstration** allows you to try everything (`demo normal` in the console).
-
----
-
-## 6. Compile
+## 5. Build the firmware
 
 ```powershell
 idf.py set-target esp32p4
 idf.py build
 ```
 
-Component manager uploads dependencies to the first compilation
-(BSP Waveshare, LVGL, ESP- Hosted, ESP-SR...) respecting `dependencies.lock`. Count
-several minutes and 2,400 object files.
+The ESP-IDF component manager restores dependencies from `dependencies.lock`. Use `powershell -ExecutionPolicy Bypass -File tools\build.ps1` as a project-specific helper if preferred; its `-Clean` option forces a fresh build.
 
-Expected outcome at the end of the compilation:
+If you change `sdkconfig.defaults` or `config/esp32p4_rev1_3.defaults`, regenerate the resolved `sdkconfig` instead of assuming old cached settings will automatically update.
 
-```
-glycemie_display.bin binary size 0x5d8920 bytes. Smallest app partition is 0x800000 bytes.
-0x2276e0 bytes (27%) free.
-```
-
-Shortcut provided: `powershell -ExecutionPolicy Bypass -File tools\build.ps1` (add
-`-Clean` for one `fullclean` prior).
-
-> After any modification of `sdkconfig.defaults` or `config/esp32p4_rev1_3.defaults`,
-> **delete `sdkconfig`** before recompiling, otherwise old values persist.
-
----
-
-## 7. Check before flashing
+## 6. Validate before flashing
 
 ```powershell
 python tools\verif_avant_flash.py
 ```
 
-23 security checks on the image produced: target, profile rev1.3, flash size,
-PSRAM, partition offsets ** identical to those of the original firmware**, files
-actual written (the NVS is never in the list), absence of erasure, sizes of
-binary, accepted revisions, no ID in configuration files.
+This checks the ESP32-P4 revision profile, flash and PSRAM settings, image compatibility, partition offsets, expected binaries, and other safety conditions. **Do not flash if any check fails.** The CI firmware workflow performs the same checks on a public build without personal credentials.
 
-The script is mistaken if only one control fails. **Do not flash in this case. **
+## 7. Flash the correct board
 
----
+Make a backup before experimenting, especially when the device already has settings or history. A full flash copy is sensitive and must remain outside GitHub.
 
-## 8. Flash
+```powershell
+python -m esptool --chip esp32p4 -p COM7 read-flash 0 0x2000000 backup_32MB.bin
+```
+
+To build and flash through ESP-IDF:
 
 ```powershell
 idf.py -p COM7 flash monitor
 ```
 
-Are written: bootloader `0x2000`, partition table `0x8000`, application `0x10000`,
-models ESP-SR `0xF10000`. **The NVS is never written** : settings, dates of installation of the
-sensor and catheter, stocks and lock Dexcom are kept.
+The reference partition layout contains the bootloader at `0x2000`, partition table at `0x8000`, application at `0x10000`, and optional speech-recognition models at `0xF10000`. For an application-only update, the project historically used `idf.py -p COM7 app-flash` to avoid rewriting the models.
 
-If only the application has changed (current case), `idf.py -p COM7 app-flash` is sufficient and avoids
-Rewrite the 3MB of models, instead of 2 min.
+**Never use `erase-flash`, automatic microSD formatting, eFuse changes, Secure Boot or flash encryption as part of this project's ordinary installation.** The ESP32-C6 coprocessor firmware is not modified by this procedure.
 
-**Never** of`erase-flash`, of`erase-region`, eFuse, Secure Boot or Flash
-Encryption. The firmware of theESP32- C6 is never hit.
+## 8. Configure the touchscreen and microSD
 
-> **Recommended save before the first flash.** Read the entire flash
-> (32 MB) allows you to return to the factory firmware:
-> `python -m esptool --chip esp32p4 -p COM7 read-flash 0 0x2000000 sauvegarde_32MB.bin`
-> This backup may contain private data: keep it **outside the repository**.
+On first start, use the touchscreen setup wizard to select a language, Wi-Fi network, Dexcom Share account and region. The wizard tests a new connection before saving it. The public firmware disables voice-command recognition, while prerecorded announcements and alert tones are supported.
 
----
+A microSD card is optional but needed for daily CSV history and WAV announcements. Use **FAT32**, including for a 64 GB SDXC card; exFAT is not supported by this firmware. Never reformat a card containing history without making a verified backup.
 
-## 9. First commissioning
+See [Dexcom setup](DEXCOM_SETUP_EN.md), [the voice tutorial](VOICE_TUTORIAL_EN.md), and [hardware details](HARDWARE_EN.md).
 
-1. On startup, the console displays the revision of the chip, the PSRAM, the initialisation of
-   the screen, the detection of the GT911, then Wi-Fi, SNTP and Dexcom.
-2. Page **REGULATIONS**: adjust volume (85% recommended), brightness, thresholds,
-   Night mode, catheter interval.
-3. Page **CONSOMMABLES**: press **NOUVEAU CAPTEUR** at the actual time of installation, then
-   Inform stocks.
-4. Voice commands are **disabled** by default (they consume 6 MB of PSRAM
-   and 12 Ko of RAM internal): to be activated in LOGIES if desired.
-
----
-
-## 10. microSD (optional but recommended)
-
-Format a map in **FAT32** (a 64 GB card must be explicitly formatted in
-FAT32, not exFAT), insert it, then check:
+## 9. Run regression tests
 
 ```powershell
-python tools\serial_capture.py --port COM7 --duration 20 --send "2:sd_check" --log sd.log
+python tests\run_tests.py
+python tests\test_depot.py
+python tests\test_assistant_config.py
+python tests\test_sd_voice_upload.py
 ```
 
-Without microSD: no history CSV and no voices (a beep replaces the ads). All
-remains working.
-
-To install the French voice bank, see [THIRD_PARTY_LICENSES_EN.md](THIRD_PARTY_LICENSES_EN.md)
-(the bank is not distributed with the deposit) and `tools\voice\gen_voice_google.py` +
-`tools\voice\sd_voice_upload.py`.
-
----
-
-## 11. Tests
-
-```powershell
-python tests\run_tests.py      # tests unitaires sur PC, sans carte
-python tests\test_depot.py     # cohérence du dépôt, absence de données privées
-```
-
-See [../tests/README.md](../tests/README.md).
+GitHub Actions runs Linux and Windows suites plus a full ESP-IDF build. A successful compiler run **does not certify medical use** or prove every first-time setup path on an unused board. Those limitations are documented honestly in [Limitations](LIMITATIONS_EN.md).
