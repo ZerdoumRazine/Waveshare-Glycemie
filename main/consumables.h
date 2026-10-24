@@ -1,20 +1,14 @@
 /* consumables.h: Consumables lifecycle and reminders interface.
  * Keep this header focused on the contracts used by other modules.
  */
-/*
- * Consumables: Dexcom G7 sensor (followed in sensor_session.c) and infusion site / catheter.
- *
- * NOUVEAU CAPTEUR / NOUVEAU CATHETER (button with confirmation, or voice command confirmed): the current time
- * (SNTP) devient l'heure de depart, enregistree en NVSwithout any date or time entry. Line added
- * a /glycemie/logs/consumables.csv for each actual confirmation ("2026-09-15 16:42,G7,new"); if microSD is
- * not available, the line is written on its return (marker NVS, never duplicate or line for restoration).
- *
- * Catheter: 72 h interval per default (48 h possible), one single recall has single use 2 h before default, then
- * "A CHANGER" on schedule. It is a reminder configured by the user, not a therapeutic recommendation.
- */
-/* Public interface / Interface publique
- * Cateter dates, discounts and their persistence contract.
- */
+/* Consumables lifecycle: sensor sessions live in sensor_session.c and
+ * infusion-set dates live here. A confirmed replacement records the current
+ * synchronized time in NVS and is logged to microSD once. When the card is
+ * unavailable, the pending record is written on remount without duplication.
+ * The infusion-set interval is user-selectable (48 or 72 hours); its single
+ * reminder is two hours before the due time. These are user preferences,
+ * not clinical recommendations. */
+/* Shared APIs for replacement dates, reminders and persistence. */
 #pragma once
 
 #include <stdbool.h>
@@ -34,8 +28,8 @@ typedef enum {
 
 typedef struct {
     bool known;
-    int64_t start_s;        /* heure du changement (epoch UTC) */
-    int64_t due_s;          /* echeance = changement + intervalle */
+    int64_t start_s;        /* Confirmed replacement time as UTC epoch seconds. */
+    int64_t due_s;          /* Due time = replacement time plus selected interval. */
     int interval_h;         /* 48 ou 72 */
     int day;                /* Day 1.days_total */
     int days_total;
