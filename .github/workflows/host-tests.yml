@@ -1,6 +1,5 @@
-# EN: Run host C/Python regression tests and validate the Windows application.
-# FR: Lance les tests C/Python et vérifie l'application Windows.
-name: Tests hors matériel
+# Run host C/Python regression tests and validate the Windows application.
+name: Hardware-independent tests
 
 on:
   pull_request:
@@ -11,47 +10,49 @@ permissions:
 
 jobs:
   host-tests:
-    name: Tests C et Python (sans écran)
+    name: C and Python host tests
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - name: Récupérer les sources
+      - name: Check out sources
         uses: actions/checkout@v4
-      - name: Préparer Python
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Tests C compilés avec GCC
+      - name: Run C tests with GCC
         run: python tests/run_tests.py
-      - name: Cohérence du dépôt
+      - name: Check repository consistency
         run: python tests/test_depot.py
-      - name: Traductions et banques vocales
+      - name: Ensure English-only Markdown documentation
+        run: python tests/test_english_docs.py
+      - name: Validate language and speech resources
         run: python tests/test_langues_voix.py
-      - name: Assistant USB (simulation)
+      - name: Test USB assistant (simulation)
         run: python tests/test_assistant_config.py
-      - name: Sauvegarde microSD (simulation)
+      - name: Test microSD recovery (simulation)
         run: python tests/test_recuperation_microsd.py
-      - name: Transfert des annonces (simulation)
+      - name: Test voice transfers (simulation)
         run: python tests/test_sd_voice_upload.py
-      - name: Paquet d'installation (fichiers factices)
+      - name: Test release package (fixtures)
         run: python tests/test_pack_release.py
 
   windows-app:
-    name: Application de configuration Windows (sans écran)
+    name: Windows setup application (without hardware)
     runs-on: windows-latest
     timeout-minutes: 15
     steps:
-      - name: Récupérer les sources
+      - name: Check out sources
         uses: actions/checkout@v4
-      - name: Préparer Python
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Tests de l'application Windows
+      - name: Test Windows application
         run: python tests/test_pc_app.py
-      - name: Installer l'outil de construction Windows
+      - name: Install PyInstaller
         run: py -3 -m pip install pyinstaller
-      - name: Vérifier la syntaxe de l'installateur USB
+      - name: Check USB installer syntax
         shell: pwsh
         run: |
           $tok = $null
@@ -59,10 +60,10 @@ jobs:
           [void][System.Management.Automation.Language.Parser]::ParseFile(
             (Resolve-Path 'tools/installer.ps1').Path, [ref]$tok, [ref]$errors)
           if ($errors.Count -gt 0) { $errors | Out-String | Write-Host; exit 1 }
-      - name: Construire l'executable Windows
+      - name: Build Windows executable
         shell: pwsh
         run: powershell -ExecutionPolicy Bypass -File tools/pc_app/construire_exe.ps1
-      - name: Conserver l'executable verifie (depot prive)
+      - name: Store tested Windows executable (private repo)
         uses: actions/upload-artifact@v4
         with:
           name: GlycemieConnexion-${{ github.sha }}

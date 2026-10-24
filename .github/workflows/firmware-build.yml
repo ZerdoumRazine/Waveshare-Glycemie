@@ -1,6 +1,5 @@
-# EN: Compile and preflight-check the ESP32-P4 firmware without personal credentials.
-# FR: Compile et contrôle le firmware ESP32-P4 sans identifiants personnels.
-name: Compilation ESP-IDF
+# Compile and preflight-check the ESP32-P4 firmware without personal credentials.
+name: ESP-IDF firmware build
 
 on:
   pull_request:
@@ -11,15 +10,15 @@ permissions:
 
 jobs:
   esp32p4-build:
-    name: Firmware ESP32-P4 (sans identifiants)
+    name: ESP32-P4 firmware without embedded credentials
     runs-on: ubuntu-latest
     timeout-minutes: 40
     container:
       image: espressif/idf:v5.5.5
     steps:
-      - name: Récupérer le code
+      - name: Check out sources
         uses: actions/checkout@v4
-      - name: Activer ESP-IDF et compiler (sans identifiants)
+      - name: Activate ESP-IDF and build
         shell: bash
         run: |
           source "$IDF_PATH/export.sh"
@@ -27,7 +26,7 @@ jobs:
           idf.py set-target esp32p4
           idf.py build
           python tools/verif_avant_flash.py
-      - name: Conserver les trois binaires verifies (depot prive)
+      - name: Store verified firmware binaries (private repo)
         uses: actions/upload-artifact@v4
         with:
           name: firmware-esp32p4-${{ github.sha }}

@@ -1,13 +1,8 @@
-# EN: Publish the verified v0.2.0 prerelease without changing repository visibility.
-# FR: Finalise la préversion vérifiée sans modifier la visibilité du dépôt.
-name: Finaliser la préversion privée v0.2.0
+# Publish the verified v0.2.0 prerelease without changing repository visibility.
+name: Finalize private v0.2.0 pre-release
 
+# Manual maintenance only: this historical v0.2.0 release already exists.
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - ".github/workflows/finaliser-release-privee.yml"
   workflow_dispatch:
 
 permissions:
@@ -15,15 +10,15 @@ permissions:
 
 jobs:
   finaliser:
-    name: Vérifier les six voix puis publier dans le dépôt privé
+    name: Verify six speech banks and publish in private repo
     runs-on: ubuntu-latest
     timeout-minutes: 35
     env:
       GH_TOKEN: ${{ github.token }}
     steps:
-      - name: Sources versionnées
+      - name: Check out tracked sources
         uses: actions/checkout@v4
-      - name: Exiger un dépôt privé et un brouillon v0.2.0
+      - name: Require private repository and draft v0.2.0
         shell: bash
         run: |
           set -euo pipefail
@@ -37,17 +32,17 @@ jobs:
             grep -Fxq "$file" /tmp/assets.txt
           done
           if grep -Fxq "glycemie-microSD-v0.2.0.zip" /tmp/assets.txt; then
-            echo "Archive déjà jointe : vérifier manuellement avant de recommencer."
+            echo "Audio bank already present; review before retry."
             exit 1
           fi
-      - name: Télécharger les voix originales et leur somme de contrôle
+      - name: Download original speech banks and checksum
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p _voice
           gh release download v0.1.0 --repo "$GITHUB_REPOSITORY" \
             --pattern 'glycemie-microSD.zip' --pattern 'SHA256SUMS.txt' --dir _voice
-      - name: Reconditionner et vérifier les 2376 WAV
+      - name: Repackage and check 2,376 WAV files
         run: |
           set -euo pipefail
           python3 tools/release_voice_archive.py \
@@ -55,7 +50,7 @@ jobs:
             --historical-sha _voice/SHA256SUMS.txt \
             --out _voice/public
           (cd _voice/public && sha256sum -c SHA256SUMS-voix.txt)
-      - name: Attacher le seul paquet audio nettoyé et son empreinte
+      - name: Attach sanitized audio archive and checksum
         shell: bash
         run: |
           set -euo pipefail
@@ -76,7 +71,7 @@ jobs:
               > /tmp/last_uploaded_asset.json
             jq -e --arg filename "$filename" '.name == $filename and .state == "uploaded"' /tmp/last_uploaded_asset.json
           done
-      - name: Recontrôler tous les téléchargements et publier la préversion
+      - name: Recheck all assets and publish private pre-release
         shell: bash
         run: |
           set -euo pipefail
@@ -95,11 +90,11 @@ jobs:
                           'make_latest': 'false'}, ensure_ascii=False),
               encoding='utf-8')
           PY
-          # La visibilité du dépôt n'est jamais modifiée.
+          # Repository visibility remains private.
           gh api -X PATCH "repos/$GITHUB_REPOSITORY/releases/$RELEASE_ID" \
             --input /tmp/release_payload.json --jq '{tag_name, draft, prerelease, html_url}'
           test "$(gh api "repos/$GITHUB_REPOSITORY" --jq '.private')" = true
-      - name: Archiver l'ancienne préversion dans les brouillons
+      - name: Archive previous pre-release as draft
         shell: bash
         run: |
           set -euo pipefail
@@ -110,4 +105,4 @@ jobs:
               -F draft=true -F prerelease=true --jq '{tag_name, draft}'
           fi
           test "$(gh api "repos/$GITHUB_REPOSITORY" --jq '.private')" = true
-          echo "Préversion 0.2.0 publiée dans le dépôt PRIVE. 0.1.0 archivée."
+          echo "Pre-release 0.2.0 published inside PRIVATE repository; v0.1.0 archived."
