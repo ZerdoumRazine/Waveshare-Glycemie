@@ -1,17 +1,29 @@
-Composant esp_driver_ppa surcharge dans le projet (prioritaire sur celui d'ESP-IDF)
+Local override of esp_driver_ppa (takes precedence over ESP-IDF's bundled component)
+==================================================================================
 
-Origine : $IDF_PATH/components/esp_driver_ppa (ESP-IDF v5.5.5, sans test_apps).
-Seule modification : src/ppa_srm.c, fonction ppa_srm_transaction_on_picked() :
-le bloc "Hardware bug workaround (DIG-734)" (bypass_mb_order conditionnel) est remplace par
+Origin: $IDF_PATH/components/esp_driver_ppa from ESP-IDF v5.5.5, excluding test_apps.
+Only modification: src/ppa_srm.c, function ppa_srm_transaction_on_picked().
+The original conditional "Hardware bug workaround (DIG-734)" block
+(bypass_mb_order) is replaced with:
     ppa_ll_srm_bypass_mb_order(platform->hal.dev, true);
 
-Source du correctif : Espressif, composant espressif/esp_lvgl_adapter 0.6.4,
-fichier 0001-bugfix-ppa-Temporary-fix-for-the-PPA-hang-issue.patch et README (section "PPA Freeze Fix (ESP32-P4)") :
-gel de l'affichage sur ESP32-P4 en mode TRIPLE_PARTIAL avec rotation. Le patch vise ESP-IDF v6.0 ; le code
-concerne est identique en v5.5.5 a une ligne de contexte pres (calcul de la profondeur de pixel), d'ou le report manuel.
+Upstream fix: Espressif's espressif/esp_lvgl_adapter v0.6.4, file
+0001-bugfix-ppa-Temporary-fix-for-the-PPA-hang-issue.patch.
+See the adapter README section "PPA Freeze Fix (ESP32-P4)".
+The issue freezes the screen in TRIPLE_PARTIAL display mode with rotation.
+Although the upstream patch targets ESP-IDF v6.0, the affected v5.5.5 code
+has the same behavior; only one nearby context line differs (pixel depth).
+The fix was backported manually.
 
-Constat sur cette carte (2026-09-14) : interface figee (watchdog "lvgl") apres des appuis rapides sur + / - ;
-core dump : lvgl bloquee dans ppa_do_operation() <- ppa_do_scale_rotate_mirror() <- rotate_copy_strided_region()
-<- display_bridge_v9_flush_partial_rotate() (esp_lvgl_adapter). Decodage : tools/logs/99_coredump_A2_decode.txt.
+Observed on the project board on 2026-09-14: display froze after rapidly
+tapping the + and - controls, with an "lvgl" watchdog report.
+The decoded call stack was:
+    ppa_do_operation()
+    <- ppa_do_scale_rotate_mirror()
+    <- rotate_copy_strided_region()
+    <- display_bridge_v9_flush_partial_rotate() (esp_lvgl_adapter)
+The historical decode is referenced as tools/logs/99_coredump_A2_decode.txt.
 
-A supprimer lorsque la version d'ESP-IDF utilisee integrera ce correctif.
+This override should be removed only after the pinned ESP-IDF version
+contains an equivalent upstream fix. Preserve the original Espressif source
+copyright headers and the Apache-2.0 licence.
