@@ -297,9 +297,9 @@ esp_err_t audio_out_init(void)
     }
     app_state_set_audio_ok(true);
     ESP_LOGI(TAG, "Audio pret : ES8311 via le BSP, 16 kHz stereo 16 bits");
-    /* The codec is open to every ringing: traces of information of masked drivers, as well as the false message
-     * d'erreur "i2s_channel_disable ... has not been enabled yet" d'esp_codec_dev (without consequence). The real
-     * echecs d'ouverture et d'ecriture restent journalises par ce module. */
+    /* The codec driver emits informational logs and occasionally a harmless
+ * "i2s_channel_disable ... has not been enabled yet" diagnostic. Report real
+ * audio open/write failures separately so operators can distinguish them. */
     esp_log_level_set("I2S_IF", ESP_LOG_WARN);
     esp_log_level_set("Adev_Codec", ESP_LOG_WARN);
     esp_log_level_set("i2s_common", ESP_LOG_NONE);

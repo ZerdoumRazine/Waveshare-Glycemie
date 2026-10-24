@@ -335,7 +335,7 @@ void consumables_sd_flush(void)
         snprintf(line, sizeof(line), "%04d-%02d-%02d %02d:%02d,%s,new\n", tm_local.tm_year + 1900, tm_local.tm_mon + 1,
                  tm_local.tm_mday, tm_local.tm_hour, tm_local.tm_min, k_csv_type[c]);
         if (sd_storage_append_line(CSV_PATH, CSV_HEADER, line) != ESP_OK) {
-            return; /* nouvel essai au prochain passage (carte indisponible) */
+            return; /* Retry during the next pass when storage is available. */
         }
         xSemaphoreTake(s_mutex, portMAX_DELAY);
         s_logged[c] = pending[c];

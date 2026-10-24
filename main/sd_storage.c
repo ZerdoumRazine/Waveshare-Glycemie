@@ -882,7 +882,7 @@ static void repair_history(void)
     s_last_written_known = false;
 }
 
-/* consumables.csv : lignes "AAAA-MM-JJ HH:MM,type,event" (heure locale) datees de from_s ou plus tard retirees */
+/* Remove consumables.csv test rows from the supplied local timestamp onward. */
 static void purge_consumables(int64_t from_s)
 {
     static const char path[] = LOGS_DIR "/consumables.csv";

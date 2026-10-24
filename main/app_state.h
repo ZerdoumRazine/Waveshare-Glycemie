@@ -28,7 +28,7 @@ typedef enum {
     DEX_STATE_CONNECTING,
     DEX_STATE_OK,
     DEX_STATE_NO_DATA,
-    DEX_STATE_RETRYING,     /* erreur reseau ou serveur : nouvel essai programme */
+    DEX_STATE_RETRYING,     /* Network or server error: retry according to the connection policy. */
     DEX_STATE_AUTH_REFUSED, /* identifiants refuses : tentatives arretees */
     DEX_STATE_LOCKED,       /* compte temporairement bloque par Dexcom */
     DEX_STATE_AWAITING_ARM, /* Never valid identifiers: single attempt pending authorization */
@@ -40,7 +40,7 @@ typedef enum {
     SD_STATE_ABSENT,        /* no detecte map */
     SD_STATE_OK,            /* montee, ecriture possible */
     SD_STATE_UNSUPPORTED,   /* Unrecognized file system: no automatic formatting */
-    SD_STATE_ERROR,         /* erreur d'acces : fonctionnement principal non affecte */
+    SD_STATE_ERROR,         /* Authentication error: preserve normal local display operation. */
 } sd_state_t;
 
 /* Codes de tendance Dexcom Share (ordre de pydexcom DEXCOM_TREND_DIRECTIONS) */

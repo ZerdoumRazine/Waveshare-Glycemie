@@ -24,7 +24,7 @@ typedef enum {
 
 typedef struct {
     bool known;
-    int64_t start_s;        /* heure de pose (epoch UTC) */
+    int64_t start_s;        /* Sensor insertion time as UTC epoch seconds. */
     int64_t due_s;          /* Due time = insertion time plus exactly ten days. */
     int day;                /* Day 1..10 */
     bool expired;           /* Due time reached: show the replacement-required state. */

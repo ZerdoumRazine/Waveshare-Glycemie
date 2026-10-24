@@ -17,7 +17,7 @@
 
 typedef enum {
     CONSUMABLE_SENSOR = 0,  /* Dexcom G7 sensor */
-    CONSUMABLE_CATHETER,    /* infusion site / catheter */
+    CONSUMABLE_CATHETER,    /* Infusion-set component. */
     CONSUMABLE_COUNT,
 } consumable_t;
 
@@ -33,17 +33,19 @@ typedef struct {
     int interval_h;         /* 48 ou 72 */
     int day;                /* Day 1.days_total */
     int days_total;
-    bool overdue;           /* echeance depassee */
+    bool overdue;           /* True after the scheduled due time. */
     int64_t remaining_s;    /* before maturity (negative if exceeded) */
-    int progress_pct;       /* promotion over the interval */
+    int progress_pct;       /* Percentage of elapsed interval. */
 } catheter_status_t;
 
 esp_err_t consumables_init(void); /* After sensor_session_init() */
 
-/* Heure actuelle -> heure de depart (NVS + ligne CSV en attente). ESP_ERR_INVALID_STATE si l'heure SNTP is not
- * valid. source: "button", "voice" or "console" (journal only). Not since a pile spot in PSRAM. */
+/* Set the confirmed change time to the synchronized UTC epoch. Persist it
+ * in NVS and queue a CSV log entry. Reject the action if the system clock
+ * is not reliable. Accepted sources: button, voice or serial console.
+ * Call from a task with a safe internal-RAM stack, not a PSRAM-stack worker. */
 esp_err_t consumable_start_now(consumable_t c, const char *source);
-const char *consumable_name(consumable_t c); /* "NOUVEAU CAPTEUR"... */
+const char *consumable_name(consumable_t c); /* Stable name used by the existing serial/log protocol. */
 
 void catheter_get(int64_t now_s, catheter_status_t *out);
 int catheter_interval_h(void);
@@ -52,13 +54,13 @@ void catheter_set_interval_h(int hours); /* 48 ou 72 */
 /* Incremented with each modification (sensor or catheter): refreshing the display */
 uint32_t consumables_revision(void);
 
-/* Reminder of the current catheter (time pass, time not reached), -1 otherwise; *donone: already present (NVS) */
+/* Return due reminder index, or -1 if none is due; *done reports NVS state. */
 int catheter_current_reminder(int64_t now_s, bool *done);
-void catheter_mark_reminder_done(int reminder); /* presente ou acquitte : memorise en NVS */
+void catheter_mark_reminder_done(int reminder); /* Persist presented or acknowledged reminder state in NVS. */
 void catheter_reset_reminders(void);
 const char *catheter_reminder_text(int reminder);
 
-/* MicroSD cache, mount card: write lines CSV en attente */
+/* Flush pending consumable history rows when microSD is mounted. */
 void consumables_sd_flush(void);
 
 /* Console: state, exact restoration of a real date after a test (no line CSV), effacement */

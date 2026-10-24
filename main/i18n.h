@@ -1,21 +1,13 @@
 /* i18n.h: Identifiers and language selection for UI translations.
  * The declarations below are shared with other firmware modules.
  */
-/*
- * Langue de l'interface (6 langues europeennes).
- *
- * Only TEXTES AFFICHES are translated. Voice announcements remain in French:
- * the voice bank of the microSD (voice Google Chirp 3 HD) n'existe qu'in French, and
- * local voice recognition keeps its original sentences. The newspapers, the console
- * and files CSV also remain in French, so that the recordings
- * anciens et nouveaux restent comparables.
- *
- * The language is recorded in the NVS (space "settings", key "lang" : one byte,
- * separate from the "v1" block of other adjustments which is therefore never invalid).
- */
-/* Public interface / Interface publique
- * Language IDs and text lookup across the six supported UI languages.
- */
+/* Six UI languages: French, English, Spanish, German, Italian and Portuguese.
+ * Screen labels are selected via i18n.c and persisted under the separate
+ * NVS settings key "lang". Spoken announcements have their own six-language
+ * microSD WAV banks; do not remove translations while editing documentation.
+ * Historical logs, CSV headings and serial protocol identifiers remain stable
+ * for backwards compatibility. */
+/* Public APIs for retrieving localized text using stable message IDs. */
 #pragma once
 
 #include <stdbool.h>
@@ -33,14 +25,14 @@ typedef enum {
 } lang_t;
 
 typedef enum {
-    /* Navigation et bandeau */
+    /* Navigation and shared header. */
     S_NAV_HOME = 0, S_NAV_GRAPH, S_NAV_TODAY, S_NAV_CONSUM, S_NAV_SETTINGS,
     S_DEMO_MODE, S_TIME_NOT_SYNCED,
 
     /* Data Breaker */
     S_FRESH_OK, S_FRESH_LATE, S_FRESH_STALE, S_FRESH_WAITING,
 
-    /* Tendances (ordre de trend_t, l'indice 0 est vide) */
+    /* Trends follow the order of trend_t; the first ID is the empty value. */
     S_TREND_UP_FAST, S_TREND_UP, S_TREND_UP_SLOW, S_TREND_FLAT,
     S_TREND_DOWN_SLOW, S_TREND_DOWN, S_TREND_DOWN_FAST,
     S_TREND_UNKNOWN, S_TREND_OUT_OF_RANGE, S_TREND_DASH,
@@ -52,17 +44,17 @@ typedef enum {
     S_WIFI_SETUP_NEEDED, S_WIFI_CONNECTING, S_DEXCOM_NO_CREDENTIALS,
     S_DEXCOM_WAITING_AUTH, S_DEXCOM_RETRYING, S_NO_READING_24H, S_DEXCOM_CONNECTING,
 
-    /* Graphique */
+    /* History graph. */
     S_GRAPH_HINT, S_NO_MEASURE,
 
-    /* Page AUJOURD'HUI */
+    /* Today statistics page. */
     S_TODAY_TITLE, S_SINCE_MIDNIGHT, S_DAY_BAND,
     S_LEG_TARGET, S_LEG_LOW, S_LEG_HIGH, S_LEG_NODATA,
     S_TIR, S_RANGE_70_180, S_AVERAGE, S_MINIMUM, S_MAXIMUM, S_COVERAGE,
     S_TIME_LOW, S_UNDER_70, S_TIME_HIGH, S_OVER_180,
     S_EPISODES_LOW, S_EPISODES_HIGH, S_AT_LEAST_15MIN, S_MEASURES,
 
-    /* Consommables */
+    /* Sensor and infusion-set consumables. */
     S_SENSOR_G7, S_SENSOR_SUB, S_NEW_SENSOR, S_INFUSION_SITE, S_NEW_CATHETER,
     S_STOCK_SENSORS, S_STOCK_CATHETERS, S_STOCK_LOW, S_NOT_SET, S_SET_IT,
     S_NOT_RECORDED, S_BUTTON_BELOW, S_NO_SENSOR_RECORDED, S_NO_CATHETER_RECORDED,

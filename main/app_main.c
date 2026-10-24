@@ -547,7 +547,7 @@ static void console_task(void *arg)
                     printf("IDENT wifi %s\n", e == ESP_OK ? "a l'essai" : esp_err_to_name(e));
                 }
             } else if (strncmp(line, "ident_dexcom ", 13) == 0) {
-                /* ident_dexcom <compte>|<mot de passe>|<region ous|us|jp>, egalement a l'essai */
+                /* ident_dexcom <account>|<password>|<region ous|us|jp>: trial values only. */
                 char *p1 = strchr(line + 13, '|');
                 char *p2 = p1 != NULL ? strchr(p1 + 1, '|') : NULL;
                 if (p1 == NULL || p2 == NULL) {
@@ -672,7 +672,7 @@ void app_main(void)
         ESP_LOGW(TAG, "Audio indisponible : alertes visuelles uniquement");
     }
 
-    /* Wi-Fi after the screen (order valid on this card), then heure/Internet et Dexcom */
+    /* Start Wi-Fi after display initialization, then synchronize time and start Dexcom. */
     err = wifi_manager_start();
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "Wi-Fi heberge : demarrage impossible (%s)", esp_err_to_name(err));

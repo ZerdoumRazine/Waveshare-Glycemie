@@ -26,7 +26,7 @@ typedef enum {
     DEX_OK = 0,
     DEX_ERR_CONFIG,        /* identifiants absents */
     DEX_ERR_NETWORK,       /* DNS, TCP, TLSTime to go */
-    DEX_ERR_SERVER,        /* HTTP inattendu, JSON invalide, code inconnu */
+    DEX_ERR_SERVER,        /* Unexpected HTTP response, invalid JSON or unknown server code. */
     DEX_ERR_SESSION,       /* SessionIdNotFound / SessionNotValid */
     DEX_ERR_AUTH,          /* identifiant ou mot de passe refuse : ne pas reessayer */
     DEX_ERR_MAX_ATTEMPTS,  /* SSO_AuthenticateMaxAttemptsExceeded : compte bloque */
@@ -46,7 +46,7 @@ typedef struct {
     dex_step_t step;
     int http_status;       /* 0 if no answer HTTP */
     bool request_sent;     /* the request (and therefore the identifiers) may have left */
-    char esp_error[40];    /* erreur ESP-IDF reseau/TLS */
+    char esp_error[40];    /* Network or TLS error reported by ESP-IDF. */
     char code[64];         /* champ Code de Dexcom */
     char message[160];     /* champ Message de Dexcom, identifiants masques */
 } dex_error_info_t;
@@ -66,7 +66,7 @@ bool dexcom_client_configured(const dexcom_client_t *client);
 bool dexcom_has_session(const dexcom_client_t *client);
 void dexcom_invalidate_session(dexcom_client_t *client);
 
-/* Test DNS + TLS Dexcom server SANS identifiers (no authentication) */
+/* Verify DNS and TLS without sending user credentials. */
 dex_result_t dexcom_probe_tls(dexcom_client_t *client, int *http_status);
 
 /* 2 step connection (Step 1 is skipped if the account ID is already known) */

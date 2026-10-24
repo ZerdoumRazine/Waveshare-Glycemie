@@ -725,7 +725,7 @@ static void test_task(void *arg)
     }
     test_set(GLY_TEST_EN_COURS, "internet");
     bool heure = false;
-    for (int i = 0; i < 40 && !heure; i++) { /* l'heure SNTP prouve l'acces a Internet (20 s au plus) */
+    for (int i = 0; i < 40 && !heure; i++) { /* An SNTP update demonstrates Internet connectivity; enforce a 20-second limit. */
         heure = net_time_is_valid();
         if (!heure) {
             vTaskDelay(pdMS_TO_TICKS(500));
