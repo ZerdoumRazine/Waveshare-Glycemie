@@ -3,10 +3,8 @@
  * Design note: Never announce successful credential removal after an NVS failure.
  */
 
-/*
- * Presents user options and the touchscreen connection wizard without printing passwords.
- * Shows settings and login wizard without revealing passwords.
- */
+/* Touchscreen settings, language selection and credential management.
+ * Never print passwords or report a failed erase as successful. */
 #include "i18n.h"
 #include "ui_main.h"
 #include "ui_pages.h"
@@ -43,8 +41,7 @@ typedef enum {
     THR_COUNT,
 } thr_id_t;
 
-/* Volume level heads: girld according to language; LVGL keep the pointer,
- * the table must therefore remain static. */
+/* Keep translated volume labels in static storage; LVGL retains pointers. */
 static const char *k_volume_map[6];
 static const str_id_t k_volume_ids[5] = {S_MUTE, S_LOW, S_MEDIUM, S_HIGH, S_MAX};
 
@@ -89,14 +86,13 @@ static bool s_updating;
 
 static const char *const k_interval_map[] = {"48 H", "72 H", ""};
 
-/* Language names are never translated: everyone writes in their own language.
- * L'ordre suit lang_t ; "\n" separates the two rows and does not count as a button. */
+/* Entries follow lang_t; the newline separates two button rows. */
 static const char *const k_lang_map[] = {"Français", "English", "Español", "\n",
                                          "Deutsch", "Italiano", "Português", ""};
 
-/* Choosing the language: you don't touch anything here. The Spot LVGL reconstruct pages out of this
- * callback, for the object that bears it is part of what will be destroyed. */
-/* Configuration Assistant: same screen as the first start-up */
+/* Queue language changes for the LVGL task to avoid destroying a widget
+ * from within its own event callback. */
+/* Reuse the first-run configuration wizard from Settings. */
 static void on_connexion_modifier(lv_event_t *e)
 {
     (void)e;
@@ -134,8 +130,7 @@ static void on_effacer_confirmer(lv_event_t *e)
     const esp_err_t err = credentials_clear();
     fermer_modal();
     if (err != ESP_OK) {
-        /* Do not start again or announce an erasure that has not been
-         * confirms in permanent memory. Existing access remains active. */
+        /* A failed NVS write must not cause a restart or a success message. */
         ESP_LOGE(TAG, "Effacement des acces impossible : %s", esp_err_to_name(err));
         lv_label_set_text(s_conn_aide, tr(S_SETUP_FAIL_OTHER));
         return;
@@ -143,7 +138,7 @@ static void on_effacer_confirmer(lv_event_t *e)
     esp_restart(); /* the empty configuration is saved: open the wizard */
 }
 
-/* Confirmation before erasing: nothing is erased without this second support */
+/* Require a second explicit confirmation before erasing credentials. */
 static void on_effacer(lv_event_t *e)
 {
     (void)e;
@@ -233,7 +228,7 @@ static void on_volume_level(lv_event_t *e)
     apply(&s);
 }
 
-/* During the slide: value displays live; release: volume applies and records */
+/* Preview the volume while dragging; apply and persist on release. */
 static void on_volume_slider(lv_event_t *e)
 {
     const int pct = lv_slider_get_value(lv_event_get_target_obj(e));
@@ -292,8 +287,8 @@ static void show_thresholds(const settings_t *s)
     }
 }
 
-/* Buttons + / - thresholds: value updated immediately on screen; the writing NVS est faite plus tard
- * by the spot "reglages" (never in this callback). */
+/* Update the displayed threshold immediately and defer NVS writes to
+ * the settings worker rather than blocking the LVGL callback. */
 static void on_threshold(lv_event_t *e)
 {
     const intptr_t code = (intptr_t)lv_event_get_user_data(e);
@@ -304,12 +299,12 @@ static void on_threshold(lv_event_t *e)
     uint16_t *const values[THR_COUNT] = {&s.thr_very_low, &s.thr_low, &s.thr_high, &s.thr_very_high};
     *values[id] = (uint16_t)(*values[id] + (plus ? 5 : -5));
     apply(&s); /* memory + notification of the backup spot, without waiting */
-    settings_get(&s); /* values after consistency control */
+    settings_get(&s); /* Reload bounds-checked values from shared settings. */
     show_thresholds(&s);
 }
 
-/* Luminosite day: value displayed live; to the release, recorded and applied by night mode
- * (in period night the screen remains at night luminosite) */
+/* Preview daytime brightness while dragging and persist it on release;
+ * night mode continues to apply its own configured brightness. */
 static void on_brightness(lv_event_t *e)
 {
     const int pct = lv_slider_get_value(lv_event_get_target_obj(e));
@@ -345,7 +340,7 @@ static void on_night_switch(lv_event_t *e)
     apply_night(&n);
 }
 
-/* TEST MODE NUIT : immediate view of the night screen, interchangeable hours (a touch or 60 s end) */
+/* Preview night mode briefly without changing the saved schedule. */
 static void on_night_test(lv_event_t *e)
 {
     (void)e;
@@ -353,7 +348,7 @@ static void on_night_test(lv_event_t *e)
     night_mode_preview();
 }
 
-/* Start / end of night by 15 min walk (user_data : 0 start -, 1 start +, 2 end -, 3 end +) */
+/* Adjust scheduled start and end times in 15-minute increments. */
 static void on_night_time(lv_event_t *e)
 {
     const intptr_t code = (intptr_t)lv_event_get_user_data(e);
@@ -378,7 +373,7 @@ static void on_night_brightness(lv_event_t *e)
     apply_night(&n);
 }
 
-/* Catheter recall interval (recall configures by user, not a recommendation) */
+/* Configurable infusion-set reminders are not clinical recommendations. */
 static void on_interval(lv_event_t *e)
 {
     if (s_updating) {
@@ -472,9 +467,8 @@ static void threshold_row(lv_obj_t *page, int col, int row, thr_id_t id, const c
 
 void ui_settings_create(lv_obj_t *page)
 {
-    /* Page defilable vertically. CLICKABLE : a press on text or an empty space targets the page (and not
-     * the screen, which does not slip), so a slip makes to slip from any point. The buttons,
-     * sliders and switches remain priority under the finger. The navigation bar is off the page. */
+    /* Make the entire settings page scrollable while keeping sliders,
+ * buttons and switches directly interactive. The navigation bar is separate. */
     lv_obj_add_flag(page, LV_OBJ_FLAG_SCROLLABLE | LV_OBJ_FLAG_CLICKABLE);
     lv_obj_set_scroll_dir(page, LV_DIR_VER);
     lv_obj_set_scrollbar_mode(page, LV_SCROLLBAR_MODE_AUTO);
@@ -484,7 +478,7 @@ void ui_settings_create(lv_obj_t *page)
     s_volume_value = ui_label(page, g_fonts.title, UI_COL_TEXT, "");
     lv_obj_set_pos(s_volume_value, 440, 12);
 
-    /* Cursor 0.10%: extended touch area around the bar and button */
+    /* Enlarge the slider touch target without changing its range. */
     s_volume_slider = lv_slider_create(page);
     lv_slider_set_range(s_volume_slider, 0, 100);
     lv_obj_set_pos(s_volume_slider, 48, 80);
@@ -572,7 +566,7 @@ void ui_settings_create(lv_obj_t *page)
     lv_obj_set_width(interval_hint, 976);
     lv_obj_set_pos(interval_hint, 24, 1432);
 
-    /* --- CONNEXION : Wi-Fi network and Dexcom account, editable without recompiling ------- */
+    /* Connection settings: available even before Wi-Fi/Dexcom is configured. */
     section_title(page, 1510, tr(S_CONN_TITLE));
     s_conn_wifi = ui_label(page, g_fonts.m, UI_COL_TEXT, "");
     lv_obj_set_width(s_conn_wifi, 620);
@@ -596,7 +590,7 @@ void ui_settings_create(lv_obj_t *page)
     lv_label_set_long_mode(s_conn_aide, LV_LABEL_LONG_WRAP);
     lv_obj_set_pos(s_conn_aide, 24, 1724);
 
-    /* --- LANGUE : six langues europeennes, deux rangees de trois ------------------------ */
+    /* Six user-interface languages in two rows of three. */
     section_title(page, 1810, tr(S_LANG_TITLE));
     s_lang_btns = lv_buttonmatrix_create(page);
     lv_buttonmatrix_set_map(s_lang_btns, k_lang_map);
@@ -613,7 +607,8 @@ void ui_settings_create(lv_obj_t *page)
     lv_obj_set_pos(lang_hint, 24, 2034);
 
 #if GLY_VOICE_CMD
-    /* --- COMMANDES VOCALES (absent from the public version, see docs/LIMITATIONS_FR.md) --- */
+    /* Optional voice commands are not included in the public firmware.
+ * See docs/LIMITATIONS_EN.md for this build's capabilities. */
     section_title(page, 2400, tr(S_VOICECMD_TITLE));
     s_vcmd_sw = switch_row(page, 2456, tr(S_VOICECMD_ENABLE), on_vcmd_switch);
     s_wake_sw = switch_row(page, 2518, tr(S_WAKEWORD), on_vcmd_switch);
@@ -678,8 +673,8 @@ void ui_settings_update(const ui_data_t *d, bool force)
                                         LV_BUTTONMATRIX_CTRL_CHECKED);
         s_updating = false;
     }
-    /* CONNEXION : visible names only, never a password. This section does not depend on
-     * network or Dexcom: it remains searchable without Wi-Fi, without Internet or account refuses. */
+    /* Account names are masked, never passwords. Keep this section accessible
+ * even when the network or Dexcom authentication fails. */
     static bool essai_affiche;
     const bool essai = credentials_trial_active();
     if (force || settings_changed || essai != essai_affiche) {

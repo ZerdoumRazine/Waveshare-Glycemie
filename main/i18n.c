@@ -3,10 +3,8 @@
  * Design note: String IDs must remain stable even when translations change.
  */
 
-/*
- * Maps stable text IDs to French, English, Spanish, German, Italian and Portuguese.
- * Associates text identifiers with the six languages of the interface.
- */
+/* All six interface translations share stable text IDs and format placeholders.
+ * Do not change the translation tables when editing developer comments. */
 #include "i18n.h"
 
 #include <stdio.h>
@@ -44,12 +42,8 @@ const char *lang_code(lang_t lang)
     return (lang >= 0 && lang < LANG_COUNT) ? k_lang_codes[lang] : k_lang_codes[LANG_FR];
 }
 
-/* ------------------------------------------------------------------------------------------------
- * Translation table: one line per text, in the order of str_id_t.
- * Order of columns: French, English, Spanish, German, Italian, Portuguese.
- * The format specifiers (%d, %s, %%) must be identical and in the same order
- * all over the line: i18n_check() verifies it at the start.
- * ---------------------------------------------------------------------------------------------- */
+/* Format placeholders (%d, %s, %%) must match across all six languages;
+ * i18n_check() verifies this at startup. */
 static const char *const k_tr[S_COUNT][LANG_COUNT] = {
 [S_NAV_HOME] = {"ACCUEIL", "HOME", "INICIO", "START", "HOME", "INÍCIO"},
 [S_NAV_GRAPH] = {"GRAPHIQUE", "CHART", "GRÁFICO", "VERLAUF", "GRAFICO", "GRÁFICO"},
@@ -455,7 +449,7 @@ static const char *const k_tr[S_COUNT][LANG_COUNT] = {
 [S_DATE_DAY_HM] = {"%02d/%02d à %02d:%02d", "%02d/%02d at %02d:%02d", "%02d/%02d a las %02d:%02d",
                              "%02d.%02d um %02d:%02d", "%02d/%02d alle %02d:%02d", "%02d/%02d às %02d:%02d"},
 
-/* --- Assistant de configuration ------------------------------------------------------------- */
+/* First-run configuration wizard labels. */
 [S_SETUP_WELCOME] = {"Bienvenue", "Welcome", "Bienvenido", "Willkommen", "Benvenuto", "Bem-vindo"},
 [S_SETUP_INTRO] = {"Cet écran affiche la glycémie d'un capteur Dexcom G7. Trois étapes suffisent : la langue, le Wi-Fi, le compte Dexcom.",
                              "This display shows glucose from a Dexcom G7 sensor. Three steps: language, Wi-Fi, Dexcom account.",
@@ -548,7 +542,7 @@ static const char *const k_tr[S_COUNT][LANG_COUNT] = {
                              "Modalità dimostrativa: i valori sono fittizi, nessun account viene usato.",
                              "Modo demonstração: os valores são fictícios, nenhuma conta é usada."},
 [S_SETUP_EMPTY] = {"À renseigner", "Required", "Falta rellenar", "Bitte ausfüllen", "Da compilare", "Por preencher"},
-/* --- Section CONNEXION adjustments --------------------------------------------------------------------------------------------- */
+/* Connection settings labels. */
 [S_CONN_TITLE] = {"CONNEXION", "CONNECTION", "CONEXIÓN", "VERBINDUNG", "CONNESSIONE", "LIGAÇÃO"},
 [S_CONN_WIFI] = {"Réseau Wi-Fi", "Wi-Fi network", "Red Wi-Fi", "WLAN-Netz", "Rete Wi-Fi", "Rede Wi-Fi"},
 [S_CONN_DEXCOM] = {"Compte Dexcom", "Dexcom account", "Cuenta Dexcom", "Dexcom-Konto", "Account Dexcom", "Conta Dexcom"},
@@ -608,9 +602,7 @@ const char *tr_fr(str_id_t id)
     return (id >= 0 && id < S_COUNT && k_tr[id][LANG_FR] != NULL) ? k_tr[id][LANG_FR] : "";
 }
 
-/* ------------------------------------------------------------------------------------------------
- * Dates longues
- * ---------------------------------------------------------------------------------------------- */
+/* Long date formatting. */
 
 static const char *const k_days[LANG_COUNT][7] = {
     {"Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"},
