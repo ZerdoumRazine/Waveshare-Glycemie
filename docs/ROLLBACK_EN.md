@@ -1,165 +1,81 @@
-# Save, go back, troubleshoot a screen that no longer starts
+# Backing up and restoring the Waveshare display
 
-This document serves **before** an update, and **if something goes wrong**. It concerns only
-screen (processor ESP32-P4. The second processor, theESP32-C6 that provides Wi-Fi, **is never
-** affected: neither erased nor reprogrammed.
+This procedure concerns only the **ESP32-P4 display processor**. The project's normal flashing procedure does not replace the ESP32-C6 Wi-Fi coprocessor firmware. Read this guide **before** flashing and keep official Dexcom monitoring available while the supplementary screen is offline.
 
----
+## What an ordinary application update changes
 
-## 1. What the update changes, and what it does not change
+An application-only update replaces the application partition. It does not intentionally rewrite the NVS configuration partition, the microSD, or the ESP32-C6. Language selection, thresholds, sensor and infusion-set dates, stock, history, and audio should remain intact during a normal app update.
 
-**It replaces** one thing: the screen program (partition) `app`, about 3.5 MB).
+This is not a guarantee against power failure, a damaged card, or incompatible firmware. Never substitute a full-flash erase, eFuse operation, Secure Boot change, flash encryption or automatic microSD formatting for a proper recovery procedure.
 
-**It does not affect:**
+## 1. Back up internal flash
 
-| What is preserved | Where it's tidy |
-|---|---|
-| Language, volume, night mode, thresholds | settings memory (`nvs`, space `settings`) |
-| Sensor and catheter dates, stock | settings memory (`nvs`, consumable spaces) |
-| History of measurements, newspapers | microSD |
-| Voice banks (six languages) | microSD |
-| Wi-Fi network and Dexcom account | see item 3 below |
+Connect the board with a USB-C **data cable** to its UART/CH343 port. The project provides:
 
-** None of these transactions are used**: `erase_flash` (general erasure), eFuse writing,
-Secure Boot, flash encryption, microSD formatting. They are irreversible or
-the non-recoverable device: they will never be done without explicit and separate authorization.
-
-**Interruptions to be expected:** the screen restarts twice (once to enter programming mode,
-Once after), and remain off during writing, about **one to two minutes**. Meanwhile,
-No measurements are displayed. Official Dexcom phone and receiver continue to work
-normally: they do not depend on this screen.
-
----
-
-## 2. Save AVANT (mandatory)
-
-Connect the screen to the PC with a cable USB-C **of data**, then:
-
-```bash
+```powershell
 python tools\sauvegarde_appareil.py --complet
 ```
 
-The tool reads the device, writes the copy in `private\sauvegardes\<date>\`, the **reliance and comparison**
-Apparatus (`verify_flash`), and records fingerprints SHA-256 in `manifeste.json`.
-He never writes in the camera.
+The tool performs a read-only backup of the full **32 MB flash**, compares the image against a second device read, and records file hashes and a manifest in a private backup directory. `--identifier` performs device identification only; the normal mode copies selected partitions rather than the entire flash.
 
-- `--identifier` : identification alone, nothing is copied.
-- without option: only useful parts (program, partition table, settings) are copied.
-- `--complet` : all memory (32 MB) — it is the backup that allows **all** to put back as before.
+**The backup is sensitive**: it can contain personal Wi-Fi/Dexcom details, health readings or settings. Never put it in GitHub, a public Release, or a support issue. Store an additional verified copy on another trusted drive.
 
-These backups remain **private**: the folder `private\` is never published, and archives
-are verified to ensure this.
+## 2. Back up the microSD
 
-> Keep a copy of the backup folder away from the PC (key USB, external disk).
-> A backup on the only disk that can fail is not a backup.
+With a card reader, power off the screen, remove the card, and use a verified file-by-file copy. The bundled command accepts the selected drive letter:
 
-**Save the microSD as well.** Two ways:
+```powershell
+python tools\sauvegarde_microsd.py --lecteur E:
+```
 
-- *with card reader*: screen turned off, card in PC, then
+Without a reader, leave the card in the powered-on screen and recover its contents over the USB serial cable (supported by K22 and later firmware):
 
-  ```bash
-  python tools\sauvegarde_microsd.py --lecteur E:
-  ```
+```powershell
+python tools\recuperer_microsd.py --port COM7
+```
 
-  The map is only read; each file is copied and then **rereaded on both sides and compared**.
+Replace `E:` and `COM7` with the actual drive or port. These tools are designed to inspect and verify data; read the on-screen messages before approving any operation. **Never accept Windows' offer to format or automatically repair a card containing the only history copy.**
 
-- *without card reader, via cable USB*: the card remains in the camera.
+## 3. Understand credential compatibility
 
-  ```bash
-  python tools\recuperer_microsd.py --port COM7
-  ```
+Older private builds could embed the Wi-Fi and Dexcom details through `private/device_secrets.h`. Current public builds do not embed those details: the user configures the display on the touchscreen or with the Windows USB application, and the accepted settings are stored in NVS.
 
-  The tool makes inventory, recovers logs and**history** (command `sd_dump`,
-  present since K22), checks the print CRC-32 of each file, and compares the sounds of the
-  card to a bank already present on the PC so as not to transfer anything unnecessarily.
+If an old binary is restored, its earlier credential behavior returns with it. Treat every flash backup and private build as secret-bearing even when its filename looks harmless. The project does not guarantee forensic erasure of credentials previously present in flash.
 
-In both cases: do not format the card, and do not "repair" it if Windows offers it.
+## 4. Restore an application partition
 
----
+**Only restore a backup from the same board and a known compatible partition layout.** Record the verified path, port and checksum before proceeding. After entering the board's programming mode, the historical restore command for an application-partition backup is:
 
-## 3. Where are your current accesses, and how they pass in the new version
-
-| Version | Where are Wi-Fi and Dexcom account |
-|---|---|
-| Old (before this update) | ** written in the program** at the time of compilation, since `private\device_secrets.h` |
-| New | **in the memory of settings** (space `ident`), entered on screen or from PC |
-
-The new version maintains compatibility: if memory `ident` is empty and the program has been
-compiled with `private\device_secrets.h`, ** these values serve as the starting point**. In other words, if you
-Install on your screen the program compiled from your own folder (which contains
-`private\device_secrets.h`), **he reconnects himself, without grasping anything**.
-
-Two possible paths:
-
-1. **The simplest**: install the compiled program at home (`tools\build.ps1`). Your access is
-   automatic. You can then, when you want, save them in memory
-   settings from the Windows app or touch screen, so you don't depend on the compilation anymore.
-2. **Cleanest**: install the public program (without any identifier), then enter your accesses
-   with the touch assistant or Windows application. This is exactly what a person who
-   discover the project.
-
-Passwords are never requested in a conversation, never written in a newspaper, and
-Never displayed: the screen and application show only the length.
-
----
-
-## 4. Back to your current version
-
-After a backup `--complet`, the reverse is to rewrite what has been saved.
-
-1. Connect the screen to USB.
-2. Open window **ESP-IDF 5.5 PowerShell** (it defines the necessary variables).
-3. Return the saved program:
-
-```bash
+```powershell
 python -m esptool --port COM7 --baud 460800 write_flash 0x10000 private\sauvegardes\<date>\app_0x10000.bin
 ```
 
-With a complete backup, the same command with `0` et `flash_complete.bin` gives **all**:
+The command is an example. Replace `<date>` with the actual verified backup folder. A wrong board, path or offset can make the installation unusable.
 
-```bash
+## 5. Full flash recovery — use only a verified image
+
+Restoring a full 32 MB image is a different and much more invasive operation: it restores **all partitions**, including NVS and private settings, not just the application. The historical command is:
+
+```powershell
 python -m esptool --port COM7 --baud 460800 write_flash 0 private\sauvegardes\<date>\flash_complete.bin
 ```
 
-4. Unplug, reconnect: the screen restarts on your old version.
+Use it only when you deliberately want the exact earlier state and have verified that the image belongs to this board. It is **not** the standard update procedure, and it can overwrite newer settings or data.
 
-> Check the port number (`python tools\assistant_config.py --lister`). On this PC, the map
-> appears as **USBEnhanced-SERIAL CH343**.
+## 6. Recover a device that no longer boots
 
----
+The ESP32-P4 bootloader has a hardware programming mode, independent of the installed application:
 
-## 5. If screen no longer starts
+1. Disconnect power.
+2. Hold the board's **BOOT** button.
+3. Connect its UART USB-C data cable while continuing to hold BOOT; release after a short interval.
+4. Confirm that Windows sees the CH343 COM port.
+5. Restore the correct verified image using the procedure above.
 
-A screen that remains black, reboots in loop or displays nothing ** is not lost**: the mode
-programming is wired in the processor, it does not depend on the installed program.
+If the port is missing, check cable data support, the connector, the USB port and the WCH driver. A display ribbon, board or power-supply failure cannot be fixed by flashing. A non-booting app also means the in-app Connection menu and Windows configuration wizard cannot help until firmware boot is restored.
 
-In this case, the menu CONNEXION and Windows app ** is not enough**: they assume that the
-program starts. You have to go through the programming mode.
+## Limits
 
-1. Disconnect the power from the screen.
-2. Keep the button **BOOT** of the card pressed.
-3. Reconnect cable USB-C **without releasing** the button, wait two seconds, then release.
-4. The serial port must reappear on the PC (`python tools\assistant_config.py --lister`).
-5. Rewrite your backup (point 4 above).
+These procedures do not repair physical damage, a failed SD card or an account blocked by Dexcom. They do not back up or reprogram the ESP32-C6. See [Hardware](HARDWARE_EN.md), [Recovery](RECOVERY_EN.md) and [Known limitations](LIMITATIONS_EN.md).
 
-If the port does not appear: change the cable (many cables) USB-C only transport the current),
-change take USB, and check that it's the catch USB **card** used.
-
-If the screen starts but the image is black while the sound works, it is the display or its tablecloth
-We need to check, not the program.
-
----
-
-## 6. What this procedure does not cover
-
-- A hardware failure (screen, power, card): no software backup fixes it.
-- A defective microSD: keep a copy of its contents, cheap cards wear out.
-- A Dexcom account blocked after too many tests: you have to wait, it is a Dexcom protection.
-- The second processor ESP32-C6 (Wi-Fi): it is neither saved nor reprogrammed by these tools, because
-  it is not modified. If it broke down, we'd need Waveshare's original firmware.
-
----
-
-*This screen is an experimental complementary display. He may be wrong, late, or
-Stop. It does not replace official arrangements and should not guide a decision to
-treatment. *
+The device is an experimental supplemental display, not a primary medical monitor or treatment-decision tool.
