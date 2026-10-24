@@ -7,6 +7,8 @@ This guide explains where the project's logic lives. Comments in `main/`,
 engineering decisions, especially failure paths. The implementation stays in
 C, Python, PowerShell and CMake; **comments do not add functionality**.
 
+For the full source-reading sequence, see the [developer walkthrough](DEVELOPER_WALKTHROUGH.md).
+
 ## Where to look
 
 | Area | Main modules | Responsibility |
