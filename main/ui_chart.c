@@ -141,7 +141,7 @@ void ui_chart_create(ui_chart_t *c, lv_obj_t *parent, int32_t x, int32_t y, int3
     lv_obj_set_width(c->last_value, 90);
     lv_obj_set_style_text_align(c->last_value, LV_TEXT_ALIGN_RIGHT, 0);
 
-    /* Duree displays to the right of the mini-curve, out of the trace area */
+    /* Show duration labels beside the mini-chart, outside the plotted data. */
     c->range_label = ui_label(parent, g_fonts.s, UI_COL_DIM, "");
     if (time_labels) {
         lv_obj_add_flag(c->range_label, LV_OBJ_FLAG_HIDDEN);

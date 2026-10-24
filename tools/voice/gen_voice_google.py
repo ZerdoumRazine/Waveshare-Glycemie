@@ -329,7 +329,7 @@ def generate(items, only):
         if not unchanged:
             with open(path, 'wb') as f:
                 f.write(data)
-        # verification: the written file is read as a WAV PCM 16 bits mono 16 kHz de duree plausible
+        # Validate the written WAV as 16-bit mono PCM at 16 kHz with plausible duration.
         check_back = read_wav_file(path)
         if check_back is None or check_back[1] != RATE:
             raise SystemExit('%s : WAV final illisible' % name)

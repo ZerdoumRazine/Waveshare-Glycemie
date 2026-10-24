@@ -75,7 +75,7 @@ typedef struct {
     lv_font_t *m;
     lv_font_t *s;
     lv_font_t *nav;
-    lv_font_t *clock;  /* heure du bandeau */
+    lv_font_t *clock;  /* Time shown in the shared header. */
     lv_font_t *card;   /* card values */
     lv_font_t *xs;     /* petites mentions */
     lv_font_t *label;  /* card titles (gras) */
@@ -101,7 +101,7 @@ typedef struct {
     bool time_ok;
     int64_t now_ms;
     struct tm now_tm;
-    int64_t age_s;        /* -1 si inconnu */
+    int64_t age_s;        /* -1 means an unknown value. */
     gm_freshness_t fresh;
     bool delta_ok;
     int delta;

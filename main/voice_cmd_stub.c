@@ -3,24 +3,15 @@
  * Design note: This stub must not activate microphone listening.
  */
 
-/*
- * Voice commands ABSENTES of this compilation (GLY_VOICE_CMD=OFF).
- *
- * Reason: local recognition (ESP-SR MultiNet) exist only in English and Chinese. The awards
- * French were approached with English phones, which gave scores barely above the
- * "New sensor" recognized in an English sentence of the
- * television). No Spanish, German, Italian or Portuguese model exists: the promise "six langues"
- * could not be held properly without paid remote service. See docs/LIMITATIONS_EN.md.
- *
- * The ANNONCES PARLEES (microSD voice bank, six languages) and ALERTES SONORES ne sont pas concernees :
- * they continue to work. All actions are accessible to the touch.
- *
- * This file replaced voice_cmd.c: same interface, no listen, no open microphone, no load model.
- */
-/*
- * Public-build stubs keep touch and audio features while disabling voice-command listening.
- * Public compilation replacements: no listening to voice commands.
- */
+/* The public build disables experimental local speech-command recognition.
+ * ESP-SR's available model and tested phonetic approximations were not
+ * reliable enough to promise six-language recognition without using paid
+ * remote services. See docs/LIMITATIONS_EN.md.
+ * This does not disable the six-language microSD speech announcements or
+ * the standard audible alerts. All commands remain available by touch.
+ * This stub preserves the voice_cmd.c API without opening microphones or
+ * loading speech recognition models. */
+/* Keep the public build's interface stable without enabling microphones. */
 #include "voice_cmd.h"
 
 #include <stdio.h>

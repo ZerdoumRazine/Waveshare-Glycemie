@@ -133,7 +133,7 @@ static volatile float s_sim_prob;
 static volatile int64_t s_sensor_quiet_until_us; /* anti-repetition sensor ad (K19) */
 static float s_frame_ms[LEVEL_FRAMES];       /* average energy of the last frames (level during detection) */
 static int s_frame_idx;
-static int16_t *s_inj_pcm;                   /* test vrx_inject (PSRAM, alloue au premier essai) */
+static int16_t *s_inj_pcm;                   /* Audio injection buffer, allocated in PSRAM on first use. */
 static volatile size_t s_inj_len;            /* echantillons */
 static volatile size_t s_inj_pos;
 static volatile bool s_inj_restart;          /* test : MultiNet window aligns to the beginning of the sound injection */
@@ -177,7 +177,7 @@ static const char *cmd_name(voice_cmd_id_t cmd)
     }
 }
 
-/* Phrase MultiNet (journal et variantes de test) */
+/* MultiNet command phrases and diagnostic variants. */
 static const char *phrase_name(int mn_id)
 {
     switch (mn_id) {

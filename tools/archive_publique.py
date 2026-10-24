@@ -23,7 +23,7 @@ RACINE = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import controle_donnees_perso as cdp  # noqa: E402
 
-# Everything that should JAMAIS exit: IDs, health data, personal binary, caches.
+# Never export personal credentials, patient histories, backups or local caches.
 # Apply exclusion rules case-insensitively
 INTERDITS = [
     # private/ stays in the repository with its only .gitignore (the folder must exist): everything else is forbidden
