@@ -1,58 +1,51 @@
-# Resources
+# Project resources
 
-## `banque_vocale_manifeste.csv`
+## Speech-bank manifest
 
-List of 396 phrases of the French** voice bank, stored on microSD in
-`/glycemie/audio/voice/`. The other five languages have the same list of files, translated, in
-`/glycemie/audio/voice/<code>/` (`en`, `es`, `de`, `it`, `pt`). Texts and numbers in letters
-of each language are in [`../tools/voice/langues_voix.py`](../tools/voice/langues_voix.py).
+The file [banque_vocale_manifeste.csv](banque_vocale_manifeste.csv) lists
+396 recording names for the French reference bank. The device expects this
+bank in `/glycemie/audio/voice/`; the other five banks use subdirectories
+`en/`, `es/`, `de/`, `it/` and `pt/`.
 
-Columns: `fichier ; texte ; duree_s ; taille_octets ; crc32`.
+The CSV uses French column headers for compatibility with the existing
+generation scripts: `fichier` (filename), `texte` (phrase),
+`duree_s` (duration in seconds), `taille_octets` (size in bytes)
+and `crc32` (checksum). These are data/schema identifiers, not comments
+to translate.
 
-Files WAV they themselves are **not** in the repository (
-by Google Cloud Text-to-Speech, voice `fr-FR-Chirp3-HD-Aoede`). See
-[../docs/THIRD_PARTY_LICENSES_EN.md](../docs/THIRD_PARTY_LICENSES_EN.md).
+The WAV files are not included in the repository. Optional release banks
+were generated with Google Cloud Text-to-Speech using the Chirp 3 HD
+Aoede voice; see [third-party licences](../docs/THIRD_PARTY_LICENSES_EN.md).
 
-Categories of sentences:
-
-| Prefix | Content |
+| File prefix | Purpose |
 |---|---|
-| `glucose_040` … `glucose_400` | one full sentence per value ("Glycemia seventy-eight.") |
-| `glucose_low`, `glucose_high` | off-range ("Glycemia less than forty.) |
-| `alert_*` | very low / low / high / very high / no data |
-| `sensor_rappel_*`, `catheter_rappel_*` | recalls of consumables |
-| `trend_*` | trends ("Stable. "On the rise. »...) |
-| `vc_*` | voice control responses |
+| `glucose_040` through `glucose_400` | Spoken glucose readings |
+| `glucose_low`, `glucose_high` | Readings outside the supported range |
+| `alert_*` | Glucose and missing-data alerts |
+| `sensor_rappel_*`, `catheter_rappel_*` | Consumables reminders |
+| `trend_*` | Trend phrases |
+| `vc_*` | Optional voice-command responses |
 
-### Reconstitute the bank
+## Generating a bank
+
+The optional generator requires a Google Cloud account and may incur charges.
+To inspect the planned language bank before generation:
 
 ```powershell
-# --lang fr (défaut) | en | es | de | it | pt
-python tools\voice\gen_voice_google.py --lang en --estimate   # phrases, caractères, coût indicatif
-python tools\voice\gen_voice_google.py --lang en --check      # accès à l'API (aucun caractère facturé)
-python tools\voice\gen_voice_google.py --lang en              # génération (bank/en/voice)
-python tools\voice\sd_voice_upload.py --port COM7 --lang en --log copie_en.log
+python tools/voice/gen_voice_google.py --lang en --estimate
+python tools/voice/gen_voice_google.py --lang en --check
 ```
 
-Count approximately 11,500 characters per language, i.e. 0.35 USD at the price Chirp 3 HD — in the million
-free characters per month. Each bank weighs 22 MB and takes 5 min to go through the cable
-USB-Series.
+To generate an English WAV bank and transfer it over the board's UART/CH343
+USB connection, consult [the voice tutorial](../docs/VOICE_TUTORIAL_EN.md).
+Transfer verification includes checksums and a read-back check. Without a
+speech bank, the device still sounds alert beeps.
 
-Copy goes through the **cable USB- series**, without removing microSD: temporary flow rate
-921 600 bauds, acquitted blocks, CRC32 checked in memory and then rereaded on the card, and
-complete final verification against the manifest. `--verify-only` Check without writing.
+## Fonts and optional legacy audio
 
-A Google Cloud account is required and Google's terms and conditions apply.
-**Without a voice bank, the device works**: ads are replaced by a beep.
+Montserrat fonts are stored in `main/fonts/` and carry the SIL Open Font
+License 1.1. The third-party licence and author credits must remain intact.
 
-## Police
-
-Montserrat police are not here but in `main/fonts/`, because they are
-** boarded in firmware** (`EMBED_FILES` de `main/CMakeLists.txt`) and rendered by
-TinyTTF. Their license (SIL OFL 1.1) is in `main/fonts/OFL.txt`.
-
-## Onboard voice
-
-`main/voice/voice_fr.pcm` 40 withdrawal extracts (1.25 MB), used only when
-microSD bank is absent. Origin and Licence Issue:
-[../docs/THIRD_PARTY_LICENSES_EN.md](../docs/THIRD_PARTY_LICENSES_EN.md).
+The optional historical `main/voice/voice_fr.pcm` was not distributed
+because its redistribution rights were not established. The normal
+microSD WAV announcements and fallback beeps do not depend on it.
