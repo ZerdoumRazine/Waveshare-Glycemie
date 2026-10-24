@@ -6,10 +6,10 @@
  * compiles tels quels) : echeances, rappels 24 h / 2 h, anti-repetition, persistance NVS After starting again,
  * stock never negative and decrement only once by change.
  *
- * La NVS est simulee en memoire (tests/hote/shims) : a "restart" consists of recalling the functions
- * initialization without deleting the NVS, exactement comme au demarrage de la carte.
+ * La NVS is simulated in memory (tests/hote/shims) : a "restart" consist of recalling the functions
+ * initialization without deleting the NVS, exactly as at the start of the map.
  */
-/* Verify sensor/catheter dates, reminders and stock after simulated restart.
+/* Verify sensor/catheter dates, memories and stock after simulated restaurt.
  */
 #include <stdio.h>
 #include <string.h>
@@ -93,7 +93,7 @@ int main(void)
 
     section("Capteur G7 : un redemarrage ne perd ni la date ni les rappels deja signales");
     const uint8_t masque_avant = sensor_session_reminder_mask();
-    demarrage(); /* relecture de la NVS, as after a card reboot */
+    demarrage(); /* rereading of the NVS, as after a card reboot */
     sensor_session_get(POSE + 3 * J, &s);
     CHECK(s.known, "capteur toujours connu apres redemarrage");
     CHECK_EQ_I(s.start_s, POSE, "heure de pose identique a la seconde pres");

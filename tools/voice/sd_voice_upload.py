@@ -4,21 +4,21 @@
 # Design note: Verification-only mode must not create or overwrite files.
 # Copies existing WAV banks over USB with CRC32 checks and a read-only verification mode.
 #
-"""Copie la banque vocale (tools/voice/bank) sur la microSD du Waveshare par le cable USB-serie, sans retirer la
-carte et sans reseau. Outil temporaire : commandes console vrx_* du firmware (main/voice_rx.c).
+"""Copy the voice bank (tools/voice/bank) on the Waveshare microSD by the cable USB-Series, without removing the
+map and no network. Temporary tool: firmware vrx * console commands (main/voice_rx.c).
 
-- debit temporaire 921600 bauds (retour automatique de la carte a 115200 ; repli a 115200 si le changement echoue) ;
-- chaque fichier : blocs de 896 octets acquittes un par un (aucun debordement du tampon de la carte), CRC32 verifie
-  par la carte en memoire puis apres relecture sur la microSD ; fichier deja present et identique : saute ;
-- verification finale : liste complete relue sur la carte avec CRC32, comparee au manifeste (nombre exact, tailles,
-  fichiers manquants ou en trop, integrite) et espace libre. La verification n'envoie QUE des commandes de lecture
-  (vrx_dir ... lecture, vrx_list crc) : aucun octet de fichier n'est transmis, meme si la carte est non conforme.
-Le port est ouvert sans agir sur DTR/RTS : la carte ne redemarre pas.
+- temporary debit 921600 bauds (automatic return of the card to 115200; withdrawal to 115200 if the change failed);
+- each file: 896 bytes blocks acquit one by one (no card stamp overflow), CRC32 verifies
+  by the memory card then after rereading on the microSD; file already present and identical: jump;
+- Final verification: complete list reread on the map with CRC32, compares to the manifest (accurate number, sizes,
+  missing or surplus files, integrite) and free space. Verification does not send QUE read commands
+  (vrx_dir ... reading, vrx_list crc) : no file byte is transmitted, even if the card is not compliant.
+The port is open without acting on DTR/RTS The card doesn't start again.
 
 Usage (environnement du projet, pyserial) :
   .venv\\Scripts\\python.exe -B tools\\voice\\sd_voice_upload.py --port COM7 --log tools\\logs\\NNN_copie.log
-  ... --verify-only    verification seule : aucune ecriture, aucun dossier cree (necessite un firmware qui
-                       repond "VRX LIST dossier=..." pour les langues autres que le francais)
+  ... --verify-only verification alone: no writing, no folder created (needs firmware that
+                       answer "VRX LIST dossier=..." for languages other than French)
 """
 import argparse
 import csv
@@ -41,10 +41,10 @@ MANIFEST = os.path.join(HERE, 'bank', 'manifest.csv')
 
 # Select either a developer bank or the public ZIP extracted to a folder.
 def configure(lang, sd_root=None):
-    """Banque depuis les fichiers de travail ou depuis le ZIP microSD extrait.
+    """Bank from working files or from the ZIP microSD extracted.
 
-    --sd-root pointe vers un dossier contenant glycemie/audio/voice, pour
-    copier directement les sons telecharges sans relancer une generation Google.
+    --sd-root points to a folder containing glycemie/audio/voice, for
+    Copy the telecharges directly without restarting a Google generation.
     """
     global BANK, MANIFEST
     if sd_root is not None:
@@ -88,7 +88,7 @@ class Link:
         self.ser.write((command + '\n').encode('ascii'))
 
     def line(self, timeout):
-        """Ligne suivante de la carte (masquee), None apres timeout secondes."""
+        """Next line of the map (mask), None after timeout seconds."""
         end = time.time() + timeout
         while True:
             if b'\n' in self.buffer:
@@ -106,7 +106,7 @@ class Link:
                 self.buffer += chunk
 
     def expect(self, pattern, timeout):
-        """Premiere ligne VRX correspondant a pattern (regex) ; les autres lignes (journal) sont ignorees."""
+        """First line VRX a pattern correspondent (regex); Other lines (journal) are not known."""
         regex = re.compile(pattern)
         end = time.time() + timeout
         while True:
@@ -138,7 +138,7 @@ class Link:
 def load_manifest():
     entries = []
     if MANIFEST is None:
-        # ZIP public : pas besoin d'un compte Google ou d'un manifest prive.
+        # ZIP public: no need d'un compte Google ou d'A private protest.
         # The five language sub-folders in the French bank are
         # not files and should never be copies as such.
         names = sorted(n for n in os.listdir(BANK) if n.lower().endswith('.wav')
@@ -210,7 +210,7 @@ def put_file(link, name, size, crc, data):
 
 
 def choisir_dossier(link, lang, lecture):
-    """vrx_dir pour une langue. lecture=True : la carte ne doit RIEN creer (firmware a jour exige)."""
+    """vrx_dir for a language. read=True: the map must not RIEN create (day firmware requires)."""
     if lang == 'fr':
         return True
     link.send('vrx_dir %s%s' % (lang, ' lecture' if lecture else ''))
@@ -228,7 +228,7 @@ def choisir_dossier(link, lang, lecture):
 
 # Compare names, sizes and CRCs through read-only device commands.
 def verify(link, entries, lang='fr'):
-    """Verification en LECTURE SEULE : seule la commande vrx_list est envoyee."""
+    """Verification in LECTURE SEULE : only the command vrx_list is sent."""
     link.send('vrx_list crc')
     files = {}
     end = time.time() + 300

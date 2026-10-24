@@ -4,11 +4,11 @@
 # Design note: No pattern scan can guarantee every secret has been found.
 # Looks for accidentally included credentials without ever echoing secret values.
 #
-"""Recherche des identifiants prives dans des fichiers texte (journaux, rapports, sources).
+"""Search for private identifiers in text files (newspapers, reports, sources).
 
-N'affiche JAMAIS les valeurs : seulement le nom du champ et le fichier concerne.
-Usage : python scan_secrets.py <fichier ou dossier> [...]
-Code de sortie 1 si une valeur est trouvee.
+Show JAMAIS values: only the field name and file is relevant.
+Use: python scan_secrets.py <file or folder> [...]
+Output code 1 if a value is found.
 """
 import os
 import re

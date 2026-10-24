@@ -2,8 +2,8 @@
  * Keep this header focused on the contracts used by other modules.
  */
 /*
- * Sortie audio : codec ES8311 + I2S + amplificateur de la carte, exclusivement via le BSP Waveshare
- * (bsp_audio_codec_speaker_init) et esp_codec_dev. Aucune broche definie ici.
+ * Audio output: codec ES8311 + I2S + card amplifier, exclusively via the BSP Waveshare
+ * (bsp_audio_codec_speaker_init) and esp_codec_dev. No pins defined here.
  *
  * A dediee spot plays sequence (tonalites synthetises, extracts) PCM) without blocking the caller.
  * The codec is only opened during the reading (absorbing amplifier).
@@ -49,26 +49,26 @@ bool audio_out_render_pcm(const int16_t *samples, size_t count); /* mono 16 kHz 
 bool audio_out_render_silence(int ms);
 bool audio_out_render_pattern(audio_pattern_t pattern);
 
-/* Arrete la lecture en cours et vide la file */
+/* Stop playback and empty the file */
 void audio_out_stop(void);
 bool audio_out_busy(void);
 
-/* Volume numerique du DAC ES8311 (dB) correspondant a un volume general 0..100 % (-96 = muet) */
+/* Digital volume of DAC ES8311 (dB) corresponding to a general volume 0.10% (-96 = mute) */
 float audio_out_volume_db(int volume_pct);
 void audio_out_print_info(void); /* console */
 
-/* Micros ES7210 (BSP) reserved by voice commands : NULL si deja reserves ou indisponibles. Pendant la
- * reservation, l'autotest et la mesure au micro sont refuses. */
+/* Microphones ES7210 (BSP) reserved by voice commands : NULL if already reserved or unavailable. During the
+ * reservation, self-test and microphone measurement are refused. */
 void *audio_out_mic_acquire(void); /* esp_codec_dev_handle_t */
 void audio_out_mic_release(void);
 
-/* Autotest : plays a tonalite and verifies its presence with the microphones of the map (ES7210 via le BSP) */
+/* Autotest : plays a tone and verifies its presence with the microphones of the map (ES7210 via BSP) */
 esp_err_t audio_out_selftest(int volume_pct, bool *detected, float *gain_db);
 
-/* Mesure comparative au micro de la carte (instrument relatif, meme position) : bip 1 kHz si play_voice est NULL,
- * sinon la lecture lancee par play_voice (TEST VOIX). Fixed micro gain to compare volumes between them. */
+/* Measure compared to the map microphone (relative instrument, same position): beep 1 kHz if play_voice is NULL,
+ * otherwise the reading starts by play_voice (TEST VOIX). Fixed micro gain to compare volumes between them. */
 typedef void (*audio_playback_fn_t)(int volume_pct);
 esp_err_t audio_out_measure(int volume_pct, audio_playback_fn_t play_voice, float mic_gain_db);
 
-/* Registres ES8311 et broche de l'amplificateur relus pendant un bip 1 kHz (console) */
+/* Registers ES8311 and pin of the amplifier rereaded during a beep 1 kHz (console) */
 void audio_out_dump_regs(int volume_pct);

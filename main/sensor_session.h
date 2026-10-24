@@ -2,8 +2,8 @@
  * The declarations below are shared with other firmware modules.
  */
 /*
- * Suivi LOCAL de la duree du capteur Dexcom G7 (aucune source automatique fiable disponible) :
- * l'heure de pose est enregistree en NVS par NOUVEAU CAPTEUR (bouton ou voix), puis
+ * Monitoring LOCAL Dexcom G7 sensor hardness (no reliable automatic source available):
+ * the time of installation is recorded in NVS by NOUVEAU CAPTEUR (button or voice), then
  * echeance = pose + 10 jours EXACTEMENT. The 12-hour Dexcom grace period is not used for the meter,
  * neither for the delay nor for the reminders: at the end, the sensor is "A CHANGER".
  * Two single-use reminders: 24 hours and 2 hours before schedule.
@@ -18,7 +18,7 @@
 #include "esp_err.h"
 
 #define SENSOR_SESSION_S (10LL * 24 * 3600)
-#define SENSOR_GRACE_S   (12LL * 3600) /* grace Dexcom : information technique, ignoree par le suivi (voir ci-dessus) */
+#define SENSOR_GRACE_S   (12LL * 3600) /* Thanks Dexcom: technical information, ignored by follow-up (see above) */
 
 typedef enum {
     SENSOR_REMIND_24H = 0,  /* 24 hours before schedule */
@@ -30,7 +30,7 @@ typedef struct {
     bool known;
     int64_t start_s;        /* heure de pose (epoch UTC) */
     int64_t due_s;          /* echeance = pose + 10 jours */
-    int day;                /* jour 1..10 */
+    int day;                /* Day 1..10 */
     bool expired;           /* echeance atteinte : A CHANGER */
     int64_t remaining_s;    /* before maturity (negative if exceeded) */
     int progress_pct;       /* promotion over 10 days */
@@ -42,10 +42,10 @@ esp_err_t sensor_session_start(int64_t start_s, int64_t now_s);
 esp_err_t sensor_session_adjust(int64_t delta_s, int64_t now_s);
 esp_err_t sensor_session_clear(void);
 
-/* Incremente a chaque modification (rafraichissement de l'affichage) */
+/* Incremented with each modification (refreshing the display) */
 uint32_t sensor_session_revision(void);
 
-/* Rappel en cours : le plus recent dont l'heure est passee, echeance non atteinte ; -1 sinon.
+/* Reminder in progress: the most recent time passed, time not reached; -1 if not.
  * *done : deja presente (memorise en NVS : never replay, even after a restart) */
 int sensor_session_current_reminder(int64_t now_s, bool *done);
 /* Rappel presente ou acquitte : memorise en NVS, with previous reminders */

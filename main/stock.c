@@ -73,7 +73,7 @@ static esp_err_t persist(stock_item_t item)
     return err;
 }
 
-/* Verrou pris : evenement local si le stock renseigne vient de passer au niveau faible */
+/* Lock taken: local event if the stock information has just passed to low level */
 /* Raise a stock reminder separately from medical glucose alerts. */
 static void push_low_event(stock_item_t item)
 {
@@ -107,7 +107,7 @@ esp_err_t stock_init(void)
         int64_t change = 0;
         if (open) {
             if (nvs_get_i16(h, k_key_qty[i], &qty) != ESP_OK) {
-                qty = STOCK_UNKNOWN; /* premier demarrage de cette version : non renseigne */
+                qty = STOCK_UNKNOWN; /* first start of this version: not provided */
             }
             if (nvs_get_i16(h, k_key_low[i], &low) != ESP_OK || low < 0 || low > STOCK_MAX) {
                 low = (int16_t)k_low_default[i];
@@ -197,7 +197,7 @@ bool stock_consume(stock_item_t item, int64_t change_s)
     const bool already = change_s > 0 && s_change[item] == change_s;
     bool consumed = false;
     if (!already) {
-        s_change[item] = change_s; /* marqueur : ce changement est decompte (ou constate comme non decomptable) */
+        s_change[item] = change_s; /* marker: this change is decounting (or not accounting) */
         if (before > 0) {
             s_qty[item] = before - 1;
             consumed = true;

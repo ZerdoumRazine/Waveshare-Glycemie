@@ -5,10 +5,10 @@
 #
 <#
 .SYNOPSIS
-    Installe la version publique sur le Waveshare ESP32-P4-WIFI6-Touch-LCD-7B.
+    Install the public version on the Waveshare ESP32-P4-WIFI6-Touch-LCD-7B.
 .DESCRIPTION
     Only works with the three binary files provided in the same archive.
-    Ne formate ni la microSD ni la partition NVS. Do not use on another card.
+    Does not format microSD or partition NVS. Do not use on another card.
     No installation is performed without verification and manual confirmation.
 #>
 param([string]$Port = "")
@@ -24,7 +24,7 @@ foreach ($name in $required) {
     }
 }
 
-# Checking file prints AVANT tout flash.
+# Checking file prints AVANT Any flash.
 $hashFile = Join-Path $dir 'SHA256SUMS.txt'
 if (-not (Test-Path $hashFile)) {
     throw "SHA256SUMS.txt absent. L'archive doit etre extraite en entier."

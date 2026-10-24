@@ -4,26 +4,26 @@
 # Design note: Validate transferred data before accepting it as a backup.
 # Retrieves recoverable microSD data over a read-only serial protocol.
 #
-r"""Recuperer par le cable USB ce que le programme INSTALLE accepte de relire sur la microSD.
+"""Recover by Cable USB what the programme INSTALLE agree to reread on the microSD.
 
-Aucun lecteur de carte n'est necessaire : tout passe par la console serie de l'appareil, en
-LECTURE SEULE. Rien n'est ecrit, efface ni formate sur la carte.
+No card reader n'est necessaire : tout passe par la console serie de l'apparatus, in
+LECTURE SEULE. Nothing is written, erased or formatted on the map.
 
-Ce que le programme actuel permet :
-  - l'inventaire complet (sd_check) : tous les fichiers, leur taille, et pour chaque journee de
-    mesures le nombre de valeurs, les doublons, la premiere et la derniere ligne ;
-  - le contenu des JOURNAUX (/glycemie/logs) : commande sd_lire ;
-  - les empreintes CRC32 des fichiers de VOIX (vrx_list crc), de quoi verifier que la banque de la
-    carte correspond a celle deja presente sur le PC, sans retransferer les sons ;
-  - le contenu des fichiers d'HISTORIQUE (/glycemie/history) seulement si le programme installe
-    connait la commande "sd_dump" (ajoutee en K22). Sinon, ces fichiers sont listes mais pas copies :
-    l'outil le dit clairement au lieu de faire croire a une sauvegarde complete.
+What the current program allows:
+  - the complete inventory (sd_check) : all files, their size, and for each day of
+    measures the number of values, duplicates, first and last line;
+  - the content of the JOURNAUX (/glycemie/logs) : order sd_lire ;
+  - fingerprints CRC32 files of VOIX (vrx_list the bank of the
+    map corresponds to the one already present on the PC, without transferring the sounds;
+  - the contents of the filesHISTORIQUE (/glycemie/history) only if the program installs
+    knows the command "sd_dump" (added in K22). Otherwise, these files are lists but not copies:
+    the tool clearly says it instead of making it look like a complete backup.
 
-La sauvegarde va dans private\sauvegardes\ : un dossier prive, jamais publie.
+The backup goes into private\\sauvegardes\\: a private folder, never published.
 
 Usage :
-    python tools\recuperer_microsd.py --port COM7
-    python tools\recuperer_microsd.py --port COM7 --banque "D:\\chemin\\vers\\voice\\fr"
+    python tools\\recuperer_microsd.py --port COM7
+    python tools\\recuperer_microsd.py --port COM7 --bank "D:\\\\chemin\\\\vers\\\\voice\\\\fr"
 """
 import argparse
 import base64
@@ -45,7 +45,7 @@ SAUVEGARDES = os.path.join(ROOT, 'private', 'sauvegardes')
 
 # Inventory remote files before attempting any copy.
 def inventaire(app, attente=120):
-    """sd_check : liste tout, en lecture seule. Renvoie (fichiers, resume_csv, brut)."""
+    """sd_check : list everything, read only. Return (file, resume_csv, crude)."""
     app.envoyer('sd_check')
     lignes, fichiers, csv, entete = [], [], {}, ''
     fin_attendue = 0
@@ -71,12 +71,12 @@ def inventaire(app, attente=120):
                 elif l.startswith('SD_DIR '):
                     fin_attendue += 1
         elif time.time() - dernier > 6:
-            break            # plus rien ne vient : l'inventaire est termine
+            break            # Nothing comes anymore: inventory is finished
     return fichiers, csv, lignes
 
 
 def lire_journal(app, nom, attente=90):
-    """sd_lire : contenu d'un fichier de /glycemie/logs. Renvoie (lignes, octets_annonces)."""
+    """sd_lire : contents of a file of /glycemie/logs. Returns (lines, octets_annonces)."""
     app.envoyer('sd_lire %s' % nom)
     contenu, octets, fini = [], None, False
     import time
@@ -128,7 +128,7 @@ def dump_fichier(app, chemin, attente=180):
 
 
 def voix_de_la_carte(app, attente=120):
-    """vrx_list crc : {nom: (taille, crc)} des fichiers de voix, sans rien transferer."""
+    """vrx_list crc: {name: (size, crc)} voice files, without transferring anything."""
     app.envoyer('vrx_begin')
     app.lire(8, 'VRX BEGIN')
     app.envoyer('vrx_list crc')
@@ -149,7 +149,7 @@ def voix_de_la_carte(app, attente=120):
 
 # Use remote CRCs to check audio without sending the same WAVs again.
 def comparer_banque(fichiers_carte, dossier_pc):
-    """Compare les empreintes de la carte a celles d'une banque deja presente sur le PC."""
+    """Compares the fingerprints of the card to those of a bank already present on the PC."""
     if not fichiers_carte or not dossier_pc or not os.path.isdir(dossier_pc):
         return None
     identiques, differents, absents = [], [], []
@@ -201,7 +201,7 @@ def main():
         resume['inventaire'] = fichiers
         resume['csv'] = csv
 
-        # --- Journaux : relisibles par le programme installe ---------------------------------
+        # --- Newspapers: rereadable by the installed program ---------------------------------
         print('\n--- Journaux (/glycemie/logs) ---')
         dossier_logs = os.path.join(cible, 'glycemie', 'logs')
         os.makedirs(dossier_logs, exist_ok=True)
@@ -221,7 +221,7 @@ def main():
             resume['recupere'].append({'chemin': f['chemin'], 'octets_annonces': octets,
                                        'lignes': len(contenu), 'octet_pour_octet': exact})
 
-        # --- Historique : seulement si le programme connait sd_dump --------------------------
+        # --- History: only if the program knows sd_dump --------------------------
         print('\n--- Historique (/glycemie/history) ---')
         histo = [f for f in fichiers if '/history/' in f['chemin']]
         dossier_histo = os.path.join(cible, 'glycemie', 'history')
@@ -250,7 +250,7 @@ def main():
                 resume['recupere'].append({'chemin': f['chemin'], 'octets': len(data),
                                            'octet_pour_octet': True})
 
-        # --- Voix : comparaison d'empreintes, aucun transfert --------------------------------
+        # --- Voice: fingerprint comparison, no transfer --------------------------------
         print('\n--- Fichiers de voix : comparaison, sans transfert ---')
         voix = voix_de_la_carte(app)
         print('   %d fichier(s) de voix sur la carte' % len(voix))

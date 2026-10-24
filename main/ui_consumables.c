@@ -20,11 +20,11 @@
 static const char *TAG = "ui_conso";
 
 /*
- * CONSOMMABLES : deux grandes sections, CAPTEUR G7 et SITE DE PERFUSION (catheter), and under each map STOCK.
- * NOUVEAU CAPTEUR / NOUVEAU CATHETER One confirmation, then the current time becomes the start time
+ * CONSOMMABLES : two main sections, CAPTEUR G7 and SITE DE PERFUSION (catheter), and under each map STOCK.
+ * NOUVEAU CAPTEUR / NOUVEAU CATHETER One confirmation, then the current time comes the start time
  * (no date or time entry) The inventory then loses a unit (only once by change).
- * STOCK : [-] quantite [+], appui sur la quantite = saisie directe ; "NON RENSEIGNE"as long as the user has nothing
- * saisi (aucune decrementation ne la transforme en 0) ; mention discrete "STOCK FAIBLE" au seuil.
+ * STOCK [-] quantite [+], quantite support = direct input; "NON RENSEIGNE"as long as the user has nothing
+ * seized (no decrementation turns it into 0); discrete "STOCK FAIBLE" at the threshold.
  */
 
 #define SEC_Y    12
@@ -168,7 +168,7 @@ static void on_new(lv_event_t *e)
 }
 
 /* ------------------------------------------------------------------------- */
-/* Stock : saisie directe de la quantite */
+/* Stock: direct capture of quantity */
 
 static void qty_refresh(void)
 {
@@ -317,7 +317,7 @@ static void stock_create(lv_obj_t *page, stock_item_t item, int32_t x, const cha
     lv_obj_set_style_bg_grad_color(s->set, UI_G_ACCENT_DEEP, 0);
     lv_obj_set_style_bg_grad_dir(s->set, LV_GRAD_DIR_VER, 0);
     touch_diag_name(s->set, item == STOCK_SENSOR ? "RENSEIGNER capteur" : "RENSEIGNER catheter");
-    /* Initial coherent state with [-] and [+] visible: RENSEIGNER masque (il recouvre le bouton [+]) */
+    /* Initial coherent state with [-] and [+] visible: RENSEIGNER mask (covers the button [+]) */
     lv_obj_add_flag(s->set, LV_OBJ_FLAG_HIDDEN);
 }
 
@@ -366,7 +366,7 @@ static void section_create(lv_obj_t *page, consumable_t c, int32_t x, const char
 void ui_consumables_create(lv_obj_t *page)
 {
     /* Reconstruction (language change): the dialog boxes are girls of the screen, no
-     * la page. ui_main.c farm them before rebuilding; These pointers are back to zero by surete. */
+     * page. ui_main.c farm them before rebuilding; These points are back to zero by surete. */
     s_backdrop = NULL;
     s_dialog_when = NULL;
     s_qty_backdrop = NULL;
@@ -413,7 +413,7 @@ static void update_sensor(int64_t now_s)
     snprintf(buf, sizeof(buf), "%s : %s", tr(S_PLACED), when);
     ui_set_text(s->started, buf);
 
-    /* echeance = pose + 10 jours exactement : la grace Dexcom de 12 h ne prolonge pas le compteur */
+    /* echeance = pose + 10 days exactly: the Dexcom grace of 12 hours does not extend the counter */
     lv_color_t color;
     ui_format_duration(st.remaining_s, false, dur, sizeof(dur));
     if (st.expired) {
@@ -436,7 +436,7 @@ static void update_sensor(int64_t now_s)
     ui_set_text(s->detail, buf);
 }
 
-/* Present the catheter deadline according to the selected replacement interval. */
+/* Present the catheter guideline granting to the selected replacement interval. */
 static void update_catheter(int64_t now_s)
 {
     section_t *s = &s_sections[CONSUMABLE_CATHETER];
@@ -493,7 +493,7 @@ static void update_stock(stock_item_t item)
     }
     ui_set_text_color(s->value, known ? (low ? UI_G_HIGH : UI_G_TEXT) : UI_G_STALE);
     if (lv_obj_has_flag(s->minus, LV_OBJ_FLAG_HIDDEN) == known) {
-        /* bascule entre [-] quantite [+] et NON RENSEIGNE + RENSEIGNER */
+        /* switch between [-] quantite [+] and NON RENSEIGNE + RENSEIGNER */
         if (known) {
             lv_obj_remove_flag(s->minus, LV_OBJ_FLAG_HIDDEN);
             lv_obj_remove_flag(s->plus, LV_OBJ_FLAG_HIDDEN);
@@ -522,7 +522,7 @@ static void update_stock(stock_item_t item)
 void ui_consumables_update(const ui_data_t *d, bool force)
 {
     if (s_dialog_when != NULL && d->time_ok) {
-        /* l'heure enregistree sera celle de la confirmation : affichee a la minute */
+        /* the recorded time will be that of the confirmation: displayed per minute */
         char when[48];
         char buf[96];
         snprintf(when, sizeof(when), tr(S_DATE_DAY_HM), d->now_tm.tm_mday, d->now_tm.tm_mon + 1,

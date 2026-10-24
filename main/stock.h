@@ -6,13 +6,13 @@
  *
  * Logique pure (NVS + events), without LVGL : l'interface (ui_consumables.c), the console and a future layer
  * Nova calls exactly the same functions.
- *  - quantite INCONNUE until the user has provided information (STOCK_UNKNOWN) : aucune decrementation ne la
+ *  - quantity INCONNUE until the user has provided information (STOCK_UNKNOWN) : no decrement
  *    transforme en 0 ;
  *  - Never negative, limit to STOCK_MAX ;
  *  - a single decrementation by real change recorded: the time of change serves as a marker in NVS
  *    (a restart, double confirmation or replay never consume two units);
  *  - seuil de stock faible par consommable (2 et 3 par defaut, modifiables) : etat consultable + evenement local
- *    STOCK_LOW (file en memoire, aucun reseau).
+ *    STOCK_LOW (grow in memory, no network).
  */
 /* Public interface / Interface publique
  * Inventory counts and item-level low-stock notifications.
@@ -53,7 +53,7 @@ int stock_low_threshold(stock_item_t item);
 esp_err_t stock_set_low_threshold(stock_item_t item, int value); /* 0..STOCK_MAX */
 bool stock_is_low(stock_item_t item);                   /* renseigne et <= seuil */
 
-uint32_t stock_revision(void);                          /* incremente a chaque changement (rafraichissement) */
+uint32_t stock_revision(void);                          /* incremented with each change (refreshment) */
 const char *stock_name(stock_item_t item);              /* "G7 sensors", "catheters" */
 
 /* Evenement local STOCK_LOW (short line): Destiny has a future Nova layer, never sent by firmware */

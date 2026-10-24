@@ -12,7 +12,7 @@
 #include <stdio.h>
 #include <string.h>
 
-/* Langue courante : lue depuis la NVS at the start (settings.c), French before that. */
+/* Current language: read from the NVS at the start (settings.c), French before that. */
 static lang_t s_lang = LANG_FR;
 
 lang_t i18n_lang(void)
@@ -48,7 +48,7 @@ const char *lang_code(lang_t lang)
  * Translation table: one line per text, in the order of str_id_t.
  * Order of columns: French, English, Spanish, German, Italian, Portuguese.
  * The format specifiers (%d, %s, %%) must be identical and in the same order
- * sur toute la ligne : i18n_check() le verifie au demarrage.
+ * all over the line: i18n_check() verifies it at the start.
  * ---------------------------------------------------------------------------------------------- */
 static const char *const k_tr[S_COUNT][LANG_COUNT] = {
 [S_NAV_HOME] = {"ACCUEIL", "HOME", "INICIO", "START", "HOME", "INÍCIO"},
@@ -548,7 +548,7 @@ static const char *const k_tr[S_COUNT][LANG_COUNT] = {
                              "Modalità dimostrativa: i valori sono fittizi, nessun account viene usato.",
                              "Modo demonstração: os valores são fictícios, nenhuma conta é usada."},
 [S_SETUP_EMPTY] = {"À renseigner", "Required", "Falta rellenar", "Bitte ausfüllen", "Da compilare", "Por preencher"},
-/* --- Section CONNEXION adjustments ---------------------------------------------------------------------------- */
+/* --- Section CONNEXION adjustments --------------------------------------------------------------------------------------------- */
 [S_CONN_TITLE] = {"CONNEXION", "CONNECTION", "CONEXIÓN", "VERBINDUNG", "CONNESSIONE", "LIGAÇÃO"},
 [S_CONN_WIFI] = {"Réseau Wi-Fi", "Wi-Fi network", "Red Wi-Fi", "WLAN-Netz", "Rete Wi-Fi", "Rede Wi-Fi"},
 [S_CONN_DEXCOM] = {"Compte Dexcom", "Dexcom account", "Cuenta Dexcom", "Dexcom-Konto", "Account Dexcom", "Conta Dexcom"},
@@ -636,7 +636,7 @@ static const char *const k_months[LANG_COUNT][12] = {
      "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"},
 };
 
-/* Mise en forme propre a chaque langue : "Jeudi 15 octobre", "Thursday 15 October",
+/* Formatting each language: "Jeudi 15 octobre", "Thursday 15 October",
  * "jueves, 15 de octubre", "Donnerstag, 15. Oktober", "giovedì 15 ottobre",
  * "quinta-feira, 15 de outubro." The French keep "1er" for the first of the month. */
 const char *i18n_day_name(int wday)

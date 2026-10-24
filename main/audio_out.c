@@ -33,7 +33,7 @@ static const char *TAG = "audio";
 #define ES8311_REG_DAC_VOLUME 0x32 /* 0xBF = 0 dB, pas de 0,5 dB */
 
 /*
- * Volume general -> volume numerique du DAC ES8311 (dB). La courbe par defaut d'esp_codec_dev est lineaire
+ * General Volume -> Digital Volume of DAC ES8311 (dB). The curve by defaultesp_codec_dev is linear
  * Of -50 dB at 0 dB (45% = -27.5 dB: voice too low). Law close to an amplitude proportional to the square
  * of the percentage (40 log10): 50% = -12 dB, 70% = -6 dB, 85% = -3 dB, 100% = 0 dB. Never gain
  * positive digital (it would saturate normalized extracts a -1.5 dBFS).
@@ -47,7 +47,7 @@ static const struct {
 };
 #define VOLUME_POINTS (int)(sizeof(k_volume_curve) / sizeof(k_volume_curve[0]))
 
-/* Meme compensation que le pilote ES8311 with values of BSP (ampli 5 V, DAC 3,3 V) : environ -3,6 dB */
+/* Same compensation as the pilot ES8311 with values of BSP 5 V, DAC 3.3 V): approximately -3.6 dB */
 static esp_codec_dev_hw_gain_t s_hw_gain = {.pa_voltage = 5.0, .codec_dac_voltage = 3.3};
 
 typedef enum {
@@ -283,7 +283,7 @@ esp_err_t audio_out_init(void)
     esp_codec_dev_vol_map_t map[VOLUME_POINTS];
     for (int i = 0; i < VOLUME_POINTS; i++) {
         map[i].vol = k_volume_curve[i].pct;
-        /* +0,25 dB : le pilote tronque au pas de 0,5 dB du registre, on arrondit au plus proche (100 % = 0xBF) */
+        /* +0.25 dB: the truncated pilot at 0.5 dB of the register, rounded to the nearest (100% = 0xBF) */
         map[i].db_value = k_volume_curve[i].dac_db + hw_gain + 0.25f;
     }
     esp_codec_dev_vol_curve_t curve = {.vol_map = map, .count = VOLUME_POINTS};
@@ -409,7 +409,7 @@ void audio_out_print_info(void)
     }
 }
 
-/* Amplitude de la composante a `freq` (algorithme de Goertzel) sur le canal gauche */
+/* Amplitude of component a `freq` (Goertzel algorithm) on the left channel */
 static double goertzel(const int16_t *stereo, int frames, int freq)
 {
     const double coeff = 2.0 * cos(2.0 * M_PI * freq / AUDIO_SAMPLE_RATE);
@@ -424,7 +424,7 @@ static double goertzel(const int16_t *stereo, int frames, int freq)
     return sqrt(power > 0 ? power : 0) / frames;
 }
 
-/* Micro (console) measuring stamp: 100 ms stereo, in PSRAM a la premiere mesure (la RAM interne reste aux
+/* Micro (console) measuring stamp: 100 ms stereo, in PSRAM the first measure (the RAM internal
  * tampons DMA) */
 #define MIC_CHUNK 1600
 static int16_t *s_rx;
@@ -560,7 +560,7 @@ esp_err_t audio_out_measure(int volume_pct, audio_playback_fn_t play_voice, floa
     } else {
         audio_out_play_tone(1000, 1800, volume_pct);
     }
-    const int chunks = voice ? 55 : 12;       /* voix : 5,5 s ; bip : 1,2 s */
+    const int chunks = voice ? 55 : 12;       /* vote: 5.5 seconds; bip: 1.2 s */
     int skip = voice ? 1 : 3;                 /* ouverture du codec et montee du bip */
     double active_energy = 0.0;
     int active_frames = 0;
@@ -584,7 +584,7 @@ esp_err_t audio_out_measure(int volume_pct, audio_playback_fn_t play_voice, floa
                 clipped += a >= 32500;
             }
             const double rms = sqrt(energy / FRAME);
-            if (!voice || rms > noise_rms * 3.16) { /* voix : trames au moins 10 dB au-dessus du bruit */
+            if (!voice || rms > noise_rms * 3.16) { /* voice: frames at least 10 dB above the noise */
                 active_energy += energy;
                 active_frames++;
             }

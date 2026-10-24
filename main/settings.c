@@ -25,7 +25,7 @@ static const char *TAG = "reglages";
 #define NVS_KEY       "v1"
 #define NVS_KEY_NIGHT "nuit"
 #define NVS_KEY_VCMD  "vcmd"
-#define NVS_KEY_LANG  "lang" /* un seul octet, separe du bloc "v1" */
+#define NVS_KEY_LANG  "lang" /* one byte, separate from the block "v1" */
 
 static SemaphoreHandle_t s_mutex;
 static settings_t s_settings;
@@ -49,7 +49,7 @@ static const night_settings_t k_night_defaults = {
 };
 
 static const settings_t k_defaults = {
-    .volume_level = VOLUME_LOW, /* premier demarrage : volume faible */
+    .volume_level = VOLUME_LOW, /* first start: low volume */
     .volume_pct = 35,
     .voice = true,
     .alerts = true,
@@ -86,7 +86,7 @@ static void sanitize(settings_t *s)
     if (s->volume_pct > 100) {
         s->volume_pct = 100;
     }
-    /* Le pourcentage fait foi : bouton allume seulement s'il correspond exactement a un prereglage */
+    /* The percentage is true: button only lights if it corresponds exactly to a prefix */
     s->volume_level = VOLUME_CUSTOM;
     for (int level = VOLUME_MUTE; level <= VOLUME_MAX; level++) {
         if (settings_level_volume((volume_level_t)level) == s->volume_pct) {

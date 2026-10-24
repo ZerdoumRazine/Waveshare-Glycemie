@@ -4,12 +4,12 @@
 # Design note: Target revision and partition offsets must match the actual board.
 # Checks board revision, partition layout and binary headers before flashing.
 #
-r"""Verifications automatiques AVANT tout flash de glycemie_display (ESP32-P4 rev1.3).
+"""Automatic verifications AVANT any flash of glycemie_display (ESP32-P4 rev1.3).
 
-Lecture seule : ce script n'accede pas a la carte. A lancer dans l'environnement ESP-IDF du projet :
-    . tools\idf_env.ps1      (ou export.ps1 / get_idf d'une installation ESP-IDF 5.5.5)
-    python tools\verif_avant_flash.py
-Code de sortie 0 uniquement si tous les controles passent.
+Play only: this script n'accede pas a la carte. A lancer dans l'environment ESP-IDF Project:
+    . tools\\idf_env.ps1 (or export.ps1 / get_idf of an installation ESP-IDF 5.5.5)
+    python tools\\verif_avant_flash.py
+Output code 0 only if all controls pass.
 """
 import json
 import os
@@ -18,15 +18,15 @@ import subprocess
 import sys
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-PROJECT = ROOT  # le projet ESP-IDF est a la racine du depot
+PROJECT = ROOT  # the project ESP-IDF is at the root of the deposit
 BUILD = os.path.join(PROJECT, 'build')
 APP_BIN = os.path.join(BUILD, 'glycemie_display.bin')
 BOOT_BIN = os.path.join(BUILD, 'bootloader', 'bootloader.bin')
 PART_BIN = os.path.join(BUILD, 'partition_table', 'partition-table.bin')
 SECRETS = os.path.join(ROOT, 'private', 'device_secrets.h')
 
-# Disposition identique au firmware d'origine (backup_original/ANALYSE_PARTITIONS.txt), plus la partition "model"
-# voice controls (ESP-SR) ajoutee le 2026-09-15 APRES original partitions (their offsets are interchanged)
+# Provision identical to the original firmware (backup_original/ANALYSE_PARTITIONS.txt), plus partition "model"
+# voice controls (ESP-SR) adds 2026-09-15 APRES original partitions (their offsets are interchanged)
 ORIGINAL_PARTITIONS = [
     ('nvs', 'data', 'nvs', 0x9000, 0x6000),
     ('phy_init', 'data', 'phy', 0xF000, 0x1000),

@@ -22,7 +22,7 @@
 
 static const char *TAG = "ui_alerte";
 
-#define PANEL_MAX_US (30 * 1000000LL) /* panneau plein ecran : 30 s au plus, puis retour a l'accueil */
+#define PANEL_MAX_US (30 * 1000000LL) /* full screen panel: 30 s at most, then back to reception */
 
 static lv_obj_t *s_overlay;
 static lv_obj_t *s_panel;
@@ -35,7 +35,7 @@ static lv_obj_t *s_snooze_button;
 
 static bool s_panel_visible;
 static int64_t s_panel_since_us;
-static uint32_t s_presented_seq[ALERT_COUNT]; /* derniere levee deja presentee en plein ecran, par type */
+static uint32_t s_presented_seq[ALERT_COUNT]; /* last lift already in full screen, by type */
 
 /* Display content: updated only if it changes (no redrawing every second) */
 static alert_type_t s_panel_style = ALERT_NONE;
@@ -258,7 +258,7 @@ void ui_alert_update(void)
     }
     refresh_panel(&v);
     if (v.seq != s_presented_seq[v.type]) {
-        /* nouvelle levee : panneau plein ecran */
+        /* new levee: full screen panel */
         s_presented_seq[v.type] = v.seq;
         show_panel();
         ESP_LOGI(TAG, "Panneau d'alerte affiche : %s (30 s au plus)", v.title);

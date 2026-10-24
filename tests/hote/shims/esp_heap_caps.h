@@ -1,7 +1,7 @@
 /* Host-memory replacements for ESP heap allocation.
  * Test and configuration interface only; no live patient data is included.
  */
-/* Allocations : malloc ordinaire sur PC. */
+/* Allocations: ordinary malloc on PC. */
 /* Replace ESP32 special-purpose allocation with host memory.
  */
 #pragma once

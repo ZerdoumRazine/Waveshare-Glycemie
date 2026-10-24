@@ -33,11 +33,11 @@ static const char *TAG = "alertes";
 
 typedef struct {
     audio_pattern_t pattern;
-    int repeat_s;      /* intervalle entre deux sonneries tant que non acquittee */
+    int repeat_s;      /* interval between two bells as long as not acquitted */
     int max_repeats;   /* 0 = jusqu'a l'acquittement */
     int reraise_min;   /* new alert if condition persists after acquittal */
     bool critical;     /* volume croissant (RAMP) */
-    str_id_t title_id; /* identifiant de texte : passer par tr() ou tr_fr(), never as */
+    str_id_t title_id; /* Text ID: go through tr() ou tr_fr(), never as */
 } alert_cfg_t;
 
 static const alert_cfg_t k_cfg[ALERT_COUNT] = {
@@ -58,15 +58,15 @@ typedef struct {
     int64_t reraise_us;
     int64_t last_sound_us;
     int repeats;
-    uint32_t seq;      /* numero de la derniere levee */
+    uint32_t seq;      /* number of last levee */
 } alert_slot_t;
 
 static alert_slot_t s_slots[ALERT_COUNT];
 static SemaphoreHandle_t s_mutex;
 static TaskHandle_t s_task;
 static alert_view_t s_view = {.type = ALERT_NONE, .style = ALERT_NONE, .ongoing = ALERT_NONE};
-/* Rappel capteur [0] / catheter [1] en cours de presentation (-1 : aucun) : garde jusqu'a OK, jusqu'au rappel suivant
- * ou jusqu'a l'echeance, meme s'il est deja memorise en NVS comme signale */
+/* Sensor reminder [0] / catheter [1] during presentation (-1: none): guard until'a OK, jusqu'at the next reminder
+ * or up'a l'even if he is already remembered in NVS as indicated */
 static int s_reminder[2] = {-1, -1};
 static bool s_test_active;
 static alert_type_t s_test_as = ALERT_TEST; /* type simule par l'alerte de test */
@@ -176,7 +176,7 @@ static void alerts_task(void *arg)
         bool cond[ALERT_COUNT] = {0};
         int value[ALERT_COUNT] = {0};
 
-        /* Hysteresis : la condition de fin est plus stricte que la condition d'entree */
+        /* Hysteresis: the end condition is stricter than the entry condition */
         cond[ALERT_VERY_LOW] = fresh && v < (int)cfg.thr_very_low + (s_slots[ALERT_VERY_LOW].active ? 3 : 0);
         cond[ALERT_LOW] = fresh && !cond[ALERT_VERY_LOW] && v < (int)cfg.thr_low + (s_slots[ALERT_LOW].active ? 5 : 0);
         cond[ALERT_VERY_HIGH] = fresh && v > (int)cfg.thr_very_high - (s_slots[ALERT_VERY_HIGH].active ? 10 : 0);
@@ -187,7 +187,7 @@ static void alerts_task(void *arg)
         cond[ALERT_NO_DATA] = count > 0 && age_s >= (s_slots[ALERT_NO_DATA].active ? 10 : 15) * 60LL;
         value[ALERT_NO_DATA] = (int)(age_s / 60);
 
-        /* Sensor / catheter reminders: each reminder is presented only once (memorise in NVS ringing,
+        /* Sensor / catheter recalls: each recall is presented only once (memorise in NVS ringing,
          * never replay after a restart); a new reminder replaces the previous with a new levee */
         for (int i = 0; i < 2; i++) {
             const alert_type_t t = i == 0 ? ALERT_SENSOR : ALERT_CATHETER;
@@ -216,7 +216,7 @@ static void alerts_task(void *arg)
         }
         const bool ongoing_test = ongoing == ALERT_NONE && s_test_active && s_test_as <= ALERT_HIGH;
         if (ongoing_test) {
-            ongoing = s_test_as; /* simulation : la condition de test persiste jusqu'a "alert_test off" */
+            ongoing = s_test_as; /* simulation: test condition persists until "alert_test off" */
         }
 
         alert_type_t current = ALERT_NONE;
@@ -264,7 +264,7 @@ static void alerts_task(void *arg)
                 test_ready = true;
             } else if (current == ALERT_NONE ||
                        (t == ALERT_CATHETER && current == ALERT_SENSOR && slot->seq > s_slots[ALERT_SENSOR].seq)) {
-                /* rappel capteur deja presente mais non acquitte : il ne bloque pas un rappel catheter plus recent */
+                /* reminder sensor already present but not acquit: it does not block a more recent catheter reminder */
                 current = (alert_type_t)t;
             }
         }
@@ -273,7 +273,7 @@ static void alerts_task(void *arg)
             current = ALERT_TEST;
         }
 
-        alert_type_t presented = ALERT_NONE; /* rappel capteur / catheter qui vient de sonner */
+        alert_type_t presented = ALERT_NONE; /* sensor / catheter reminder that just ringed */
         if (current != ALERT_NONE) {
             alert_slot_t *slot = &s_slots[current];
             const alert_cfg_t *c = &k_cfg[current];
@@ -296,7 +296,7 @@ static void alerts_task(void *arg)
         s_view.ongoing_test = ongoing_test;
         xSemaphoreGive(s_mutex);
 
-        /* Hors verrou : rappel presente memorise en NVS (un redemarrage ne le rejoue pas) */
+        /* Off lock: reminder present memorise in NVS (a reboot doesn't play it again) */
         if (presented == ALERT_SENSOR) {
             sensor_session_mark_reminder_done(presented_value);
         } else if (presented == ALERT_CATHETER) {
@@ -311,7 +311,7 @@ esp_err_t alerts_start(void)
     if (s_mutex == NULL) {
         return ESP_ERR_NO_MEM;
     }
-    /* pile 6 Ko : ecriture NVS du rappel presente en plus de la sonnerie */
+    /* 6 Ko stack: writing NVS the reminder in addition to the bell */
     return xTaskCreate(alerts_task, "alertes", 6144, NULL, 4, &s_task) == pdPASS ? ESP_OK : ESP_ERR_NO_MEM;
 }
 
@@ -368,7 +368,7 @@ void alerts_snooze(int minutes)
         slot->active = false;
         slot->snooze_until_us = esp_timer_get_time() + (int64_t)minutes * 60 * 1000000;
         if (t == ALERT_SENSOR || t == ALERT_CATHETER) {
-            /* a sensor reminder or catheter report will return once */
+            /* a sensor recall or catheter report will return once */
             slot->acked = false;
         }
         char resume[16] = "--:--";

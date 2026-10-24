@@ -16,7 +16,7 @@
 esp_err_t wifi_manager_start(void);
 
 /* Configuration assistant: list of visible networks (single names, sort by signal).
- * Bloquant (quelques secondes) : a appeler hors de la tache LVGL. Retourne le nombre de reseaux ecrits. */
+ * Blocking (a few seconds): a call out of the spot LVGL. Returns the number of networks written. */
 typedef struct {
     char ssid[33];
     int8_t rssi;      /* dBm */
@@ -30,7 +30,7 @@ bool wifi_manager_apply_credentials(TickType_t timeout);
 bool wifi_manager_is_connected(void);
 bool wifi_manager_wait_connected(TickType_t timeout);
 
-/* Vrai quand le Wi-Fi heberge est demarre (liaison SDIO withESP32-C6 etablie) */
+/* True when Wi-Fi heberge is started (linking SDIO withESP32-C6 etablie) */
 bool wifi_manager_wait_started(TickType_t timeout);
 
 /* Fiability test: Voluntaryly cuts the association (reconnection must be automatic) */

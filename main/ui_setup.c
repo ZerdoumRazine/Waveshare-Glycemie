@@ -22,16 +22,16 @@
 #include "wifi_manager.h"
 
 /*
- * Assistant de premiere mise en route (ecran tactile) : langue, reseau Wi-Fi, compte Dexcom, verification.
+ * Start-up assistant (touch screen): language, Wi-Fi network, Dexcom account, verification.
  * No one needs to recompile the firmware or plug in a PC to put their own identifiers.
  *
- * - L'assistant occupe tout l'ecran (couche superieure de LVGL) and opens alone as long as nothing is
- *   information; it is reopened from BACKGROUND > CONNEXION > Modifier.
+ * - L'assistant occupe tout l'screen (superior layer of LVGL) and opens alone as long as noting is
+ *   information; it is reproduced from BACKGROUND > CONNEXION > Amend.
  * - The two long operations (network search, connection test) run in their own
- *   taches : la tache LVGL is never blocked. The promotion is reread every second by ui_setup_tick().
+ *   spots: the spot LVGL is never blocked. The promotion is reread every second by ui_setup_tick().
  * - Passwords are screen masks, never logged, and erased from the memory of the interface
  *   at the close of the assistant as after recording (credentials.c, space NVS separe).
- * - LES ACCES PRECEDENTS NE SONT JAMAIS PERDUS : la saisie est un essai (credentials_trial_*). Le test de
+ * - LES ACCES PRECEDENTS NE SONT JAMAIS PERDUS : the entry is a test (credentials_trial_*). The
  *   connection is about new values, but nothing is saved before pressing "Save".
  *   A failure, a abandonment, a power cut: the device keeps its previous accesses.
  * - After recording, the device starts again: the services (Wi-Fi, Dexcom) go back clean with
@@ -49,17 +49,17 @@ typedef enum {
     ETAPE_VERIF,
 } etape_t;
 
-static lv_obj_t *s_root;        /* fond plein ecran */
+static lv_obj_t *s_root;        /* bottom full screen */
 static lv_obj_t *s_titre;
 static lv_obj_t *s_etape_txt;
-static lv_obj_t *s_contenu;     /* zone reconstruite a chaque etape */
+static lv_obj_t *s_contenu;     /* area rebuilt at each stage */
 static lv_obj_t *s_btn_retour;
 static lv_obj_t *s_btn_suivant;
 static lv_obj_t *s_kb;          /* sharing keyboard */
 static lv_obj_t *s_ta;          /* champ en cours de saisie */
 
 static etape_t s_etape;
-static bool s_premier;          /* premiere mise en route (pas d'acces aux pages) */
+static bool s_premier;          /* first start (no access to pages) */
 static char s_ssid[CRED_SSID_MAX];
 static char s_mdp_wifi[CRED_PASS_MAX];
 static char s_user[CRED_USER_MAX];
@@ -573,7 +573,7 @@ bool ui_setup_visible(void)
     return s_root != NULL && !lv_obj_has_flag(s_root, LV_OBJ_FLAG_HIDDEN);
 }
 
-/* Appelee chaque seconde par la tache LVGL : progress of the search and connection test */
+/* Call every second by the spot LVGL : progress of the search and connection test */
 void ui_setup_tick(void)
 {
     if (!ui_setup_visible()) {

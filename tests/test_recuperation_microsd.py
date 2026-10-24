@@ -4,13 +4,13 @@
 # These tests use simulations; they do not connect to a patient's device.
 # Validate CRC and interrupted-transfer handling with artificial microSD data.
 #
-"""Controles de la recuperation de la microSD par le cable (tools/recuperer_microsd.py).
+"""Controls of microSD recovery by cable (tools/recuperer_microsd.py).
 
-Ce qui compte ici : une copie n'est declaree bonne que si la taille ET l'empreinte annoncees par
-l'appareil correspondent a ce qui a ete recu. Une transmission tronquee, abimee, ou un programme
-qui ne connait pas la commande doivent etre signales, jamais pris pour une sauvegarde reussie.
+What matters here: a copy n'est declaree bonne que si la taille ET l'footprint announced by
+The device matches what was received. A truncated, abysmal transmission, or a program
+who does not know the command must be reported, never taken for a successful backup.
 
-Appareil simule : aucune liaison serie, aucun materiel.
+Simulating device: no serial connection, no material.
 
 Usage : python tests\\test_recuperation_microsd.py
 """
@@ -33,7 +33,7 @@ def check(nom, ok, detail=''):
 
 
 class AppareilSimule(object):
-    """Repond a sd_dump comme le firmware : lignes base64 puis taille et CRC."""
+    """Answer to sd_dump like firmware: base64 lines then size and CRC."""
 
     def __init__(self, fichiers, tronquer=False, fausser_crc=False, connait=True):
         self.fichiers = fichiers     # {chemin: contenu binaire}
@@ -66,7 +66,7 @@ class AppareilSimule(object):
         if not cmd.startswith('sd_dump '):
             return
         if not self.connait:
-            return                      # ancien programme : aucune reponse
+            return                      # old program: no answer
         chemin = cmd[len('sd_dump '):]
         if '..' in chemin or '\\' in chemin:
             self._repondre('SD_DUMP refuse : chemin invalide')
@@ -94,7 +94,7 @@ BINAIRE = bytes(range(256)) * 3
 def main():
     fichiers = {'/glycemie/history/2026-10-17.csv': CSV, '/glycemie/audio/essai.bin': BINAIRE}
 
-    # --- 1. Copie fidele -----------------------------------------------------------------------
+    # --- 1. Fidel copy ---------------------------------------------------------------------------------------
     app = ac.Appareil(AppareilSimule(fichiers))
     data, info = rm.dump_fichier(app, '/glycemie/history/2026-10-17.csv', attente=10)
     check('fichier texte : copie recue', data == CSV, repr(data)[:60])
@@ -115,7 +115,7 @@ def main():
     data, raison = rm.dump_fichier(app, '/glycemie/history/2026-10-17.csv', attente=10)
     check('empreinte differente : refusee', data is None and 'CRC' in (raison or ''), str(raison))
 
-    # --- 3. Programme qui ne connait pas la commande --------------------------------------------
+    # --- 3. Program that does not know the order ------------------------------------------------------------
     app = ac.Appareil(AppareilSimule(fichiers, connait=False))
     data, raison = rm.dump_fichier(app, '/glycemie/history/2026-10-17.csv', attente=3)
     check("ancien programme : dit que la commande est absente",

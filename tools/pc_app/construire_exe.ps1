@@ -9,13 +9,13 @@
 
 .DESCRIPTION
     The result, dist\GlycemieLogin.exe, opens by double-click: the end user has
-    besoin NI de Python NI d'aucune bibliotheque. L'executable embarque l'interprete, tkinter et
-    tools\assistant_config.py (le meme dialogue serie que l'assistant en ligne de commande).
+    NI need of NI Python d'aucune bibliotheque. L'Executable embarks the interpretation, tkinter and
+    tools\assistant_config.py (the same dialog as the command line assistant).
 
     To execute once after each modification of the application or assistant:
         powershell -ExecutionPolicy Bypass -File tools\pc_app\construire_exe.ps1
 
-    Prerequis sur le PC de developpement seulement : Python 3 et PyInstaller
+    Prerequisites on the development PC only: Python 3 and PyInstall
         py -3 -m pip install pyinstaller
 
 .NOTES
@@ -55,9 +55,9 @@ if ($Propre) {
 
 Write-Host "Construction de l'application Windows..." -ForegroundColor Cyan
 # --noconsole: no black windows; --onefile: one .exe to give to the user
-# --paths + --hidden-import : assistant_config.py est embarque comme MODULE, so that PyInstiller
+# --paths + --hidden-import: assistant_config.py is loaded like MODULE, so that PyInstiller
 # analyse aussi ses propres imports (getpass, re, argparse, winreg...). Embarque en simple donnee,
-# il manquerait ces modules et l'application ne s'ouvrirait pas.
+# these modules would be missing and'application ne s'Would not open.
 & $python @argsPy -m PyInstaller `
     --noconfirm --clean --onefile --noconsole `
     --name GlycemieConnexion `

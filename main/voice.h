@@ -2,19 +2,19 @@
  * Shared definitions for the firmware implementation.
  */
 /*
- * Annonces vocales francaises LOCALES (aucune dependance Internet, aucun appel Google depuis la carte) :
+ * French Voice Announcements LOCALES (no Internet dependence, no Google calls from the map):
  *
- * - main bank: files WAV de la microSD. Le francais est a la racine,
+ * - main bank: files WAV MicroSD. The French is at the root,
  *   /glycemie/audio/voice/ ; other languages in a subfolder by code ISO
- *   (/glycemie/audio/voice/en/, /es/, /de/, /it/, /pt/). Si la banque de la langue choisie
+ *   (/glycemie/audio/voice/en/, /es/, /de/, /it/, /pt/). If the bank of the chosen language
  *   is not installed, the French bank takes over rather than silence.
- *   (PCM 16 bits mono 16 kHz, voix Google
+ *   (PCM 16 bits mono 16 kHz, Google voice
  *   en-FR-Chirp3-HD-Aoede generee once on PC by tools/voice/gen_voice_google.py). An alert plays
- *   la phrase d'alerte puis la valeur : alert_low.wav + glucose_078.wav ("Attention, glycemie basse. Glycemie
+ *   the warning sentence and then the value: alert_low.wav + glucose_078.wav ("Warning, low glycemia. Glycemie
  *   seventy-eight."). File missing or card unavailable: no voices, the alert beep already plays serves as
  *   Help. The files are read in the audio spot, never in the interface.
- * - ancienne banque integree au firmware (voix Windows fr-FR, nombres composes mot a mot) : conservee
- *   temporairement jusqu'a validation de la nouvelle voix, jouee seulement par la console (voice_old).
+ * - old bank integrated with firmware (Windows voice en-FR, numbers composed word to word): preserved
+ *   temporarily until validation of the new voice, played only by the console (voice_old).
  */
 /* Public interface / Interface publique
  * PCM announcement playback and microSD language fallback.
@@ -25,7 +25,7 @@
 #include <stdbool.h>
 #include "alerts.h"
 
-/* Langue changee : la banque vocale de la nouvelle langue sera cherchee a nouveau */
+/* Changing language: the voice bank of the new language will be searched again */
 void voice_lang_changed(void);
 
 /* Former integrated bank present in firmware */
@@ -50,10 +50,10 @@ typedef enum {
 } voice_reply_t;
 void voice_reply(voice_reply_t reply, int volume_pct);
 
-/* Glycemie a la demande : "Glycemie cent quinze." puis la tendance ("Stable.", "En hausse."...) ; donnee ancienne :
+/* Glycemie has the request: "Glycemie cent quinze." then the trend ("Stable.", "En hausse."...) old data:
  * "Old data. Last measure:" then the value, without trend; no action: vc_no_data.wav */
 void voice_say_glucose(int mgdl, uint8_t trend, bool stale, bool available, int volume_pct);
 
-/* Ancienne voix integree (console) : phrase d'alerte, ou type ALERT_TEST : "Test du volume. Glycemie <valeur>
+/* Former integree voice (console): warning phrase, or type ALERT_TEST Volume test. Glycemie <value>
  * milligrammes par decilitre." */
 void voice_old_announce(alert_type_t type, int value, int volume_pct);

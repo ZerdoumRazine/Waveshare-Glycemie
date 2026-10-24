@@ -103,7 +103,7 @@ esp_err_t credentials_init(void)
     memset(&s_cred, 0, sizeof(s_cred));
     strlcpy(s_cred.dexcom_region, "ous", sizeof(s_cred.dexcom_region));
     memset(&s_avant, 0, sizeof(s_avant));
-    s_essai = false; /* un redemarrage equivaut a l'annulation d'un essai non confirme */
+    s_essai = false; /* an equivalent restart'annulation d'one test not confirmed */
 
     nvs_handle_t h;
     bool lu = false;
@@ -133,7 +133,7 @@ esp_err_t credentials_init(void)
     }
 
     if (!lu) {
-        /* Premiere mise en route, ou appareil deja configure a la compilation (appareil d'origine) */
+        /* First start, or device already configures to the compilation (original device) */
         strlcpy(s_cred.wifi_ssid, GLY_WIFI_SSID, sizeof(s_cred.wifi_ssid));
         strlcpy(s_cred.wifi_password, GLY_WIFI_PASSWORD, sizeof(s_cred.wifi_password));
         strlcpy(s_cred.dexcom_user, GLY_DEXCOM_USERNAME, sizeof(s_cred.dexcom_user));
@@ -302,18 +302,18 @@ void credentials_trial_cancel(void)
  */
 esp_err_t credentials_clear(void)
 {
-    /* First delete storage identifiers NVS. Le verrou
+    /* First delete storage identify NVS. Lock
      * Dexcom is in another space NVS : the two spaces cannot
      * not to be modified in an atomic manner. So it must never be
-     * efface AVANT confirmation of the recording of a configuration
+     * erase AVANT confirmation of the recording of a configuration
      * empty, otherwise allow attempts to connect with
      * old accesses after a mistake NVS. */
     esp_err_t err;
 
-    /* Conserver l'ancien etat en RAM tant que l'ecriture de la configuration
-     * vide n'a pas ete confirmee. Un effacement de cle NVS serait insuffisant :
+    /* Keep l'ancien etat en RAM tant que l'configuration writing
+     * empty was not confirmed. Clearing the Key NVS would be insufficient:
      * on an old customised firmware, compile IDs would be
-     * repris automatiquement au prochain demarrage. */
+     * automatically resumed at the next start. */
     credentials_t precedent, essai_precedent;
     bool origine_precedente, demo_precedent, essai_actif_precedent, origine_essai_precedente;
     xSemaphoreTake(s_mutex, portMAX_DELAY);
@@ -329,7 +329,7 @@ esp_err_t credentials_clear(void)
     s_demo = false;
     xSemaphoreGive(s_mutex);
 
-    /* Inscrire explicitement un bloc vide en NVS afin d'empecher tout retour
+    /* explicitly enter an empty block in NVS to prevent any return
      * implicit in identifiers embedded by an old compilation. */
     err = persist();
     if (err != ESP_OK) {

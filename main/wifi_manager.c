@@ -11,7 +11,7 @@
 
 /*
  * The start of Wi-Fi (recording of events managers, waiting by group)
- * d'evenements) suit le squelette de l'exemple station d'Espressif, repris tel quel par Waveshare
+ * d'evenements) suit le squelette de l'example station of Espressive, taken as such by Waveshare
  * (examples/esp-idf/05_wifistation, SPDX-License-Identifier: Apache-2.0). Tout le reste - liaison
  * par ESP-Hosted, reconnection, search for networks, hot application of identifiers - is
  * propre a ce projet.
@@ -83,7 +83,7 @@ static void on_network_event(void *arg, esp_event_base_t base, int32_t id, void 
         case WIFI_EVENT_STA_DISCONNECTED: {
             const wifi_event_sta_disconnected_t *d = data;
             s_connected = false;
-            /* Never log SSID : seulement la raison et le signal */
+            /* Never log SSID : only reason and signal */
             ESP_LOGW(TAG, "Wi-Fi deconnecte (raison %d, RSSI %d dBm)", d ? d->reason : -1, d ? d->rssi : 0);
             app_state_set_wifi(LINK_ERROR, 0, "");
             xEventGroupClearBits(s_events, BIT_CONNECTED);

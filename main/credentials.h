@@ -6,12 +6,12 @@
  *
  * Purpose: No one needs to recompile the firmware to put their own accesses.
  * - Storage: space NVS "ident", separates settings and Dexcom lock.
- *   The block is blurred by an OR exclusive with a key drive of the address MAC de la carte :
+ *   The block is shielded by an OR exclusive with a key drive of the address MAC of the map:
  *   It's not PAS encryption (the Flash Encryption is not active on this project), only
  *   to avoid a password reading plain in a rough copy of the memory.
- * - Passwords are not JAMAIS Journals and posters: only masked shapes come out
- *   d'ici (credentials_masked_*).
- * - Compatibilite : si la NVS is empty and that firmware has been compiled with private/device_secrets.h,
+ * - Passwords are not JAMAIS Journals and posters: only made shapes come out
+ *   From here (credentials_masked_*).
+ * - Compatibility: if the NVS is empty and that firmware has been compiled with private/device_secrets.h,
  *   These values serve as departure (the original device continues to operate without entering anything).
  */
 /* Public interface / Interface publique
@@ -50,17 +50,17 @@ bool credentials_from_build(void);   /* valeurs heritees de private/device_secre
 /* Record immediately (after a successful test, or for a console resumption). */
 esp_err_t credentials_set_wifi(const char *ssid, const char *password);
 esp_err_t credentials_set_dexcom(const char *user, const char *password, const char *region);
-esp_err_t credentials_clear(void);   /* efface tout : NVS, memoire et verrou d'authentification */
+esp_err_t credentials_clear(void);   /* Clear everything: NVS, memory and authentication lock */
 
 /*
  * ESSAI DE NOUVEAUX ACCES, without losing the elders.
  *
- * Regle appliquee partout (ecran tactile, console, assistant PC) :
+ * Regle applies everywhere (touch screen, console, PC assistant):
  *   keep old accesses -> try new -> save only after success
  *   ET confirmation.
  *
  * During a trial, the new values are used as a living memory (the connection test).
- * porte donc bien sur elles) mais RIEN is written in the permanent memory. A cancellation,
+ * of course, but RIEN is written in the permanent memory. Cancelling,
  * an error, a power outage or a restart therefore brings back the old accesses: there is no
  * no intermediate state or device would end up without previous access.
  */

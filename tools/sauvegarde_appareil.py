@@ -4,25 +4,25 @@
 # Design note: The backup is private because it may contain Wi-Fi, Dexcom and health data.
 # Reads a complete flash backup before maintenance without changing the device.
 #
-r"""Identifier et SAUVEGARDER l'ecran avant toute mise a jour. Ce programme n'ecrit JAMAIS dans l'appareil.
+"""Identify and SAUVEGARDER l'ecran avant toute mise a jour. Ce programme n'Written JAMAIS in the camera.
 
-Il fait trois choses, dans cet ordre :
-  1. identification : type de puce, revision, taille de memoire, table des partitions, programme en place ;
-  2. sauvegarde : copie de la memoire flash (complete, ou seulement les parties utiles) dans un dossier
+He does three things in this order:
+  1. identification: type of chip, revision, memory size, partition table, program in place;
+  2. backup: copy of flash memory (complete, or only useful parts) in a folder
      prive, hors du depot public ;
-  3. verification : la copie est relue et comparee a l'appareil (esptool verify_flash), et son empreinte
+  3. verification: the copy is reread and compared to the device (esptool) verify_flash) and its footprint
      SHA-256 est enregistree.
 
-Ce qu'il ne fait pas, jamais : effacer (erase_flash), ecrire (write_flash), toucher aux eFuses, au Secure
-Boot, au chiffrement de flash, ni au second processeur ESP32-C6 qui assure le Wi-Fi.
+What he does not, never: erase (erase_flash), write (write_flash), touch eFuses, Secure
+Boot, flash encryption, or second processor ESP32-C6 that provides Wi-Fi.
 
-La carte reste branchee en USB. Aucune donnee ne part sur Internet.
+The card remains plugged in USB. No data goes on the Internet.
 
 Usage :
-    python tools\sauvegarde_appareil.py --identifier            (lecture seule, tres rapide)
-    python tools\sauvegarde_appareil.py                         (identification + sauvegarde utile)
-    python tools\sauvegarde_appareil.py --complet               (sauvegarde TOUTE la memoire : plus long)
-    python tools\sauvegarde_appareil.py --port COM7 --vitesse 921600
+    python tools\\sauvegarde_appareil.py --identifier            (lecture seule, tres rapide)
+    python tools\\sauvegarde_appareil.py (identification + useful backup)
+    python tools\\sauvegarde_appareil.py -- full (safeguard TOUTE memory: longer)
+    python tools\\sauvegarde_appareil.py --port COM7 --vitesse 921600
 """
 import argparse
 import datetime
@@ -38,7 +38,7 @@ import sys
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 SAUVEGARDES = os.path.join(ROOT, 'private', 'sauvegardes')
 
-# Zones sauvegardees par defaut (adresses de partitions.csv, relues sur l'appareil si possible).
+# Areas saved by default (partition addresses.csv, reread on device if possible).
 ZONES_PAR_DEFAUT = [
     ('bootloader', 0x0, 0x8000),
     ('table_partitions', 0x8000, 0x1000),
@@ -46,11 +46,11 @@ ZONES_PAR_DEFAUT = [
 
 
 def esptool_cmd(impose=None):
-    """Commande esptool a utiliser : celle d'ESP-IDF si elle est installee, sinon le module Python.
+    """Esptool command to use: that ofESP-IDF if it is installed, otherwise the Python module.
 
-    Aucun chemin personnel n'est inscrit ici : l'environnement ESP-IDF est trouve par les variables
-    IDF_TOOLS_PATH / IDF_PATH (que definit la fenetre « ESP-IDF 5.5 PowerShell »), par une
-    installation dans le projet, ou par l'option --esptool.
+    No personal path n'est inscrit ici : l'environment ESP-IDF is found by variables
+    IDF_TOOLS_PATH / IDF_PATH (which the window defined " ESP-IDF 5.5 PowerShell"), by a
+    installation in the project, or by the --esptool option.
     """
     candidats = []
     if impose:
@@ -64,7 +64,7 @@ def esptool_cmd(impose=None):
         env = os.path.join(base, 'python_env')
         if os.path.isdir(env):
             for sous in sorted(os.listdir(env)):
-                # le python de l'environnement ESP-IDF, with the esptool module: more reliable than
+                # environmental python ESP-IDF, with the esptool module: more reliable than
                 # esptool.exe, which needs this environment to start
                 py = os.path.join(env, sous, 'Scripts', 'python.exe')
                 if os.path.exists(py):
@@ -84,7 +84,7 @@ def esptool_cmd(impose=None):
 
 
 def lancer(cmd, args, timeout=900):
-    """Execute esptool et renvoie (code, sortie). Aucune commande d'ecriture n'est acceptee ici."""
+    """Execute esptool and return (code, output). No command d'ecriture n'is accepted here."""
     interdits = {'erase_flash', 'erase_region', 'write_flash', 'burn_efuse', 'write_mem',
                  'erase-flash', 'erase-region', 'write-flash', 'burn-efuse'}
     if interdits & set(args):
@@ -96,7 +96,7 @@ def lancer(cmd, args, timeout=900):
 
 # Inspect partition metadata to confirm the hardware layout.
 def lire_partitions(chemin_bin):
-    """Analyse une table de partitions brute (0x8000) : [(nom, type, sous-type, adresse, taille)]."""
+    """Analyze a raw partition table (0x8000): [(name, type, subtype, address, size)]."""
     entrees = []
     with open(chemin_bin, 'rb') as f:
         data = f.read()

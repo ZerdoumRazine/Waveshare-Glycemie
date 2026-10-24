@@ -56,7 +56,7 @@ typedef struct {
 } resp_buf_t;
 
 /* Vocabulaire de tendance defini par l'API Dexcom Share: it is the channels that the service
- * renvoie. Tout client emploie donc la meme liste, a l'identique. */
+ * Send back. So every customer uses the same list, identically. */
 static const char *const k_trend_names[TREND_COUNT] = {
     "None", "DoubleUp", "SingleUp", "FortyFiveUp", "Flat",
     "FortyFiveDown", "SingleDown", "DoubleDown", "NotComputable", "RateOutOfRange",
@@ -203,7 +203,7 @@ static esp_err_t http_event(esp_http_client_event_t *evt)
     return ESP_OK;
 }
 
-/* POST JSON en HTTPS. Ni l'URL (sessionId) ni le corps (mot de passe) ne sont journalises. */
+/* POST JSON en HTTPS. Neither theURL (sessionId) and the body (password) are not logged. */
 static dex_result_t http_post_json(dexcom_client_t *c, const char *url, const char *body, resp_buf_t *rb)
 {
     rb->len = 0;
@@ -280,7 +280,7 @@ static dex_result_t classify_http_error(dexcom_client_t *c, const resp_buf_t *rb
             result = (ctx == CTX_READ) ? DEX_ERR_SESSION : DEX_ERR_AUTH;
         } else if (ctx == CTX_AUTH && (strstr(code_s, "Account") != NULL || strstr(code_s, "Password") != NULL ||
                                        strstr(code_s, "Authenticate") != NULL)) {
-            /* Code inconnu mais clairement lie au compte : traite comme un refus (aucun nouvel essai) */
+            /* Unknown code but clearly linked to account: treats as refusal (no new trial) */
             result = DEX_ERR_AUTH;
         }
         ESP_LOGW(TAG, "Etape %s : HTTP %d, code Dexcom %s, message \"%s\" -> %s", dex_step_name(c->last_error.step),
@@ -308,7 +308,7 @@ static char *build_credentials_body(const char *id_key, const char *id_value, co
     return body;
 }
 
-/* Reponse attendue : un UUID JSON entre guillemets, different de l'UUID nul */
+/* Expected response: one UUID JSON between quotation marks, different from theUUID zero */
 static bool parse_uuid_response(const resp_buf_t *rb, char out[37], bool *is_default)
 {
     bool ok = false;
@@ -405,7 +405,7 @@ static uint8_t parse_trend(const cJSON *item)
         return TREND_NOT_COMPUTABLE;
     }
     if (cJSON_IsNumber(item) && item->valueint >= 0 && item->valueint < TREND_COUNT) {
-        return (uint8_t)item->valueint; /* ancien format numerique */
+        return (uint8_t)item->valueint; /* old digital format */
     }
     return TREND_NONE;
 }
@@ -437,7 +437,7 @@ void dexcom_client_init(dexcom_client_t *c, const char *region, const char *user
     }
     c->username = username ? username : "";
     c->password = password ? password : "";
-    /* Comme pydexcom : un identifiant de compte (UUID) peut remplacer le nom d'utilisateur */
+    /* Like pydexcom: an account identifier (UUID) can replace the username */
     if (is_uuid(c->username)) {
         memcpy(c->account_id, c->username, 36);
         c->account_id[36] = '\0';

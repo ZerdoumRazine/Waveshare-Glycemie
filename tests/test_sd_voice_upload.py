@@ -4,11 +4,11 @@
 # These tests use simulations; they do not connect to a patient's device.
 # Test read-only verification and audio transfer using a simulated serial device.
 #
-"""Controles de l'outil de copie de la banque vocale (tools/voice/sd_voice_upload.py).
+"""Controls of the Voice Bank Copy Tool (tools/voice/sd_voice_upload.py).
 
-Le plus important : en mode --verify-only, l'outil ne doit JAMAIS ecrire sur la carte, dans aucune des
-six langues, meme si la carte est incomplete ou differente. Les essais utilisent un transport simule
-(aucune liaison serie, aucun materiel, aucun fichier reel de banque).
+Most importantly: in --verify-only mode, the tool must not JAMAIS write on the map, in none of the
+Six languages, even if the card is incomplete or different. Tests use simulated transport
+(no serial link, no hardware, no real bank file).
 
 Usage : python tests\\test_sd_voice_upload.py
 """
@@ -38,7 +38,7 @@ def check(nom, ok, detail=''):
 
 # Use short synthetic clips instead of the real WAV files.
 def banque_temporaire(dossier):
-    """Petite banque locale (3 fichiers) + manifeste, a la place de la vraie banque."""
+    """Small local bank (3 files) + manifest, instead of the real bank."""
     voice = os.path.join(dossier, 'voice')
     os.makedirs(voice, exist_ok=True)
     lignes = ['fichier;texte;duree_s;taille_octets;crc32']
@@ -56,7 +56,7 @@ def banque_temporaire(dossier):
 
 
 class CarteSimulee:
-    """Repond comme le firmware : vrx_begin / ping / dir / put / list / end."""
+    """Answers like firmware: vrx_begin / ping / dir / put / list / end."""
 
     def __init__(self, contenu, dossier_liste=True, sous_dossiers=('en',)):
         self.contenu = {code: dict(fichiers) for code, fichiers in contenu.items()}  # {'racine'|code: {nom: (t, crc)}}
@@ -85,7 +85,7 @@ class CarteSimulee:
                 return ['VRX DIR racine']
             if lecture:
                 if not self.dossier_liste:
-                    self.dossiers_crees.append(code)      # ancien firmware : ignore "lecture" et cree le dossier
+                    self.dossiers_crees.append(code)      # old firmware: ignores "lecture" and create the folder
                     self.courant = code
                     return ['VRX DIR %s' % code]
                 if not self.contenu.get(code):
@@ -145,7 +145,7 @@ class SerieSimulee:
 
 
 class LienSimule:
-    """Meme interface que sd_voice_upload.Link, sans port serie."""
+    """Same interface as sd_voice_upload.Link, without serial port."""
 
     def __init__(self, port, log_path, carte=None):
         self.carte = carte if carte is not None else LienSimule.carte_par_defaut
@@ -190,10 +190,10 @@ class LienSimule:
 
 # Replace the serial transport so a regression test cannot write to a physical microSD.
 def executer(carte, lang, verify_only):
-    """Lance l'outil sur une carte simulee ; retourne (code de sortie, lien)."""
+    """Launch the tool on a simulated card; Returns (output code, link)."""
     dossier = tempfile.mkdtemp(prefix='banque_')
     voice, entrees = banque_temporaire(dossier)
-    up.configure = lambda _lang, _sd_root=None: None  # banque simulee, meme signature
+    up.configure = lambda _lang, _sd_root=None: None  # Simulated bank, same signature
     up.BANK, up.MANIFEST = voice, os.path.join(dossier, 'manifest.csv')
     liens = []
 
@@ -251,7 +251,7 @@ def main():
     code, lien, _ = executer(carte, 'fr', verify_only=True)
     check('fr : firmware ancien, sous-dossiers ignores dans la liste', code == 0, 'code %d' % code)
 
-    # Copie normale : l'outil ecrit bien ce qui manque (le transport simule fonctionne)
+    # Normal copy: the tool writes well what is missing (simulated transport works)
     carte = CarteSimulee({'racine': manquant})
     code, lien, entrees_copie = executer(carte, 'fr', verify_only=False)
     check('fr : la copie normale envoie le fichier manquant', carte.ecritures == [FICHIERS[-1]],

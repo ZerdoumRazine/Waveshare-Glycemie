@@ -36,8 +36,8 @@ typedef enum {
 } dexcom_state_t;
 
 typedef enum {
-    SD_STATE_UNKNOWN = 0,   /* pas encore initialisee */
-    SD_STATE_ABSENT,        /* aucune carte detectee */
+    SD_STATE_UNKNOWN = 0,   /* not yet initialized */
+    SD_STATE_ABSENT,        /* no detecte map */
     SD_STATE_OK,            /* montee, ecriture possible */
     SD_STATE_UNSUPPORTED,   /* Unrecognized file system: no automatic formatting */
     SD_STATE_ERROR,         /* erreur d'acces : fonctionnement principal non affecte */
@@ -59,7 +59,7 @@ typedef enum {
 } trend_t;
 
 typedef struct {
-    int64_t wt_ms;   /* horodatage UTC de la mesure en ms (champ WT) */
+    int64_t wt_ms;   /* time stamping UTC Measurement in ms (WT field) */
     int16_t mgdl;
     uint8_t trend;   /* trend_t */
 } glucose_point_t;
@@ -103,7 +103,7 @@ void app_state_set_sd(sd_state_t st, const char *type, uint32_t capacity_mb, uin
 void app_state_add_sd_rows(uint32_t rows);
 void app_state_set_audio_ok(bool ok);
 
-/* Historique : mesures triees de la plus recente a la plus ancienne */
+/* History: measures sorted from the most recent to the oldest */
 void app_history_set(const glucose_point_t *points, int count);
 int app_history_get(glucose_point_t *out, int max, uint32_t *seq);
 uint32_t app_history_seq(void);

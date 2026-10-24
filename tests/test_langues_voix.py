@@ -4,13 +4,13 @@
 # Tests use simulated data, not a real user's glucose history.
 # Check that all six language catalogs and audio phrase inventories are consistent.
 #
-"""Controles de la banque vocale multilingue (tools/voice/langues_voix.py).
+"""Multilingual voice bank controls (tools/voice/langues_voix.py).
 
-Ne genere aucun audio et n'appelle aucun service : ce sont des controles de texte.
+Don't generate any audio and don't call any service: these are text controls.
 
-Le plus important est le premier : les phrases FRANCAISES doivent rester identiques au manifeste
-versionne (assets/banque_vocale_manifeste.csv), qui decrit la banque deja copiee sur la microSD.
-Changer un mot en francais rendrait les fichiers de la carte obsoletes sans que rien ne le signale.
+The most important is the first: the sentences FRANCAISES must remain the same as the manifest
+version (assets/banque_vocale_manifeste.csv), which describes the bank already copied on the microSD.
+Changing a word in French would make the files of the obsolete card without any indication.
 
 Usage : python tests\\test_langues_voix.py
 """
@@ -49,7 +49,7 @@ def main():
     check('francais : memes textes que le manifeste (la banque de la microSD reste valable)',
           not differents, ', '.join('%s : %r != %r' % (n, fr[n], attendu[n]) for n in differents[:3]))
 
-    # 2. Chaque langue est complete et coherente
+    # 2. Each language is complete and cohesive
     for lang in lv.LANGUES:
         items = lv.phrases(lang)
         noms = [n for n, _ in items]
@@ -65,7 +65,7 @@ def main():
         trop_long = [n for n, t in items if len(t) > 90]
         check('%s : aucune phrase demesuree (> 90 caracteres)' % lang, not trop_long, str(trop_long[:3]))
 
-    # 3. Nombres en lettres : quelques valeurs de reference, verifiees a la main
+    # 3. Numbers in letters: some reference values, manually verified
     reference = {
         'fr': {40: 'quarante', 71: 'soixante et onze', 80: 'quatre-vingts', 100: 'cent',
                121: 'cent vingt et un', 180: 'cent quatre-vingts', 400: 'quatre cents'},

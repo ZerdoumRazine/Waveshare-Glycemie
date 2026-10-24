@@ -41,36 +41,36 @@
 
 static const char *TAG = "voixcmd";
 
-/* Modeles officiels d'esp-sr 2.5.3 (partition "model", srmodels.bin genere et flashe par le composant) */
+/* Official esp-sr models 2.5.3 (partition) "model", srmodels.bin generate and flash by component) */
 #define MODEL_PARTITION    "model"
 #define WN_MODEL           "wn9l_fr_bonjouresp_tts3"
 #define MN_MODEL           "mn7_en"
 #define MN_WINDOW_MS       6000                 /* listens to a command (after the word of the eye, or slippery window) */
 #define CONFIRM_WINDOW_US  (10 * 1000000LL)     /* 2nd detection expected after the end of "Repet to confirm" */
 #define PLAYBACK_TAIL_US   (600 * 1000LL)       /* 0,6 s after the end of any audio playback */
-#define RESULT_TIMEOUT_US  (5 * 1000000LL)      /* enregistrement par la tache LVGL (rafraichissement 1 s) */
+#define RESULT_TIMEOUT_US  (5 * 1000000LL)      /* spot recording LVGL (refreshment 1 s) */
 #define TASK_STACK         (16 * 1024)
 #define TASK_PRIORITY      3
 #define BOOT_DELAY_US      (60 * 1000000LL)     /* first listens 60 s after the powering */
-#define MN_ID_GLUCOSE_Z    4                    /* "Glucose" GLoKbZ : meme action que "Glycemie", seuil propre */
+#define MN_ID_GLUCOSE_Z    4                    /* "Glucose" GLoKbZ: same action as "Glycemie", own threshold */
 #define GLYCEMIE_MIN_PROB  0.155f               /* accept if prob >= 0.155f : score displayed >= 0.16 */
 #define GLUCOSE_Z_MIN_PROB 0.205f               /* accept if prob > 0.25f: score displays >= 0.21 */
-/* K19 (2026-09-21) : capteur en deux phrases differentes, identifiants MultiNet propres. L'identifiant 2 (anciennes
- * "Nouveau capteur" / "New sensor") n'a plus aucune phrase : il ne sert qu'aux variantes de test (vcmd_ajout 2),
+/* K19 (2026-09-21): sensor in two different sentences, own MultiNet identifiers. Identifier 2 (old)
+ * "Nouveau capteur" / "New sensor") n'a plus aucune phrase : il ne sert qu'test variants (vcmd_ajout 2),
  * Journalised without any action. */
 #define MN_ID_LEGACY_SENSOR   2
-#define MN_ID_SENSOR_REGISTER 5                 /* "Enregistrer nouveau capteur" : annonce seulement */
-#define MN_ID_SENSOR_CONFIRM  6                 /* "Confirmer capteur" : seule phrase qui enregistre */
+#define MN_ID_SENSOR_REGISTER 5                 /* "Enregistrer nouveau capteur" : announcement only */
+#define MN_ID_SENSOR_CONFIRM  6                 /* "Confirmer capteur" : only sentence that records */
 #define MN_ID_MAX             6
 #define SENSOR_REGISTER_MIN_PROB 0.180f         /* own thresholds, selected from the scores recorded (detection_accepted) */
 #define SENSOR_CONFIRM_MIN_PROB  0.150f
-#define SENSOR_QUIET_US    (5 * 60 * 1000000LL) /* annonce capteur non confirmee : plus d'annonce pendant 5 min */
+#define SENSOR_QUIET_US    (5 * 60 * 1000000LL) /* Unconfirmed sensor announcement: no announcement for 5 min */
 #define LEVEL_FRAMES       64                   /* microphone level over the last ~2 seconds (32 ms tracks) */
 #define INJECT_MAX_BYTES   (256 * 1024)         /* test vrx_inject : 8 s de son au plus */
 
 /* Phonemes de MultiNet7 anglais (alphabet de tools/multinet_g2p.py written for the French pronunciation:
  * "glycemie" /gli.se.mi/, "nouveau capteur" /nu.vo kap.toer/, "nouveau catheter" /nu.vo ka.te.ter/.
- * Deux variantes par commande (voyelles proches) : meme identifiant de commande. */
+ * Two variants per command (close vowels): same command ID. */
 static const struct {
     int id;
     const char *text;
@@ -78,12 +78,12 @@ static const struct {
 } k_phrases[] = {
     {VOICE_CMD_GLUCOSE, "GLYCEMIE", "GLmSdMm"},
     {VOICE_CMD_GLUCOSE, "GLYCEMIE B", "GLgSfMm"},
-    /* K19 : "enregistrer nouveau capteur" /an.re.jis.tre nu.vo kap.teur/ puis "confirmer capteur" /kon.fir.me kap.teur/
+    /* K19 : "enregistrer nouveau capteur" /year.re.jis.tre nu.vo kap.teur/ then "confirmer capteur" /kon.fir.me kap.tor/
      * (old "NoVb KaPTk" and "No SfNSk" removed: false triggers all came from "New sensor") */
     /* French nasal voyelles "en" / "con" : heard by this English model with or without N. "Save" : with
      * the schwa ("an-re-gister") or without ("an-r'gister"). Alternatives to "confirm": the only one heard during the
-     * essais par injection de voix de synthese (2026-09-21, logs 350-359 : Hortense, 0,1427) est KbFmMd. Peu de
-     * variantes : chaque phrase ajoutee elargit le graphe (un graphe charge a degrade toute la reconnaissance). */
+     * Synthesis Voice Injection Tests (2026-09-21, logs 350-359: Hortense, 0.1427) is KbFmMd. Few
+     * variants: each sentence adds expands the graph (a graph load degrades all recognition). */
     {MN_ID_SENSOR_REGISTER, "ENREGISTRER NOUVEAU CAPTEUR", "nNRcrmSTRd NoVb KaPTk"},
     {MN_ID_SENSOR_REGISTER, "ENREGISTRER NOUVEAU CAPTEUR B", "nNRrmSTRd NoVb KaPTk"},
     {MN_ID_SENSOR_REGISTER, "ENREGISTRER NOUVEAU CAPTEUR C", "nRcrmSTRd NoVb KaPTk"},
@@ -102,7 +102,7 @@ static const struct {
     {VOICE_CMD_CATHETER, "NOUVEAU CATHETER G", "NoVb KcTfTf"},
     /* English orders kept at the same time as the French (user's request):
      * distance to this English model (log 203: "new sensor" p=0.24, "glucose" recognized in each test). Phones of the
-     * dictionnaire anglais (CMU) : GLUCOSE G L UW K OW S, NEW N (Y) UW, SENSOR S EH N S ER, CATHETER K AE TH AH T ER.
+     * English dictionary (CMU) : GLUCOSE G L UW K OW S, NEW N (Y) UW, SENSOR S EH N S ER, CATHETER K AE TH AH T ER.
      * 2026-09-17 (log 221) : variante GLoKbS retiree (vraies detections 0,16-0,19 et faux declenchements 0,14-0,20
      * indissociable); GLoKbZ has its own ID for the filter of detection_accepted() */
     {MN_ID_GLUCOSE_Z, "GLUCOSE Z", "GLoKbZ"},
@@ -128,23 +128,23 @@ static srmodel_list_t *s_models;          /* single project partition (pointers 
 
 /* State of recognition (patch voicecmd; readings for the interface) */
 static volatile voice_cmd_id_t s_pending = VOICE_CMD_NONE; /* commande a confirmer */
-static volatile int64_t s_confirm_until_us;                /* 0 : fenetre pas encore ouverte (phrase en cours) */
+static volatile int64_t s_confirm_until_us;                /* 0 : window not yet open (phrase in progress) */
 static volatile bool s_listening;                          /* mot d'eveil entendu : commande attendue */
 static volatile int64_t s_listen_until_us;
-static volatile uint32_t s_await_seq;                      /* enregistrement demande a la tache LVGL */
+static volatile uint32_t s_await_seq;                      /* registration request to the spot LVGL */
 static int64_t s_await_since_us;
-static volatile int s_sim_id;                /* console vcmd_sim : identifiant MultiNet simule (0 = aucun) */
+static volatile int s_sim_id;                /* console vcmd_sim : MultiNet identifier simulates (0 = none) */
 static volatile float s_sim_prob;
-static volatile int64_t s_sensor_quiet_until_us; /* anti-repetition de l'annonce capteur (K19) */
+static volatile int64_t s_sensor_quiet_until_us; /* anti-repetition sensor ad (K19) */
 static float s_frame_ms[LEVEL_FRAMES];       /* average energy of the last frames (level during detection) */
 static int s_frame_idx;
 static int16_t *s_inj_pcm;                   /* test vrx_inject (PSRAM, alloue au premier essai) */
 static volatile size_t s_inj_len;            /* echantillons */
 static volatile size_t s_inj_pos;
-static volatile bool s_inj_restart;          /* test : fenetre MultiNet alignee sur le debut du son injecte */
+static volatile bool s_inj_restart;          /* test : MultiNet window aligns to the beginning of the sound injection */
 static volatile bool s_level_log;
-static volatile bool s_decode_log;          /* console : chaine decodee par MultiNet a chaque detection ou fin de fenetre */
-/* Console : variante de phonemes ajoutee pendant l'ecoute (reglage fin, perdue au redemarrage) */
+static volatile bool s_decode_log;          /* console: MultiNet decode string with every detection or window end */
+/* Console: Telephone variant adds during listening (fine, lost at restarting) */
 static char s_add_phonemes[64];
 static volatile int s_add_id;
 static int s_extra_count;
@@ -156,10 +156,10 @@ static size_t s_int_after;
 static size_t s_psram_after;
 static volatile int s_chunk;
 static volatile uint32_t s_detections[4];
-static volatile uint32_t s_ignored;        /* detections sous le seuil de detection_accepted() */
+static volatile uint32_t s_ignored;        /* detections below the threshold of detection_accepted() */
 static volatile uint32_t s_wake_count;
 static volatile uint32_t s_read_errors;
-static int64_t s_proc_us;                 /* temps de calcul cumule (WakeNet + MultiNet) */
+static int64_t s_proc_us;                 /* cumulative calculation time (WakeNet + MultiNet) */
 static int64_t s_audio_us;                /* duree audio traitee */
 static int64_t s_wn_us;
 static int64_t s_mn_us;
@@ -241,7 +241,7 @@ static void cancel_pending(const char *why, bool announce)
     if (s_pending != VOICE_CMD_NONE) {
         ESP_LOGI(TAG, "%s : confirmation annulee (%s), aucun enregistrement", cmd_name(s_pending), why);
         if (s_pending == VOICE_CMD_SENSOR) {
-            /* demande non confirmee (souvent un faux declenchement) : aucune nouvelle annonce pendant 5 min */
+            /* unconfirmed request (often false trigger): no new announcement for 5 min */
             s_sensor_quiet_until_us = esp_timer_get_time() + SENSOR_QUIET_US;
             ESP_LOGI(TAG, "Anti-repetition : \"Enregistrer nouveau capteur\" ignore pendant 5 min (bouton tactile "
                      "toujours disponible)");
@@ -255,12 +255,12 @@ static void cancel_pending(const char *why, bool announce)
 }
 
 /* Software filter by order (2026-09-17, logs 203, 208, 220, 221). MultiNet7 only issues an order if
- * exp(logP / (jetons + 2)) > exp(-2) ~ 0,135 (test strict de la bibliotheque) ; scores relus a 2 decimales.
- * "Glycemie" : aucun faux declenchement observe, vraies detections >= 0,16 -> prob >= 0.155f (plus petit float
+ * exp(logP / (tokens + 2)) > exp(-2) ~ 0,135 (strict library test); scores read 2 decimals.
+ * "Glycemie" : no false triggering observed, true detections >= 0.16 -> prob >= 0.155f (smaller float
  * Display 0.16. "Glucose" GLoKbZ: false <= 0.16, true >= 0.24, false old variant GLoKbS <= 0.20
  * -> prob > 0.205f (0.205f) is displayed 0.20. Non-filter catheter: double confirmation.
- * K19 (2026-09-21) : faux declenchements capteur releves du 18 au 19/09 (journal 226) : tous "New sensor",
- * 0,1390 / 0,1399 / 0,1422 / 0,1429 / 0,1656 ; vraies "Nouveau capteur" 0,16 a 0,36 (logs 194, 203, 226).
+ * K19 (2026-09-21): false sensor triggers raised from 18 to 19/09 (Journal 226): all "New sensor",
+ * 0.1390 / 0.1399 / 0.1422 / 0.1429 / 0.1656; True "Nouveau capteur" 0.16 to 0.36 (logs 194, 203, 226).
  * "Save new sensor" (only sentence that causes an ad): prob >= 0.180f, above all
  * False lifting with a margin. "Confirm sensor" only acts within 10 seconds of the announcement: prob >= 0.150f,
  * above the library floor without making confirmation impossible. */
@@ -335,7 +335,7 @@ static void sensor_register(int64_t now_us)
         cancel_pending("autre commande", false);
     }
     s_pending = VOICE_CMD_SENSOR;
-    s_confirm_until_us = 0; /* ouverte a la fin de l'annonce */
+    s_confirm_until_us = 0; /* open at the end of the announcement */
     ESP_LOGI(TAG, "NOUVEAU CAPTEUR : premiere phrase entendue, aucun changement ; \"Dites confirmer capteur\"");
     reply(VOICE_REPLY_SENSOR_ASK_CONFIRM);
 }
@@ -362,7 +362,7 @@ static float energy_dbfs(double mean_square)
 }
 
 /* Any detection (real or simulated): log (exact score, phonemes, microphone level), threshold, action.
- * Retourne true si la detection est acceptee. */
+ * Turn true if detection is accepted. */
 static bool on_detection(int mn_id, float prob, const char *phonemes, int64_t now_us)
 {
     double sum = 0.0;
@@ -419,7 +419,7 @@ static void inject_mix(int16_t *mono, int n)
     }
 }
 
-/* Resultat de l'enregistrement demande a la tache LVGL */
+/* Result of registration request to the spot LVGL */
 static void poll_registration(int64_t now_us)
 {
     if (s_await_seq == 0) {
@@ -455,7 +455,7 @@ static uint32_t rd_u32(const uint8_t *p)
  * esp_srmodel_init() echouerait). srmodels.bin (format pack_model.py: number of models, then for each name[32],
  * number of files, and for each file name[32], start, size) is read in PSRAM puis charge par l'API
  * officielle srmodel_load(). Play only once, by a temporary spot a pile in RAM internal: a reading of
- * la flash desactive le cache, interdit depuis la tache voixcmd dont la pile est en PSRAM. */
+ * flash disables the cache, forbidden from the voice spotcmd whose stack is in PSRAM. */
 typedef struct {
     TaskHandle_t waiter;
     uint8_t *data;
@@ -673,7 +673,7 @@ static void voice_task(void *arg)
             }
             if (cfg.wake_word != use_wn && s_pending == VOICE_CMD_NONE && s_await_seq == 0) {
                 ESP_LOGI(TAG, "Mot d'eveil %s : redemarrage de l'ecoute", cfg.wake_word ? "requis" : "non requis");
-                break; /* liberation puis nouvelle ecoute (voice_cmd_apply_settings en fin de tache) */
+                break; /* then new listen (voice_cmd_apply_settings at the end of the stain) */
             }
         }
 
@@ -732,7 +732,7 @@ static void voice_task(void *arg)
         }
         if (s_pending != VOICE_CMD_NONE && s_await_seq == 0) {
             if (s_confirm_until_us == 0) {
-                s_confirm_until_us = now_us + CONFIRM_WINDOW_US; /* la phrase de confirmation vient de se terminer */
+                s_confirm_until_us = now_us + CONFIRM_WINDOW_US; /* confirmation sentence just ended */
                 ESP_LOGI(TAG, "%s : fenetre de confirmation ouverte (10 s)", cmd_name(s_pending));
             } else if (now_us > s_confirm_until_us) {
                 cancel_pending(s_pending == VOICE_CMD_SENSOR ? "aucun \"Confirmer capteur\" en 10 s"
@@ -838,7 +838,7 @@ static void voice_task(void *arg)
         }
     }
 
-    /* Arret (reglage) ou echec : liberation complete */
+    /* Stop (regulating) or failed: complete release */
     if (mic_open) {
         esp_codec_dev_close(mic);
     }
@@ -846,7 +846,7 @@ static void voice_task(void *arg)
     if (mn_data != NULL) {
         /* destroy() also frees the list of commands (a call prealable a esp_mn_commands_free() produisait
          * "MN_COMMAND: The mn commands is not initialized") ; a remaining list would be freed by
-         * esp_mn_commands_alloc() au prochain demarrage */
+         * esp_mn_commands_alloc() at the next start-up */
         mn->destroy(mn_data);
     }
     if (wn_data != NULL) {
@@ -863,7 +863,7 @@ static void voice_task(void *arg)
     s_run = ok ? RUN_STOPPED : RUN_ERROR;
     portEXIT_CRITICAL(&s_lock);
     if (ok) {
-        voice_cmd_apply_settings(); /* reactivee pendant l'arret : nouvelle ecoute */
+        voice_cmd_apply_settings(); /* Reactive during stop: new listen */
     }
     vTaskDeleteWithCaps(NULL);
 }

@@ -5,10 +5,10 @@
 #
 <#
 .SYNOPSIS
-    Prepare files to download: program PUBLIC de l'ecran + application Windows + empreintes.
+    Prepare files to download: program PUBLIC screen + Windows app + prints.
 
 .DESCRIPTION
-    Le programme est compile depuis la COPIE PUBLIQUE (dossier Razine), qui ne contient aucun
+    The program has been compiled since COPIE PUBLIQUE (Razine file), which contains no
     Identifier: neither Wi-Fi nor Dexcom account. The user will enter his own after
     installation, on touch screen or with Windows application.
 
@@ -16,10 +16,10 @@
     identifiants (private\device_secrets.h is copied for your own device).
 
     Result in delivery\ (outside deposit):
-        glycemie_display.bin, bootloader.bin, partition-table.bin   le programme
+        glycemie_display.bin, bootloader.bin, partition-table.bin program
         GlycemieConnexion.exe                                        l'application Windows
         install. ps1 installation in one control
-        SHA256SUMS.txt                                               empreintes de tout
+        SHA256SUMS.txt prints of everything
 
 .EXAMPLE
     powershell -ExecutionPolicy Bypass -File tools\publier_firmware.ps1
@@ -42,7 +42,7 @@ if (Test-Path $secretsPublics) {
     throw "ARRET : $secretsPublics existe. La copie publique ne doit contenir aucun identifiant."
 }
 
-# --- 1. Programme de l'ecran, compile depuis la copie publique ------------------------------------
+# --- 1. Screen program, compiles from public copy ------------------------------------
 Write-Host 'Compilation du programme public (sans identifiants, sans commandes vocales)...' -ForegroundColor Cyan
 $build = Join-Path $publique 'tools\build.ps1'
 $arguments = @('-ExecutionPolicy', 'Bypass', '-File', $build)
@@ -50,9 +50,9 @@ if ($Propre) { $arguments += '-Clean' }
 & powershell @arguments
 if ($LASTEXITCODE -ne 0) { throw "La compilation a echoue (code $LASTEXITCODE)." }
 
-# build.ps1 compiles in a working copy ASCII quand le chemin contient un accent
+# build. ps1 compiles in a working copy ASCII when the path contains an accent
 # The outsider imposes an array: without it, a single result would be a chain,
-# et $sorties[0] renverrait sa premiere LETTRE.
+# and $outputs[0] would send back its first LETTRE.
 $sorties = @(@(
     (Join-Path $publique 'build'),
     (Join-Path $env:TEMP 'wsg-build-razine\build')
@@ -85,12 +85,12 @@ if (Test-Path $exe) { Copy-Item $exe $livraison -Force } else { Write-Warning "A
 # --- 3. Installation in one order, for the person who charges ------------------------------
 @'
 <#
-    Installe le programme WaveShare Glycemie sur l'ecran, par le cable USB.
+    Install WaveShare Glycemie program on screen, via cable USB.
 
-    Before: Connect the screen to the PC with a cable USB-C de DONNEES, et fermez tout moniteur serie.
+    Before: Connect the screen to the PC with a cable USB-C of DONNEES, and shut down every monitor serie.
     Then: right click on this file -> Run with PowerShell. Count two minutes.
 
-    Ce script n'efface pas la carte (pas d'erase_flash) : it replaces the program, the table of
+    This script n'efface pas la carte (pas d'erase_flash) : it replaced the program, the table of
     partitions and primer. Adjustments, consumable dates and microSD are preserved.
 #>
 param([string]$Port = '')
@@ -137,7 +137,7 @@ Write-Host "Choisissez la langue, le reseau Wi-Fi, puis saisissez votre compte D
 # --- 3 bis. Imprint SOURCES qui ont produit ce programme ------------------------------------
 # It later verifies that the book program comes from these sources, whatever
 # be the dates of the files (renewing the public copy makes them all "recent").
-# Le chemin du projet contient un accent : on le passe en ARGUMENT (one string, encoded)
+# The path of the project contains an accent: we pass it in ARGUMENT (one string, encoded)
 # correctly) rather than in the code of a python -c, or it would be damaged.
 $empreinte = & python (Join-Path $racine 'tools\preparer_paquet.py') --empreinte
 if ($LASTEXITCODE -ne 0 -or -not $empreinte) { throw "Empreinte des sources impossible a calculer." }

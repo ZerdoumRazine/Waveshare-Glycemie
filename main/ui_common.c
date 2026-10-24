@@ -149,7 +149,7 @@ const char *ui_freshness_text(gm_freshness_t fresh)
 
 const char *ui_trend_text(uint8_t trend)
 {
-    /* Meme ordre que trend_t : l'indice 0 (TREND_NONE) does not display anything. */
+    /* Same order as trend_t : index 0 (TREND_NONE) does not display anything. */
     static const int16_t k_trend_ids[TREND_COUNT] = {
         -1, S_TREND_UP_FAST, S_TREND_UP, S_TREND_UP_SLOW, S_TREND_FLAT,
         S_TREND_DOWN_SLOW, S_TREND_DOWN, S_TREND_DOWN_FAST, S_TREND_UNKNOWN, S_TREND_OUT_OF_RANGE,
@@ -182,10 +182,10 @@ void ui_screen_background(lv_obj_t *obj)
     lv_obj_set_style_bg_grad_dir(obj, LV_GRAD_DIR_VER, 0);
 }
 
-/* Verre : degrade vertical (reflet en haut), bord fin semi-transparent, ombre douce decalee vers le bas.
+/* Glass: vertical degrade (top reflection), semi-transparent fine edge, soft shadow down.
  * Opaque background in the colours of the translucent glass already mixed in the dark blue background (identical on this uniform background, without
  * pixel by pixel mixture). Fine shade: its rendering cost believes with its width (measured: ~15 ms per map has 24 px
- * sur un rafraichissement complet de l'ecran) */
+ * on a complete refreshment of the screen) */
 void ui_glass_style(lv_obj_t *obj, int32_t radius)
 {
     lv_obj_set_style_radius(obj, radius, 0);
@@ -209,7 +209,7 @@ lv_obj_t *ui_card(lv_obj_t *parent, int32_t x, int32_t y, int32_t w, int32_t h, 
     return card;
 }
 
-/* Halo : tache coloree floue. LVGL ne dessine l'ombre qu'autour de l'objet : le centre est donc rempli a la moitie
+/* Halo: blurred color spot. LVGL draw l'ombre qu'around the object: the center is therefore filled with half
  * opacite of the shadow (connection without visible outline) */
 lv_obj_t *ui_glow(lv_obj_t *parent, int32_t w, int32_t h, lv_color_t color, lv_opa_t opa, int32_t blur)
 {

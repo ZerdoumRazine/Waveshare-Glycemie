@@ -4,12 +4,12 @@
 #!/usr/bin/env python3
 # Launches a demonstration of the Windows configuration UI without a real device.
 #
-"""Ouvre l'application avec des DONNEES FICTIVES, le temps d'en faire une capture pour le tutoriel.
+"""Open'application avec des DONNEES FICTIVES, le temps d'make it a capture for the tutorial.
 
-Aucun port serie n'est ouvert, aucun appareil n'est touche : la liste des ports et le journal sont
-remplis avec des exemples. Les mots de passe affiches ici sont inventes.
+No port n'est ouvert, aucun appareil n'is keyed: the list of ports and the log are
+completed with examples. Passwords posters here are invented.
 
-Usage :  python tools\\pc_app\\capture_fenetre.py tools\\pc_app\\demo_capture.pyw sortie.png
+Use: python tools\\pc_app\\capture_fenetre.py tools\\pc_app\\demo_capture.pyw output.png
 """
 import importlib.util
 import os
@@ -53,7 +53,7 @@ def main():
     f._boutons(True)
     f.etiquette_etat.configure(text='Réseau : MaBox-Salon   |   Compte Dexcom : m***@exemple.fr '
                                     '  |   configuré')
-    racine.after(25000, f.fermer)   # se referme toute seule si la capture n'a pas eu lieu
+    racine.after(25000, f.fermer)   # closes alone if the catch has not taken place
     racine.mainloop()
     return 0
 

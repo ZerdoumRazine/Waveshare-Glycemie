@@ -4,18 +4,18 @@
 # Design note: Simulated components are not a substitute for hardware validation.
 # Compile actual firmware C modules against host stubs before executing their tests.
 #
-r"""Compile et execute les tests unitaires du firmware sur le PC (sans carte ESP32).
+"""Compiles and executes firmware unit tests on PC (without card) ESP32).
 
-Les tests compilent le VRAI code C de main/ : glucose_math.c, app_state.c, sensor_session.c,
-consumables.c et stock.c. Seules les dependances materielles (NVS, FreeRTOS, journal, microSD)
-sont remplacees par les bouchons de tests/hote/shims.
+The tests compile the VRAI Code C: glucose_math.c, app_state.c, sensor_session.c,
+consumables.c and stock.c. Only material dependencies (NVS, FreeRTOS, journal, microSD)
+are replaced by the stoppers tests/hote/shims.
 
 Usage :
-    python tests\run_tests.py              compile puis execute toutes les suites
-    python tests\run_tests.py --liste      affiche seulement ce qui serait compile
+    python tests\\run_tests.py compiles then executes all the suites
+    python tests\\run_tests.py --list displays only what would be compiled
 
-Compilateur : gcc, clang ou MSVC (Build Tools Visual Studio). Aucun ESP-IDF requis.
-Code de sortie 0 seulement si toutes les suites passent.
+Compiler: gcc, clang or MSVC (Build Tools Visual Studio). None ESP-IDF required.
+Output code 0 only if all suites pass.
 """
 import argparse
 import json
@@ -63,7 +63,7 @@ FORCE_INCLUDE = os.path.join(SHIMS, 'compat_hote.h')
 
 # Detect the Visual Studio toolchain when GCC and Clang are unavailable.
 def trouver_msvc():
-    """Renvoie (environnement, chemin de cl.exe) pour MSVC, ou (None, None)."""
+    """Returns (environment, cl.exe path) for MSVC, or (None, None)."""
     vswhere = os.path.join(os.environ.get('ProgramFiles(x86)', r'C:\Program Files (x86)'),
                            'Microsoft Visual Studio', 'Installer', 'vswhere.exe')
     if not os.path.exists(vswhere):
@@ -81,7 +81,7 @@ def trouver_msvc():
             dump = subprocess.run(f'"{vcvars}" >nul 2>&1 && set',
                                   capture_output=True, text=True, shell=True)
             # Variable Names Windows are not case-sensitive: normalize
-            # (sinon "Path" du vidage et "PATH" d'os.environ coexistent et cl.exe reste introuvable).
+            # (other "Path" and "PATH" about coexist and cl.exe remains unobtainable).
             env = {k.upper(): v for k, v in os.environ.items()}
             for line in dump.stdout.splitlines():
                 if '=' in line:

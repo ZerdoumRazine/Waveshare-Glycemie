@@ -4,7 +4,7 @@
 /*
  * Glycemy service: plans readings Dexcom Share, gere session, errors and delays,
  * and maintains a cache of the last 24 hours (incremental scans, without reauthentication).
- * Never valid identifiers only triggerUNE tentative, sur autorisation explicite.
+ * Never valid identify only triggerAn attempt, upon explicit authorization.
  */
 /* Public interface / Interface publique
  * Polling, demo mode and uncommitted setup-test public APIs.
@@ -17,7 +17,7 @@
 
 /*
  * Called after each reading providing new real measures.
- * `cache` est trie du plus recent au plus ancien ; `previous_newest_ms` est l'horodatage
+ * `cache` is sorted from the most recent to the oldest; `previous_newest_ms` is the time stamp
  * the most recent measurement before reading (0 at start).
  * Never called in demonstration mode.
  */
@@ -33,14 +33,14 @@ typedef enum {
     GLY_TEST_REUSSI,
     GLY_TEST_ECHEC,
 } gly_test_t;
-void glucose_service_test_request(void);                    /* lance un essai (ignore si deja en cours) */
+void glucose_service_test_request(void);                    /* run a trial (does not know if already underway) */
 gly_test_t glucose_service_test_state(char *msg, size_t size); /* message ready to display (without secret) */
 void glucose_service_set_new_readings_cb(glucose_new_readings_cb_t cb);
 
-/* Secondes depuis le dernier signe de vie de la tache (surveillance par app_main) */
+/* Seconds since the last sign of life of the spot (monitoring by app_main) */
 int64_t glucose_service_heartbeat_age_s(void);
 
-/* Autorise la tentative unique d'authentification ; renvoie un compte rendu textuel */
+/* Authorizes the single attempt to authenticate; returns a textual record */
 const char *glucose_service_request_auth(void);
 
 /* Fiability Test: Force an expired session to verify automatic renewal */

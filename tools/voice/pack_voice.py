@@ -4,13 +4,13 @@
 # Design note: Keep generated audio separate from code copyright and user data.
 # Processes a legacy Windows voice into short PCM clips for local use only.
 #
-"""Assemble les extraits vocaux WAV en un bloc PCM integre au firmware.
+"""Assemble the vocal extracts WAV in one block PCM integrated with firmware.
 
-- rogne les silences de debut et de fin (marge 30 ms) ;
-- normalise le niveau : meme niveau efficace pendant la parole pour tous les extraits (TARGET_RMS_DB),
-  crete limitee a CEILING_DB par un limiteur a anticipation (gain lisse, jamais d'ecretage) ;
+- rumbles the silences of beginning and end (marge 30 ms);
+- normalizes the level: same level effective during speech for all extracts (TARGET_RMS_DB),
+  limit a CEILING_DB by an anticipation limiter (smooth gain, never secretion);
 - ecrit firmware/glycemie_display/main/voice/voice_fr.pcm (int16 little-endian, mono, 16 kHz) ;
-- genere firmware/glycemie_display/main/voice_clips.h (index des extraits).
+- Genere firmware/glycemie_display/main/voice_clips.h (index of excerpts).
 """
 import array
 import collections
@@ -39,11 +39,11 @@ THRESHOLD = 250
 MARGIN = int(0.03 * RATE)
 
 TARGET_RMS_DB = -12.0              # effective level targets speech windows (20 ms)
-ACTIVE_DB = -40.0                  # fenetre consideree comme parole au-dessus de ce niveau
+ACTIVE_DB = -40.0                  # window considered as speaking above this level
 CEILING_DB = -1.5                  # maximum crete after limitation (margin before full scale)
-MAX_REDUCTION_DB = 6.0             # limitation maximale : au-dela, le gain de l'extrait est reduit (voix naturelle)
+MAX_REDUCTION_DB = 6.0             # maximum limitation: in-dela, the extract gain is reduced (natural voice)
 LOOKAHEAD = int(0.008 * RATE)      # anticipation et lissage du gain : 8 ms
-RELEASE_S = 0.100                  # retour du gain : 100 ms
+RELEASE_S = 0.100                  # return of win : 100 ms
 WINDOW = int(0.020 * RATE)
 
 
@@ -75,7 +75,7 @@ def trim(samples):
 
 
 def active_rms(x):
-    """Valeur efficace sur les fenetres de 20 ms au-dessus de ACTIVE_DB (pleine echelle = 1.0)."""
+    """Effective value on windows 20 ms above ACTIVE_DB (full ladder = 1.0)."""
     floor = 10.0 ** (ACTIVE_DB / 10.0)
     energies = []
     for i in range(0, max(1, len(x) - WINDOW + 1), WINDOW):
@@ -88,11 +88,11 @@ def active_rms(x):
 
 # Control peaks before embedding clips in a personal firmware build.
 def limit(x):
-    """Limiteur a anticipation : |sortie| <= plafond sans ecretage.
+    """Anticipated limiter: - output <= ceiling without recording.
 
-    gain requis r[i] = min(1, plafond/|x[i]|) ; minimum glissant sur [i-L, i+L], puis moyenne glissante de
-    meme largeur : chaque valeur moyennee est <= r[i], donc la crete ne depasse jamais le plafond.
-    Le retour du gain est ensuite ralenti (RELEASE_S) sans jamais depasser le gain lisse.
+    required gain r[i] = min(1, ceiling/ minimum slippery on [i-L, i+L], then slippery average of
+    same width: each average value is <= r[i], so the crete never exceeds the ceiling.
+    The return of the gain is then slowed (RELEASE_S) without ever passing the smooth gain.
     """
     ceiling = 10.0 ** (CEILING_DB / 20.0)
     n = len(x)

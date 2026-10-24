@@ -2,12 +2,12 @@
  * The declarations below are shared with other firmware modules.
  */
 /*
- * Alertes a l'ecran :
- * - panneau plein ecran (titre, valeur, OK = acquitter, RAPPEL DANS 30 MIN) a chaque nouvelle levee d'alerte,
+ * Screen alerts:
+ * - full screen panel (title, value, OK = pay, RAPPEL DANS 30 MIN) to each new alert,
  *   displays 30 s at most and closes automatically with return to reception; the alert remains active and continuous
  *   de sonner selon ses repetitions ;
  * - small persistent indicator in the upper headband: full until the alert is discharged (support
- *   rouvre le panneau), contour seul tant que la glycemie reste basse / tres basse / elevee / tres elevee ou que
+ *   reopen the panel), contour alone as long as the glycemia remains low / very low / high / very high or
  *   data is missing after OK or RAPPEL.
  */
 /* Public interface / Interface publique

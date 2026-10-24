@@ -2,18 +2,18 @@
  * Keep this header focused on the contracts used by other modules.
  */
 /*
- * Consumables: Dexcom G7 sensor (followed in sensor_session.c) et site de perfusion / catheter.
+ * Consumables: Dexcom G7 sensor (followed in sensor_session.c) and infusion site / catheter.
  *
  * NOUVEAU CAPTEUR / NOUVEAU CATHETER (button with confirmation, or voice command confirmed): the current time
  * (SNTP) devient l'heure de depart, enregistree en NVSwithout any date or time entry. Line added
  * a /glycemie/logs/consumables.csv for each actual confirmation ("2026-09-15 16:42,G7,new"); if microSD is
- * indisponible, la ligne est ecrite a son retour (marqueur NVS, never duplicate or line for restoration).
+ * not available, the line is written on its return (marker NVS, never duplicate or line for restoration).
  *
  * Catheter: 72 h interval per default (48 h possible), one single recall has single use 2 h before default, then
  * "A CHANGER" on schedule. It is a reminder configured by the user, not a therapeutic recommendation.
  */
 /* Public interface / Interface publique
- * Catheter dates, reminders and their persistence contract.
+ * Cateter dates, discounts and their persistence contract.
  */
 #pragma once
 
@@ -22,8 +22,8 @@
 #include "esp_err.h"
 
 typedef enum {
-    CONSUMABLE_SENSOR = 0,  /* capteur Dexcom G7 */
-    CONSUMABLE_CATHETER,    /* site de perfusion / catheter */
+    CONSUMABLE_SENSOR = 0,  /* Dexcom G7 sensor */
+    CONSUMABLE_CATHETER,    /* infusion site / catheter */
     CONSUMABLE_COUNT,
 } consumable_t;
 
@@ -37,11 +37,11 @@ typedef struct {
     int64_t start_s;        /* heure du changement (epoch UTC) */
     int64_t due_s;          /* echeance = changement + intervalle */
     int interval_h;         /* 48 ou 72 */
-    int day;                /* jour 1..days_total */
+    int day;                /* Day 1.days_total */
     int days_total;
     bool overdue;           /* echeance depassee */
     int64_t remaining_s;    /* before maturity (negative if exceeded) */
-    int progress_pct;       /* avancement sur l'intervalle */
+    int progress_pct;       /* promotion over the interval */
 } catheter_status_t;
 
 esp_err_t consumables_init(void); /* After sensor_session_init() */
@@ -55,10 +55,10 @@ void catheter_get(int64_t now_s, catheter_status_t *out);
 int catheter_interval_h(void);
 void catheter_set_interval_h(int hours); /* 48 ou 72 */
 
-/* Incremente a chaque modification (capteur ou catheter) : rafraichissement de l'affichage */
+/* Incremented with each modification (sensor or catheter): refreshing the display */
 uint32_t consumables_revision(void);
 
-/* Rappel du catheter en cours (heure passee, echeance non atteinte), -1 sinon ; *done : deja presente (NVS) */
+/* Reminder of the current catheter (time pass, time not reached), -1 otherwise; *donone: already present (NVS) */
 int catheter_current_reminder(int64_t now_s, bool *done);
 void catheter_mark_reminder_done(int reminder); /* presente ou acquitte : memorise en NVS */
 void catheter_reset_reminders(void);

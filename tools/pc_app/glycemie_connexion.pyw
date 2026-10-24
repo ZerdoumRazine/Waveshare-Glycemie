@@ -4,22 +4,22 @@
 # Design note: Do not display, log or persist account passwords on the PC.
 # Provides the Windows USB setup interface; credential changes remain a confirmable trial.
 #
-"""Configuration de l'ecran WaveShare Glycemie depuis le PC (fenetre graphique Windows).
+"""Configuring the WaveShare Glycemie screen from the PC (Windows graphical window).
 
-Ce programme sert a renseigner, essayer, enregistrer ou effacer les acces de l'ecran (reseau Wi-Fi et
-compte Dexcom Share) par le cable USB, sans rien installer et sans recompiler le firmware.
+This program is used to inform, try, save or erase accesses from the screen (Wi-Fi network and
+Dexcom Share account) by cable USBwithout installing anything and recompiling the firmware.
 
-Regle de securite appliquee ici comme sur l'ecran :
-    garder les acces precedents -> essayer les nouveaux -> enregistrer seulement apres reussite
-    ET confirmation. Un echec, un abandon ou un debranchement laisse l'appareil avec ses acces
+Security regulation applies here as on screen:
+    keep previous accesses -> try new -> save only after success
+    AND confirmation. A failure, abandonment or disconnection leaves the device with its accesses
     precedents.
 
-Ce programme ne va jamais sur Internet, n'ecrit aucun mot de passe dans un fichier et n'affiche jamais
-un mot de passe en clair (sauf si vous cochez "Afficher"). Il n'y a ni compte, ni abonnement, ni service
-en ligne : les acces saisis servent uniquement aux connexions normales de l'appareil (sa box Wi-Fi et
-les serveurs Dexcom Share).
+This program never goes on the Internet,'ecrit aucun mot de passe dans un fichier et n'never displays
+a clear password (unless you check "Afficher"). There is no account, no subscription, no service
+online: Entered accesses are used only for the device's normal connections (its Wi-Fi box and
+Dexcom Share servers).
 
-Le dialogue avec l'appareil est entierement assure par tools/assistant_config.py (meme code que
+The dialogue with the device is entirely ensured by tools/assistant_config.py (same code as
 l'assistant en ligne de commande).
 """
 import os
@@ -30,7 +30,7 @@ import tkinter as tk
 from tkinter import messagebox, ttk
 
 # --- import de l'assistant (tools/assistant_config.py), the programme has been launched since
-#     sources ou depuis l'executable fabrique par PyInstaller -----------------------------------
+#     sources or from the executable manufacture by PyInstaller -----------------------------------
 ICI = os.path.dirname(os.path.abspath(__file__))
 for candidat in (os.path.join(ICI, '..'), ICI, getattr(sys, '_MEIPASS', ICI)):
     if os.path.isfile(os.path.join(candidat, 'assistant_config.py')) and candidat not in sys.path:
@@ -223,7 +223,7 @@ class Fenetre(object):
 
     # Keep serial I/O off the Tkinter thread so the interface remains responsive.
     def lancer(self, travail, titre):
-        """Execute 'travail(app, dire)' dans un fil separe : la fenetre ne se figer jamais."""
+        """Execute 'travail(app, dire)' in a separate wire: the window never freezes."""
         if self.occupe:
             return
         port = self.port_choisi()
@@ -277,7 +277,7 @@ class Fenetre(object):
         self._tache = self.racine.after(120, self._vider_file)
 
     def fermer(self):
-        """Fermeture propre : plus aucune tache en attente, puis la fenetre disparait."""
+        """Clean closure: no more spots waiting, then the window disappears."""
         if self._tache is not None:
             self.racine.after_cancel(self._tache)
             self._tache = None
@@ -431,7 +431,7 @@ class Fenetre(object):
 
 
 def ecran_haute_definition():
-    """Ecrans 4K / affichage agrandi : sans cela, Windows etire la fenetre et tout est flou."""
+    """4K screens / enlarged display: without this, Windows is the window and everything is blurred."""
     if sys.platform != 'win32':
         return
     try:

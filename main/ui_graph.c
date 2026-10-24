@@ -67,7 +67,7 @@ void ui_graph_create(lv_obj_t *page)
     lv_obj_set_pos(s_last, UI_SCR_W - 300 - 24, 6);
 
     ui_chart_create(&s_chart, page, 84, 104, 904, 316, true);
-    ui_chart_enable_explore(&s_chart); /* appui ou glissement : mesure reelle la plus proche */
+    ui_chart_enable_explore(&s_chart); /* support or slip: closest real measure */
 
     lv_obj_t *legend = ui_label(page, g_fonts.xs, UI_G_TEXT3,
                                 tr(S_GRAPH_HINT));
@@ -101,7 +101,7 @@ void ui_graph_update(const ui_data_t *d, bool force)
 
     if (force || d->history_changed || d->minute_changed || hours != s_drawn_hours) {
         if (force || hours != s_drawn_hours) {
-            ui_chart_explore_reset(&s_chart); /* arrivee sur la page ou autre duree : curseur efface */
+            ui_chart_explore_reset(&s_chart); /* arrives on the page or other hard: cursor erases */
         }
         ui_chart_update(&s_chart, d, hours);
         s_drawn_hours = hours;

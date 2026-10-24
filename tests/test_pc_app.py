@@ -4,11 +4,11 @@
 # These tests use simulations; they do not connect to a patient's device.
 # Exercise the Windows Tkinter setup interface with simulated serial devices.
 #
-"""Controles de l'application Windows (tools/pc_app/glycemie_connexion.pyw), sans appareil branche.
+"""Windows application controls (tools/pc_app/glycemie_connexion.pyw), without a branch.
 
-La fenetre est reellement construite (Tk), puis fermee : ces essais verifient la logique de
-l'interface, pas son apparence. Aucun port serie n'est ouvert : la liste des ports et l'ouverture
-sont remplacees par des simulations.
+The window is actually built (Tk) and then closed: these tests verify the logic of
+l'interface, pas son apparence. Aucun port serie n'is open: list of ports and opening
+are replaced by simulations.
 
 Usage : python tests\\test_pc_app.py
 """
@@ -69,7 +69,7 @@ def main():
     if tkinter is None:
         return rapport()
 
-    # --- 2. Construction reelle de la fenetre --------------------------------------------------
+    # --- 2. Real window construction --------------------------------------------------
     ports_simules = []
     module.ac.lister_ports = lambda: list(ports_simules)
     module.ac.trouver_port = lambda: (ports_simules[0][0] if len(ports_simules) == 1 else None)
@@ -83,7 +83,7 @@ def main():
         racine.update()
         return racine, f
 
-    # un seul appareil : il est propose tout seul
+    # only one device: it is offered on its own
     racine, f = fenetre_avec([('COM7', 'USB-Enhanced-SERIAL CH343')])
     check('un seul appareil : il est preselectionne', f.port.get().startswith('COM7'), f.port.get())
     check('le port retenu est bien le nom du port', f.port_choisi() == 'COM7', str(f.port_choisi()))
@@ -100,7 +100,7 @@ def main():
           len(f.liste_ports.cget('values')) == 2)
     f.fermer()
 
-    # aucun appareil : message clair, pas de plantage
+    # no device: clear message, no crash
     racine, f = fenetre_avec([])
     check('aucun appareil : message clair', 'Aucun port' in f.journal.get('1.0', 'end'))
     check('aucun appareil : rien de selectionne', f.port.get() == '')
@@ -137,7 +137,7 @@ def main():
     f.journal.configure(state='normal')
     f.journal.delete('1.0', 'end')
     f.journal.configure(state='disabled')
-    f.lire_etat()                      # ouvre un port simule : aucun materiel
+    f.lire_etat()                      # opens a simulated port: no material
     racine.update()
     journal = f.journal.get('1.0', 'end')
     check("aucun mot de passe dans la fenetre d'etat",

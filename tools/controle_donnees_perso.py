@@ -4,21 +4,21 @@
 # Design note: Automated checks reduce risk but do not replace a human review.
 # Scans public files, binaries and ZIP contents for known private data.
 #
-r"""Controle des donnees personnelles dans ce qui serait publie.
+"""Controls personal data in what would be published.
 
-Examine, sans rien modifier :
-  - tous les fichiers suivis par git (le depot public est une copie de HEAD) ;
-  - l'historique git complet, blob par blob (utile seulement si le depot est pousse en ligne) ;
-  - le programme compile (build/glycemie_display.bin, et la copie publique si elle existe) ;
-  - les captures d'ecran (metadonnees, pas le contenu de l'image).
+Review, without changing anything:
+  - all files followed by git (the public deposit is a copy of HEAD) ;
+  - the complete git history, blob by blob (useful only if the deposit is pushed online);
+  - the compile programme (build/glycemie_display.bin, and the public copy if it exists);
+  - catches d'ecran (metadonnees, pas le contenu de l'image).
 
-Recherche : les identifiants reels lus dans private/device_secrets.h (jamais affiches), les adresses
-de courriel, les chemins personnels Windows, les noms de machine, et les valeurs de glycemie exportees.
+Search: real identifiers read in private/device_secrets.h (never posters), addresses
+e-mail, Windows personal paths, machine names, and export glycemie values.
 
 Usage :
-    python tools\controle_donnees_perso.py
-    python tools\controle_donnees_perso.py --historique      (ajoute l'analyse de l'historique git)
-Code de sortie 0 si rien de personnel n'est trouve dans ce qui serait publie.
+    python tools\\controle_donnees_perso.py
+    python tools\\controle_donnees_perso.py --historique      (ajoute l'analyse de l'historique git)
+Output code 0 if nothing personal is found in what would be published.
 """
 import argparse
 import io
@@ -60,7 +60,7 @@ def git(*args):
 
 # Read known local secrets only for comparison; never include them in the report.
 def secrets_reels():
-    """Chaines a rechercher, lues dans private/device_secrets.h. Jamais affichees."""
+    """Chains to seek, read in private/device_secrets.h. Never shown."""
     chemin = os.path.join(ROOT, 'private', 'device_secrets.h')
     valeurs = {}
     if not os.path.exists(chemin):
@@ -95,13 +95,13 @@ def controler_texte(nom, texte, secrets, trouves):
     for motif, libelle in CHEMINS:
         for brut in set(motif.findall(texte)):
             trouves.append((nom, libelle, brut))
-    # valeurs de glycemie exportees : lignes CSV "date;valeur;tendance"
+    # Export glycemia values: lines CSV "date;valeur;tendance"
     if re.search(r'\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}.{0,4}[;,]\s*\d{2,3}\s*[;,]', texte):
         trouves.append((nom, 'donnees de glycemie exportees', 'ligne de type journal/CSV'))
 
 
 def chercher_secrets(nom, data, secrets, trouves):
-    """Cherche UNIQUEMENT les identifiants reels : pas d'heuristique sur des octets quelconques."""
+    """Search UNIQUEMENT real identifiers: no heuristic on any bytes."""
     for cle, valeur in secrets.items():
         for encodage in ('utf-8', 'utf-16-le'):
             if valeur.encode(encodage) in data:
@@ -109,12 +109,12 @@ def chercher_secrets(nom, data, secrets, trouves):
 
 
 def controler_media(nom, data, secrets, trouves, metadonnees=4096):
-    """Fichier son ou image : les octets utiles sont du signal ou de la compression.
+    """Sound or image file: useful bytes are signal or compression.
 
-    Y chercher des adresses de courriel ou des chemins ne produit que du hasard (une voix de 20 s en
-    contient forcement une par hasard), et ces fausses alertes finiraient par masquer les
-    vraies. On cherche donc les identifiants reels dans TOUT le fichier, et les adresses et chemins
-    seulement dans les zones de metadonnees : le debut et la fin.
+    Searching for email addresses or paths produces only random (a voice of 20 s in
+    and these false warnings would eventually mask the
+    True. So we're looking for real identifiers in TOUT the file, and addresses and paths
+    only in the metadones zones: the beginning and the end.
     """
     chercher_secrets(nom, data, secrets, trouves)
     if metadonnees <= 0:
@@ -131,11 +131,11 @@ def controler_media(nom, data, secrets, trouves, metadonnees=4096):
 
 # Inspect entries inside the archive, not the compressed byte stream.
 def controler_zip(nom, chemin, secrets, trouves):
-    """Examine une archive entree par entree.
+    """Examine an archive by entering.
 
-    Les octets COMPRESSES sont du hasard : y chercher des adresses de courriel ou des chemins
-    produirait de fausses alertes (et masquerait les vraies). On regarde donc les noms des entrees,
-    le texte decompresse, et les identifiants reels dans tout le reste.
+    Bytes COMPRESSES are by chance: look for email addresses or paths
+    produce false alerts (and hide the real ones). So we look at the names of the entrances,
+    the compress text, and real identifiers in everything else.
     """
     import zipfile
     try:
@@ -223,7 +223,7 @@ def main():
             data = lire(chemin, binaire=True)
             avant = len(trouves)
             if rel.lower().endswith('.zip'):
-                controler_zip(rel, chemin, secrets, trouves)   # entree par entree, pas en vrac
+                controler_zip(rel, chemin, secrets, trouves)   # entry per entry, not in bulk
             elif rel.lower().endswith(MEDIA):
                 controler_media(rel, data, secrets, trouves)
             else:

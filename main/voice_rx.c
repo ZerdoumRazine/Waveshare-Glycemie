@@ -29,7 +29,7 @@ static const char *TAG = "voix_rx";
 
 #define CONSOLE_BAUD     115200
 #define FILE_MAX         (256 * 1024)
-#define CHUNK            896  /* < tampon de reception UART de la console (1024 octets) : aucun debordement possible */
+#define CHUNK            896  /* < receiving buffer UART console (1024 bytes): no overflow possible */
 #define CHUNK_TIMEOUT_MS 3000
 #define IDLE_END_US      (30 * 1000000LL)
 
@@ -41,10 +41,10 @@ typedef struct {
 
 static const uart_port_t k_port = (uart_port_t)CONFIG_ESP_CONSOLE_UART_NUM;
 static uint8_t *s_buf;   /* file received (PSRAM) */
-static uint8_t *s_check; /* relecture sur la carte (PSRAM) */
+static uint8_t *s_check; /* rereading on the map (PSRAM) */
 static bool s_session;
 /* Sub-folder of the bank in the process of copying: "" for the French (root of SD_VOICE_DIR),
- * sinon le code de la langue ("en", "es", "de", "it", "pt"). Remis a zero a chaque session. */
+ * otherwise the language code ("en", "es", "de", "it", "pt"). Remis a zero at every session. */
 static char s_subdir[8];
 
 static int64_t s_last_us;
@@ -110,7 +110,7 @@ static void end_session(const char *why)
 /* Verify microSD readiness and negotiate a temporary faster serial baud rate. */
 static void cmd_begin(const char *args)
 {
-    s_subdir[0] = '\0'; /* chaque session repart de la banque francaise (racine) */
+    s_subdir[0] = '\0'; /* each session starts from the French bank (root) */
     const long baud = args[0] != '\0' ? strtol(args, NULL, 10) : CONSOLE_BAUD;
     if (baud != 115200 && baud != 230400 && baud != 460800 && baud != 921600) {
         reply("VRX BEGIN ERR debit\n");
@@ -201,7 +201,7 @@ static void voice_path(const char *name, char *out, size_t size)
 
 /* "vrx_dir in": vrx_put next write in /glycemie/audio/voice/en (cree au besoin).
  * "vrx_dir read" : verification alone, the file is PAS creates and must already contain files.
- * "vrx_dir -" revient a la racine, ou vit la banque francaise. */
+ * "vrx_dir -" comes back to the root, or lives the French bank. */
 static void cmd_dir(const char *args)
 {
     char code[8];
@@ -309,7 +309,7 @@ static void cmd_list(const char *args)
         s_check = heap_caps_malloc(FILE_MAX, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
     }
     uint32_t free_mb = 0;
-    /* Le listage suit le dossier choisi par vrx_dir : verification en LECTURE SEULE de n'importe quelle langue */
+    /* The listing follows the folder chosen by vrx_dir : verification in LECTURE SEULE of any language */
     const int count = sd_storage_list_voice(s_subdir, list_file, &ctx, &free_mb);
     if (count < 0) {
         reply("VRX LIST ERR microSD indisponible\n");

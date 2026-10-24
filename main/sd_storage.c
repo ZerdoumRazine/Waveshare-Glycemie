@@ -51,8 +51,8 @@ static const char *TAG = "microsd";
 #define SD_CLUSTER_SIZE   (32 * 1024) /* FAT32 : 32 KB cluster for a large capacity map */
 #define EVENT_QUEUE_LEN   16
 #define EVENT_LEN         112
-#define PROBE_PERIOD_S    30          /* presence de la carte (CMD13, commande protegee par le pilote) */
-#define RETRY_IDLE_S      3600        /* carte absente ou non reconnue depuis le demarrage */
+#define PROBE_PERIOD_S    30          /* map presence (CMD13, pilot protected control) */
+#define RETRY_IDLE_S      3600        /* card missing or not recognized since start */
 #define CHECK_MAX_LINES   1024
 #define HISTORY_DIR       SD_MOUNT_POINT "/glycemie/history"
 #define LOGS_DIR          SD_MOUNT_POINT "/glycemie/logs"
@@ -148,7 +148,7 @@ static bool parse_iso(const char *s, int64_t *epoch_ms)
     return true;
 }
 
-/* Local day file of epoch_ms decale de day_offset jours (calcul calendaire, insensible au changement d'heure) */
+/* Local day file of epoch_ms of day_offset days (calendar calculation, time-sensitive) */
 static void day_file(const char *dir, const char *ext, int64_t epoch_ms, int day_offset, char *path, size_t size)
 {
     time_t t = (time_t)(epoch_ms / 1000);
@@ -259,7 +259,7 @@ static esp_err_t mount_fs(bool format, bool quiet)
     return err;
 }
 
-/* Carte presente mais non montee : identification en lecture seule (registres OCR et CSD), aucune ecriture */
+/* Present card but not mounted: read-only identification (registers) OCR et CSD), no writing */
 static void identify_card(void)
 {
     sdmmc_host_t host;
@@ -277,7 +277,7 @@ static void identify_card(void)
                      capacity / (1024 * 1024));
             set_state(SD_STATE_UNSUPPORTED, type, (uint32_t)(capacity / (1024 * 1024)), 0);
         }
-        host.deinit_p(host.slot); /* slot 0 seulement : le lien SDIO de l'ESP32-C6 reste actif */
+        host.deinit_p(host.slot); /* slot 0 only: the link SDIO of theESP32-C6 remains active */
     }
     free(card);
 }
@@ -428,7 +428,7 @@ static void try_mount(mount_reason_t reason)
     }
 }
 
-/* Carte retiree ou en erreur : demontage propre, le reste du systeme continue */
+/* Card removed or in error: clean assembly, the rest of the system continues */
 static void lose_card(const char *why)
 {
     if (!s_mounted) {
@@ -445,7 +445,7 @@ static void lose_card(const char *why)
 /* ------------------------------------------------------------------------- */
 /* Historique CSV */
 
-/* Horodatage de la derniere ligne complete d'un CSV (0 if no measurement). An incomplete line
+/* Time stamping of the last complete line of a CSV (0 if no measurement). An incomplete line
  * (card removed or cut during writing) is removed. Returns false in case of access error. */
 static bool last_line_time(const char *path, int64_t *out_ms)
 {
@@ -528,8 +528,8 @@ static FILE *open_csv(const char *path)
     return f;
 }
 
-/* Writes once each measure more recent than the last line of the CSV, de la plus ancienne a la plus
- * recente. Un seul fclose (vidage et mise a jour de la FAT) per batch : about one writing every 5 minutes. */
+/* Writes once each measure more recent than the last line of the CSV, from the oldest to the most
+ * recent. Only one fclose (draining and updating of the FAT) per batch : about one writing every 5 minutes. */
 /* Merge delayed readings with the last stored day and avoid duplicate CSV rows. */
 static void sync_history(void)
 {
@@ -558,7 +558,7 @@ static void sync_history(void)
     for (int i = count - 1; i >= 0; i--) {
         const glucose_point_t *p = &s_work[i];
         if (p->wt_ms / 1000 <= s_last_written_ms / 1000) {
-            continue; /* le CSV est horodate a la seconde : comparaison a la seconde */
+            continue; /* le CSV is horodate to the second: comparison to the second */
         }
         char path[64];
         day_file(HISTORY_DIR, "csv", p->wt_ms, 0, path, sizeof(path));
@@ -775,7 +775,7 @@ static void check_card(void)
     free(times);
 }
 
-/* Reecrit un CSV without its exact duplicates (line identical to the last guarded line, same second).
+/* Rewrite a CSV without its exact duplicates.
  * If another line disappears (order, invalid or different), the file remains intact (-2):
  * no single measure is ever removed. */
 static int repair_csv(const char *path, const char *name)
@@ -914,7 +914,7 @@ static void purge_consumables(int64_t from_s)
                 tm_line.tm_year -= 1900;
                 tm_line.tm_mon -= 1;
                 tm_line.tm_isdst = -1;
-                drop = (int64_t)mktime(&tm_line) >= from_s / 60 * 60; /* lignes datees a la minute */
+                drop = (int64_t)mktime(&tm_line) >= from_s / 60 * 60; /* lines date a minute */
             }
             if (drop) {
                 printf("CONSO_PURGE retiree : %.*s\n", (int)len, line);
@@ -1098,7 +1098,7 @@ void sd_storage_print_log(const char *name)
  * sd_dump : Reread a card file by the console, exactly, without changing it.
  *
  * Why: the device does not have an accessible card reader, and exiting the microSD is not
- * Always possible. Content is sent to base64 (lines "SD_DUMP| "), suivi de la taille et
+ * Always possible. Content is sent to base64 (lines "SD_DUMP| "), followed by size and
  * of a print CRC-32: The PC can therefore verify that the copy is faithful, byte for byte.
  *
  * Play-only: no files are created, modified, or erased. Only subfolders of
@@ -1337,7 +1337,7 @@ void sd_storage_log_event(const char *fmt, ...)
     app_state_t st;
     app_state_get(&st);
     if (st.demo_mode) {
-        return; /* mode demonstration : aucune ecriture sur la carte */
+        return; /* demonstration mode: no writing on the map */
     }
     sd_event_t ev = {.uptime_us = esp_timer_get_time()};
     va_list args;

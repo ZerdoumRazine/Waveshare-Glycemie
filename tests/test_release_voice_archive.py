@@ -4,7 +4,7 @@
 # These tests use simulations; they do not connect to a patient's device.
 # Verify a private audio package only contains the expected six banks and provenance.
 #
-"""Tests sans vrai son ni matériel des gardes-fous de l'archive vocale."""
+"""Tests with no real sound or hardware from the voice archive."""
 from __future__ import annotations
 
 import hashlib

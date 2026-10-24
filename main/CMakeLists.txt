@@ -17,7 +17,7 @@ if(EXISTS "${GLY_PRIVATE_DIR}/device_secrets.h")
     set(GLY_PRIVATE_INCLUDE "${GLY_PRIVATE_DIR}")
 endif()
 
-# Commandes vocales locales (ESP-SR) : ABSENTES par defaut. La reconnaissance n'existe qu'en anglais et en
+# Local voice commands (ESP-SR): ABSENTES By default. Recognition n'existe qu'in English and
 # Chinese: the French phrases approached were untimely ads, and none of the six
 # interface languages has no model. Spoken ads and sound alerts are not concerned.
 # To reactivate them: cmake -DGLY_VOICE_CMD=ON (ou tools\build.ps1 -Vocal).
@@ -32,7 +32,7 @@ else()
     set(GLY_VOICE_CMD_FLAG 0)
 endif()
 
-# Polices embarquees + ancienne voix Windows seulement si elle est presente (voir plus bas)
+# Embedded fonts + old Windows voice only if it is present (see below)
 set(GLY_EMBED_FILES "fonts/Montserrat-Medium.ttf" "fonts/Montserrat-Bold.ttf")
 set(GLY_VOICE_OLD_PCM 0)
 if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/voice/voice_fr.pcm")
@@ -80,8 +80,8 @@ idf_component_register(
     EMBED_FILES ${GLY_EMBED_FILES}
 )
 
-# Ancienne voix Windows embarquee (console "voice_old") : facultative. Si main/voice/voice_fr.pcm est absent
-# (droits de redistribution non etablis), la compilation reussit et la commande repond simplement qu'elle est
+# Former voice Windows Embedded (console "voice_old") : optional. If main/voice/voice_fr.pcm is absent
+# (redistribution rights not established), the compilation succeeds and the command simply responds that it is
 # Not available. Normal ads come from the microSD bank and do not depend on this file.
 target_compile_definitions(${COMPONENT_LIB} PRIVATE GLY_VOICE_OLD_PCM=${GLY_VOICE_OLD_PCM}
                                                     GLY_VOICE_CMD=${GLY_VOICE_CMD_FLAG})

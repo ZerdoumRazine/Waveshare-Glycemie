@@ -6,12 +6,12 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-    Compile le firmware glycemie_display.
+    Compile firmware glycemie_display.
 
 .DESCRIPTION
-    ESP-IDF ne sait pas compiler depuis un chemin contenant un caractere accentue : ccache,
+    ESP-IDF can not compile from a path containing an accentuated character: ccache,
     ldgen.py and the link editor fail all three. If the project root contains a
-    accent, this script copies the project into a working folder ASCII (sous le dossier temporaire
+    accent, this script copies the project into a working folder ASCII (under the temporary file
     user, never rated the project) and compiles there. Otherwise he compiles on the spot.
 
     Private/ is not JAMAIS erased by copying and its presence is checked before
@@ -102,7 +102,7 @@ if (-not $env:IDF_TOOLS_PATH) {
     }
 }
 $env:PYTHONUTF8 = '1'
-# IDF_CCACHE_ENABLE est teste non vide par ESP-IDF : "0" l'ACTIVE. Il faut supprimer la variable.
+# IDF_CCACHE_ENABLE is tested not empty by ESP-IDF : "0" l'ACTIVE. The variable must be removed.
 Remove-Item Env:IDF_CCACHE_ENABLE -ErrorAction SilentlyContinue
 
 # activate.py writes its progress on stderr: without this, ErrorActionPreference = 'Stop'
@@ -127,7 +127,7 @@ try {
     New-Item -ItemType Directory -Force $logDir | Out-Null
     $log = Join-Path $logDir ('build_{0:yyyyMMdd_HHmmss}.log' -f (Get-Date))
     # Commandes vocales locales : absentes par defaut (voir main/CMakeLists.txt).
-    # La valeur est TOUJOURS pass: Cmake keeps in cache what was given him once, so
+    # Value is TOUJOURS pass: Cmake keeps in cache what was given him ounce, so
     # a compilation made after a -Vocal would keep voice commands without saying anything.
     $defines = @(if ($Vocal) { '-DGLY_VOICE_CMD=ON' } else { '-DGLY_VOICE_CMD=OFF' })
     & $idfPython "$env:IDF_PATH\tools\idf.py" @defines build *>&1 | Tee-Object -FilePath $log | Out-Null

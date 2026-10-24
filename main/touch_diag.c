@@ -26,7 +26,7 @@ static const char *TAG = "tactile";
 #define MAX_NAMES          64
 #define GT911_CONFIG_REG   0x8047 /* version, puis X max (2 octets), Y max (2 octets) */
 #define GESTURE_QUEUE_LEN  64
-#define GESTURE_GAP_US     80000  /* relachement minimal entre deux appuis synthetiques */
+#define GESTURE_GAP_US     80000  /* minimal release between two synthetic supports */
 
 typedef struct {
     lv_obj_t *obj;
@@ -43,7 +43,7 @@ typedef struct {
 
 static QueueHandle_t s_gestures;
 static gesture_t s_gesture;
-static int s_gesture_state;  /* 0 aucun, 1 appui, 2 relachement */
+static int s_gesture_state;  /* 0 none, 1 support, 2 release */
 static int64_t s_gesture_t0;
 static uint32_t s_count_synthetic;
 static int64_t s_last_read_us;
@@ -116,7 +116,7 @@ static const char *lookup(const lv_obj_t *obj)
     return NULL;
 }
 
-/* "nom (classe)[bouton] < parent nomme" : l'objet touche puis son premier ancetre nomme */
+/* "nom (classe)[bouton] < parent nomme" : the object touches then its first antre named */
 static void describe(lv_obj_t *obj, bool with_button_text, char *buf, size_t size)
 {
     size_t used = 0;
@@ -271,7 +271,7 @@ static esp_err_t diag_read(esp_lcd_touch_handle_t tp, esp_lcd_touch_point_data_t
     int32_t sx = 0;
     int32_t sy = 0;
     if (synthetic_point(now_us, &synthetic_touched, &sx, &sy)) {
-        /* appui synthetique : remplace la trame reelle (le GT911 was read to empty his data) */
+        /* synthetic support: replaces the real frame (the GT911 was read to empty his data) */
         err = ESP_OK;
         *count = synthetic_touched ? 1 : 0;
         if (synthetic_touched) {

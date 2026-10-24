@@ -2,7 +2,7 @@
  * Shared definitions for the firmware implementation.
  */
 /*
- * Pages de l'interface : ACCUEIL, GRAPHIQUE, AUJOURD'HUI, CONSOMMABLES, REGLAGES.
+ * Pages of l'interface : ACCUEIL, GRAPHIQUE, AUJOURD'HUI, CONSOMMABLES, REGLAGES.
  * All functions run in the spot LVGL.
  */
 /* Public interface / Interface publique

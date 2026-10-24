@@ -43,7 +43,7 @@ typedef enum {
     THR_COUNT,
 } thr_id_t;
 
-/* Volume level headings: filled according to language; LVGL conserve le pointeur,
+/* Volume level heads: girld according to language; LVGL keep the pointer,
  * the table must therefore remain static. */
 static const char *k_volume_map[6];
 static const str_id_t k_volume_ids[5] = {S_MUTE, S_LOW, S_MEDIUM, S_HIGH, S_MAX};
@@ -94,9 +94,9 @@ static const char *const k_interval_map[] = {"48 H", "72 H", ""};
 static const char *const k_lang_map[] = {"Français", "English", "Español", "\n",
                                          "Deutsch", "Italiano", "Português", ""};
 
-/* Choix de la langue : on ne touche a rien ici. La tache LVGL reconstruct pages out of this
- * callback, car l'objet qui le porte fait partie de ce qui sera detruit. */
-/* Assistant de configuration : meme ecran qu'a la premiere mise en route */
+/* Choosing the language: you don't touch anything here. The Spot LVGL reconstruct pages out of this
+ * callback, for the object that bears it is part of what will be destroyed. */
+/* Configuration Assistant: same screen as the first start-up */
 static void on_connexion_modifier(lv_event_t *e)
 {
     (void)e;
@@ -134,13 +134,13 @@ static void on_effacer_confirmer(lv_event_t *e)
     const esp_err_t err = credentials_clear();
     fermer_modal();
     if (err != ESP_OK) {
-        /* Ne pas redemarrer ni annoncer un effacement qui n'a pas ete
+        /* Do not start again or announce an erasure that has not been
          * confirms in permanent memory. Existing access remains active. */
         ESP_LOGE(TAG, "Effacement des acces impossible : %s", esp_err_to_name(err));
         lv_label_set_text(s_conn_aide, tr(S_SETUP_FAIL_OTHER));
         return;
     }
-    esp_restart(); /* la configuration vide est enregistree : ouvrir l'assistant */
+    esp_restart(); /* the empty configuration is saved: open the wizard */
 }
 
 /* Confirmation before erasing: nothing is erased without this second support */
@@ -233,7 +233,7 @@ static void on_volume_level(lv_event_t *e)
     apply(&s);
 }
 
-/* Pendant le glissement : valeur affichee en direct ; au relachement : volume applique et enregistre */
+/* During the slide: value displays live; release: volume applies and records */
 static void on_volume_slider(lv_event_t *e)
 {
     const int pct = lv_slider_get_value(lv_event_get_target_obj(e));
@@ -263,7 +263,7 @@ static void on_test_voice(lv_event_t *e)
     settings_t s;
     settings_get(&s);
     ESP_LOGI(TAG, "Bouton TEST VOIX touche (volume %u %%)", s.volume_pct);
-    voice_test(120, s.volume_pct); /* "Glycemie cent vingt." (microSD), bip de test si la banque est absente */
+    voice_test(120, s.volume_pct); /* "Glycemie cent vingt." (microSD), test beep if bank is absent */
 }
 
 static void on_switch(lv_event_t *e)
@@ -308,8 +308,8 @@ static void on_threshold(lv_event_t *e)
     show_thresholds(&s);
 }
 
-/* Luminosite jour : valeur affichee en direct ; au relachement, enregistree et appliquee par le mode nuit
- * (en periode nuit l'ecran reste a la luminosite nuit) */
+/* Luminosite day: value displayed live; to the release, recorded and applied by night mode
+ * (in period night the screen remains at night luminosite) */
 static void on_brightness(lv_event_t *e)
 {
     const int pct = lv_slider_get_value(lv_event_get_target_obj(e));
@@ -345,7 +345,7 @@ static void on_night_switch(lv_event_t *e)
     apply_night(&n);
 }
 
-/* TEST MODE NUIT : apercu immediat de l'ecran nuit, horaires inchanges (un toucher ou 60 s y mettent fin) */
+/* TEST MODE NUIT : immediate view of the night screen, interchangeable hours (a touch or 60 s end) */
 static void on_night_test(lv_event_t *e)
 {
     (void)e;
@@ -353,7 +353,7 @@ static void on_night_test(lv_event_t *e)
     night_mode_preview();
 }
 
-/* Debut / fin de la nuit par pas de 15 min (user_data : 0 debut -, 1 debut +, 2 fin -, 3 fin +) */
+/* Start / end of night by 15 min walk (user_data : 0 start -, 1 start +, 2 end -, 3 end +) */
 static void on_night_time(lv_event_t *e)
 {
     const intptr_t code = (intptr_t)lv_event_get_user_data(e);
@@ -472,9 +472,9 @@ static void threshold_row(lv_obj_t *page, int col, int row, thr_id_t id, const c
 
 void ui_settings_create(lv_obj_t *page)
 {
-    /* Page defilable verticalement. CLICKABLE : un appui sur du texte ou un espace vide cible la page (et non
+    /* Page defilable vertically. CLICKABLE : a press on text or an empty space targets the page (and not
      * the screen, which does not slip), so a slip makes to slip from any point. The buttons,
-     * curseurs et interrupteurs restent prioritaires sous le doigt. La barre de navigation est hors de la page. */
+     * sliders and switches remain priority under the finger. The navigation bar is off the page. */
     lv_obj_add_flag(page, LV_OBJ_FLAG_SCROLLABLE | LV_OBJ_FLAG_CLICKABLE);
     lv_obj_set_scroll_dir(page, LV_DIR_VER);
     lv_obj_set_scrollbar_mode(page, LV_SCROLLBAR_MODE_AUTO);
@@ -484,7 +484,7 @@ void ui_settings_create(lv_obj_t *page)
     s_volume_value = ui_label(page, g_fonts.title, UI_COL_TEXT, "");
     lv_obj_set_pos(s_volume_value, 440, 12);
 
-    /* Curseur 0..100 % : zone tactile elargie autour de la barre et du bouton */
+    /* Cursor 0.10%: extended touch area around the bar and button */
     s_volume_slider = lv_slider_create(page);
     lv_slider_set_range(s_volume_slider, 0, 100);
     lv_obj_set_pos(s_volume_slider, 48, 80);
@@ -572,7 +572,7 @@ void ui_settings_create(lv_obj_t *page)
     lv_obj_set_width(interval_hint, 976);
     lv_obj_set_pos(interval_hint, 24, 1432);
 
-    /* --- CONNEXION : Wi-Fi network and Dexcom account, editable without recompiling -------- */
+    /* --- CONNEXION : Wi-Fi network and Dexcom account, editable without recompiling ------- */
     section_title(page, 1510, tr(S_CONN_TITLE));
     s_conn_wifi = ui_label(page, g_fonts.m, UI_COL_TEXT, "");
     lv_obj_set_width(s_conn_wifi, 620);
@@ -613,7 +613,7 @@ void ui_settings_create(lv_obj_t *page)
     lv_obj_set_pos(lang_hint, 24, 2034);
 
 #if GLY_VOICE_CMD
-    /* --- COMMANDES VOCALES (absentes de la version publique, voir docs/LIMITATIONS_FR.md) --- */
+    /* --- COMMANDES VOCALES (absent from the public version, see docs/LIMITATIONS_FR.md) --- */
     section_title(page, 2400, tr(S_VOICECMD_TITLE));
     s_vcmd_sw = switch_row(page, 2456, tr(S_VOICECMD_ENABLE), on_vcmd_switch);
     s_wake_sw = switch_row(page, 2518, tr(S_WAKEWORD), on_vcmd_switch);

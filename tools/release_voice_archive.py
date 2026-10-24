@@ -4,12 +4,12 @@
 # Design note: Reject unrelated files such as logs or personal histories.
 # Validates original six-language WAVs and writes an audio-only release ZIP.
 #
-"""Controle et repaquette uniquement les WAV nécessaires à la microSD du projet.
+"""Control and repaquette only WAV the microSD of the project.
 
-Entrée : paquet microSD historique v0.1.0, téléchargé depuis la Release PRIVÉE.
-Sortie : archive microSD v0.2.0, sans fichier utilisateur, cache ou journal,
-et empreinte SHA-256 indépendante.
-Ce programme ne contacte ni Dexcom ni Google, et ne crée aucun fichier audio.
+Enter: historical v0.1.1.0 microSD package, downloaded from the PRIVATE Release.
+Output: v0.2.0 microSD archive, without user file, cache or log,
+and footprint SHA-256 independent.
+This program does not contact Dexcom or Google, and does not create any audio files.
 """
 from __future__ import annotations
 
@@ -115,7 +115,7 @@ def main() -> None:
         for info in source.infolist():
             if info.is_dir():
                 continue
-            # L'ancien ZIP also includes a download package created
+            # The old ZIP also includes a download package created
             # local. Never reuse it in the published package:
             # a neutral provenance statement is regenerated below.
             if info.filename in ("LISEZMOI.txt",):
@@ -139,7 +139,7 @@ def main() -> None:
             counts[lang].add(filename)
             if info.file_size > 500_000 or info.file_size < 44:
                 raise ValueError("Taille WAV anormale : " + info.filename)
-            data = source.read(info)  # zipfile checks CRC32 durant la lecture
+            data = source.read(info)  # zipfile checks CRC32 while reading
             check_wav(data, info.filename)
             dest.writestr(info.filename, data)
         for lang in LANGUAGES:

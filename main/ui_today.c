@@ -15,11 +15,11 @@
 #include <time.h>
 
 /*
- * AUJOURD'HUI (depuis minuit, heure locale) : TIR 70-180, moyenne, minimum, maximum, couverture, temps bas (< 70) et
- * haut (> 180), episodes bas / hauts (au moins 3 mesures consecutives, soit 15 min). Calcule sur l'historique 24 h
- * deja en memoire (aucune lecture supplementaire), seulement quand l'historique ou la minute change.
- * Frise de la journee : 96 creneaux de 15 min dessines en plages de meme etat (evenement de dessin, aucun objet par
- * creneau, aucune image).
+ * AUJOURD'HUI (since midnight, local time): TIR 70-180, medium, minimum, maximum, coverage, low time (< 70) and
+ * High (> 180), low/high episodes (at least 3 consecutive measurements, 15 min). Calculates history 24 hours
+ * already in memory (no extra reading), only when history or minute changes.
+ * Fries of the day : 96 creneaux of 15 min drawings in beaches of the same state (drawing event, no objects by
+ * creneau, no image).
  */
 
 #define PAD        20
@@ -122,7 +122,7 @@ static lv_color_t slot_color(uint8_t state)
     }
 }
 
-/* Frise : piste, plages de meme etat, repere de l'heure actuelle */
+/* Friesland: track, same state beaches, current spot */
 static void on_timeline_draw(lv_event_t *e)
 {
     lv_obj_t *obj = lv_event_get_current_target_obj(e);
@@ -173,7 +173,7 @@ static void on_timeline_draw(lv_event_t *e)
 
 static void on_timeline_ext_size(lv_event_t *e)
 {
-    lv_event_set_ext_draw_size(e, 7); /* repere de l'heure au-dessus et au-dessous de la frise */
+    lv_event_set_ext_draw_size(e, 7); /* Repare of the hour above and below the frieze */
 }
 
 static lv_obj_t *legend_item(lv_obj_t *parent, lv_color_t color, lv_opa_t opa, const char *text)
@@ -207,7 +207,7 @@ void ui_today_create(lv_obj_t *page)
     lv_obj_set_style_text_align(s_subtitle, LV_TEXT_ALIGN_RIGHT, 0);
     lv_obj_set_pos(s_subtitle, UI_SCR_W - 24 - 620, 20);
 
-    /* Frise de la journee */
+    /* Friesland */
     lv_obj_t *line = ui_card(page, PAD, LINE_Y, UI_SCR_W - 2 * PAD, LINE_H, 20);
     lv_obj_t *head = ui_label(line, g_fonts.label, UI_G_TEXT2, tr(S_DAY_BAND));
     lv_obj_set_pos(head, 18, 10);
@@ -275,7 +275,7 @@ static int64_t local_midnight_ms(const struct tm *now_tm)
     return (int64_t)mktime(&m) * 1000;
 }
 
-/* Statistiques depuis minuit et etat de chaque creneau de 15 min */
+/* Statistics since midnight and summer of each 15 min crain */
 /* Use only available samples; incomplete coverage must remain visible. */
 static void compute_today(const ui_data_t *d, int64_t midnight_ms, today_t *t, uint8_t *slots)
 {
@@ -293,7 +293,7 @@ static void compute_today(const ui_data_t *d, int64_t midnight_ms, today_t *t, u
     int low_run = 0;
     int high_run = 0;
     int64_t prev_ms = 0;
-    for (int i = d->count - 1; i >= 0; i--) { /* du plus ancien au plus recent */
+    for (int i = d->count - 1; i >= 0; i--) { /* from oldest to most recent */
         const glucose_point_t *p = &d->hist[i];
         if (p->wt_ms < midnight_ms || p->wt_ms > d->now_ms + 5 * 60 * 1000LL) {
             continue;

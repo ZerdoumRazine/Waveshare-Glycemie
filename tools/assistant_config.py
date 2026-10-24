@@ -4,23 +4,23 @@
 # Design note: Passwords are sent to the device, not stored in a PC configuration file.
 # Configures the device by USB when touchscreen entry is inconvenient.
 #
-r"""Assistant de configuration par le cable USB (solution de secours a l'assistant de l'ecran tactile).
+"""Cable Configuration Assistant USB (relief solution a l'assistant de l'touch screen).
 
-A utiliser si la saisie au doigt pose probleme (mot de passe long, clavier a l'ecran peu pratique) ou si
-le tactile ne repond pas. L'appareil doit etre allume et relie au PC par son cable USB-C.
+Use if the finger grab poses a problem (long password, keyboard has an impractical screen) or if
+The tactile doesn't answer. The device must be switched on and connected to the PC by its cable USB-C.
 
-Ce script ne lit jamais la memoire du PC ni celle de l'appareil, n'ecrit aucun mot de passe dans un fichier
-et n'affiche pas ce que vous tapez pour un mot de passe. Les identifiants partent par le cable et sont
-enregistres par l'appareil lui-meme (espace NVS "ident"). Rien n'est envoye sur Internet.
+This script never reads the memory of the PC or that of the'appareil, n'write no password in file
+and does not display what you type for a password. Identifiers leave via cable and are
+recorded by l'appareil lui-meme (espace NVS "ident"). Rien n'is sent over the Internet.
 
-Aucune installation n'est necessaire sous Windows : le port serie est ouvert directement (ctypes). Si la
-bibliotheque pyserial est presente, elle est utilisee a la place (utile sous Linux et macOS).
+No installation is required under Windows: the serial port is opened directly (ctypes). If
+Pyserial library is present, it is used instead (useful under Linux and macOS).
 
 Usage :
-    python tools\assistant_config.py                 (port detecte, sinon --port COM7)
-    python tools\assistant_config.py --lister         liste les ports serie vus par le PC
-    python tools\assistant_config.py --etat           affiche seulement ce qui est deja enregistre
-    python tools\assistant_config.py --effacer        efface les identifiants de l'appareil
+    python tools\\assistant_config.py                 (port detecte, sinon --port COM7)
+    python tools\\assistant_config.py --lister lists the serial ports seen by the PC
+    python tools\\assistant_config.py --etat displays only what is already saved
+    python tools\\assistant_config.py -- Clear device identifiers
 """
 import argparse
 import getpass
@@ -55,7 +55,7 @@ BAUD = 115200  # console ESP-IDF
 
 
 # --------------------------------------------------------------------------------------------------
-# Acces au port serie : pyserial si disponible, sinon l'API Windows directement (aucune installation)
+# Access to the port serie : pyserial if available, otherwise theAPI Windows directly (no installation)
 # --------------------------------------------------------------------------------------------------
 try:
     import serial                      # noqa: F401
@@ -71,7 +71,7 @@ class PortPySerial(object):
         self.s.port = nom
         self.s.baudrate = BAUD
         self.s.timeout = 0.2
-        self.s.dtr = False   # ne pas redemarrer l'appareil en ouvrant le port
+        self.s.dtr = False   # do not restart the device by opening the port
         self.s.rts = False
         self.s.open()
 
@@ -86,7 +86,7 @@ class PortPySerial(object):
 
 
 class PortWin32(object):
-    """Port serie par l'API Windows (kernel32), sans dependance a installer."""
+    """PortAPI Windows (kernel32), no dependance to install."""
 
     def __init__(self, nom):
         import ctypes
@@ -125,9 +125,9 @@ class PortWin32(object):
             raise IOError('GetCommState a echoue sur %s' % nom)
         dcb.BaudRate = BAUD
         dcb.ByteSize = 8
-        dcb.Parity = 0      # aucune
+        dcb.Parity = 0      # none
         dcb.StopBits = 0    # 1 bit
-        dcb.bits = 0x0001   # binaire ; DTR et RTS desactives, aucun controle de flux
+        dcb.bits = 0x0001   # binary; DTR et RTS desactive, no flow control
         if not k.SetCommState(self.h, ctypes.byref(dcb)):
             k.CloseHandle(self.h)
             raise IOError('SetCommState a echoue sur %s' % nom)
@@ -152,10 +152,10 @@ class PortWin32(object):
 
 
 def noms_lisibles():
-    """{COM7: 'USB-Enhanced-SERIAL CH343'} : noms affiches par Windows, sans rien ouvrir.
+    """{COM7: 'USB-Enhanced-SERIAL CH343'Names posters by Windows, without opening anything.
 
-    Passe par PowerShell (aucune bibliotheque a installer). Si cela echoue, on se contente des
-    noms techniques du registre : la detection continue de fonctionner.
+    Go through PowerShell (no library to install). If this fails, we are content with the
+    Technical names of the registry: detection continues to work.
     """
     if sys.platform != 'win32':
         return {}
@@ -176,7 +176,7 @@ def noms_lisibles():
 
 
 def lister_ports():
-    """[(nom, description)] des ports serie, sans rien ouvrir."""
+    """[(name, description)] of the serial ports, without opening anything."""
     if PYSERIAL:
         return [(p.device, ('%s %s' % (p.description or '', p.manufacturer or '')).strip())
                 for p in list_ports.comports()]
@@ -206,13 +206,13 @@ def lister_ports():
     return ports
 
 
-# Noms donnes par Windows aux puces de liaison USB utilisees par ces cartes.
+# Names given by Windows to link chips USB used by these cards.
 PUCES_USB = ('CH343', 'CH34', 'USB-SERIAL', 'USB-ENHANCED-SERIAL', 'CP210', 'FTDI', 'FT232',
              'USB SERIAL DEVICE', 'USBSER', 'JTAG')
 
 
 def trouver_port():
-    """Port le plus probable, ou None s'il y a un doute : le choix revient alors a l'utilisateur."""
+    """Most likely port, or None s'il y a un doute : le choix revient alors a l'user."""
     ports = lister_ports()
     probables = [nom for nom, description in ports
                  if any(p in (description or '').upper() for p in PUCES_USB)]
@@ -244,7 +244,7 @@ class Appareil(object):
         self.port.write((commande + '\n').encode('utf-8'))
 
     def lire(self, duree, motif=None):
-        """Lignes recues pendant 'duree' secondes ; s'arrete des qu'une ligne contient 'motif'."""
+        """Lines received during 'duree' seconds; s'arrete des qu'one line contains 'motif'."""
         fin = time.time() + duree
         lignes = []
         while True:
@@ -285,10 +285,10 @@ def lire_mot_de_passe(texte):
 
 # Try new credentials in RAM before asking the user to save them.
 def configurer(app, demande=demander, mot_de_passe=lire_mot_de_passe):
-    """Pose les questions, essaie les identifiants, les enregistre apres reussite et confirmation.
+    """Ask questions, try IDs, save them after success and confirmation.
 
-    Les acces deja presents dans l'appareil sont conserves jusqu'a cette confirmation : un echec,
-    un abandon ou un debranchement les laisse en place.
+    Access already present in'appareil sont conserves jusqu'a this confirmation: a failure,
+    an abandonment or disconnection leaves them in place.
     """
     print('\n--- Reseau Wi-Fi (2,4 GHz uniquement) ---')
     ssid = demande('Nom du reseau')
@@ -336,14 +336,14 @@ def configurer(app, demande=demander, mot_de_passe=lire_mot_de_passe):
 
 
 def annuler(app):
-    """Abandon : l'appareil revient a ses acces precedents (rien n'a ete enregistre)."""
+    """Abandonment: l'appareil revient a ses acces precedents (rien n'a was recorded)."""
     app.envoyer('ident_annuler')
     app.lire(2, 'IDENT annule')
     print('Les accès precedents de l\'appareil sont conservés : rien n\'a été modifié.')
 
 
 def enregistrer(app, demande=demander):
-    """Confirmation puis enregistrement : c'est la seule etape qui ecrit dans l'appareil."""
+    """Confirmation and registration: c'est la seule etape qui ecrit dans l'camera."""
     if demande('Enregistrer ces acces dans l\'appareil ? (oui/non)', 'oui').strip().lower() != 'oui':
         annuler(app)
         return 1
@@ -360,7 +360,7 @@ def enregistrer(app, demande=demander):
 
 # Treat deletion as successful only when the device confirms it in NVS.
 def effacer(app, demande=demander):
-    """Efface les identifiants, apres confirmation explicite. Renvoie 0 si l'effacement a eu lieu."""
+    """Clear IDs, after explicit confirmation. Returns 0 if erasure has occurred."""
     if demande('Effacer le reseau Wi-Fi et le compte Dexcom ? (oui/non)', 'non').strip().lower() != 'oui':
         print('Rien efface.')
         return 1

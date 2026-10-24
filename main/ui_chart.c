@@ -21,7 +21,7 @@
 #define SLOT_MS     (5 * 60 * 1000)
 #define BUBBLE_W    186
 #define BUBBLE_H    104
-#define EXPLORE_MIN_MS 40 /* limitation du rythme pendant le glissement */
+#define EXPLORE_MIN_MS 40 /* limiting the speed during the slide */
 
 static int32_t value_to_y(const ui_chart_t *c, int value)
 {
@@ -141,7 +141,7 @@ void ui_chart_create(ui_chart_t *c, lv_obj_t *parent, int32_t x, int32_t y, int3
     lv_obj_set_width(c->last_value, 90);
     lv_obj_set_style_text_align(c->last_value, LV_TEXT_ALIGN_RIGHT, 0);
 
-    /* Duree affichee a droite de la mini-courbe, hors de la zone de trace */
+    /* Duree displays to the right of the mini-curve, out of the trace area */
     c->range_label = ui_label(parent, g_fonts.s, UI_COL_DIM, "");
     if (time_labels) {
         lv_obj_add_flag(c->range_label, LV_OBJ_FLAG_HIDDEN);
@@ -175,7 +175,7 @@ static const char *trend_arrow_text(uint8_t trend)
     case TREND_DOUBLE_DOWN:
         return "↓↓";
     default:
-        return ""; /* tendance absente de l'historique : rien d'invente */
+        return ""; /* trend absent from l'historique : rien d'invent */
     }
 }
 
@@ -255,7 +255,7 @@ static void explore_select(ui_chart_t *c, int n)
     explore_show(c, true);
 }
 
-/* Mesure reelle la plus proche horizontalement du doigt */
+/* Real measurement closest horizontally to the finger */
 /* Find the closest historical point to a touch rather than inventing an interpolated reading. */
 static void explore_select_at(ui_chart_t *c, int32_t x)
 {
@@ -271,7 +271,7 @@ static void explore_select_at(ui_chart_t *c, int32_t x)
     if (best >= 0 && best != c->selected) {
         explore_select(c, best);
     } else if (best >= 0) {
-        explore_show(c, true); /* meme point : simple reaffichage */
+        explore_show(c, true); /* same point: simple display */
     }
 }
 
@@ -291,7 +291,7 @@ static void explore_event(lv_event_t *e)
         return;
     }
     if (code == LV_EVENT_PRESSING && lv_tick_elaps(c->last_move_ms) < EXPLORE_MIN_MS) {
-        return; /* rythme limite : pas de redessin a chaque pixel */
+        return; /* limit rhythm: no redraw at each pixel */
     }
     lv_indev_t *indev = lv_indev_active();
     if (indev == NULL) {
@@ -441,7 +441,7 @@ void ui_chart_update(ui_chart_t *c, const ui_data_t *d, int hours)
             slot_from_end = (int)((ago_ms + SLOT_MS / 2) / SLOT_MS);
         } else {
             /* Placement from one measure to another: a few seconds of decalage between measurements
-             * ne creent ni faux trou ni chevauchement ; un vrai trou reste visible */
+             * create no false hole or overlap; a real hole remains visible */
             const int step = (int)((anchor_ms - wt_ms + SLOT_MS / 2) / SLOT_MS);
             if (step <= 0) {
                 continue;
@@ -459,7 +459,7 @@ void ui_chart_update(ui_chart_t *c, const ui_data_t *d, int hours)
         lv_chart_set_series_value_by_id(c->chart, c->series, (uint32_t)idx, v);
         lv_chart_set_series_value_by_id(c->glow, c->glow_series, (uint32_t)idx, v);
         if (c->explore && c->pt_count < GLY_HISTORY_MAX) {
-            /* position reelle du point trace : sert a l'exploration tactile (aucune valeur interpolee) */
+            /* real position of trace point: serves for tactile exploration (no interpole value) */
             c->pt_x[c->pt_count] = (int16_t)((int64_t)idx * (c->w - 1) / (slots > 1 ? slots - 1 : 1));
             c->pt_y[c->pt_count] = (int16_t)value_to_y(c, v);
             c->pt_index[c->pt_count] = (int16_t)i;
@@ -475,7 +475,7 @@ void ui_chart_update(ui_chart_t *c, const ui_data_t *d, int hours)
     lv_chart_refresh(c->glow);
     lv_chart_refresh(c->chart);
 
-    /* Exploration en cours : le point selectionne est retrouve a sa nouvelle position (l'echelle a pu bouger) */
+    /* Exploration in progress: the selection point is found in its new position (the ladder was able to move) */
     if (c->explore && c->selected >= 0) {
         int found = -1;
         for (int i = 0; i < c->pt_count && found < 0; i++) {
@@ -499,7 +499,7 @@ void ui_chart_update(ui_chart_t *c, const ui_data_t *d, int hours)
         int32_t px = (int32_t)((int64_t)newest_slot * (c->w - 1) / (slots > 1 ? slots - 1 : 1));
         int32_t py = value_to_y(c, newest_value);
         int32_t lx = px - 96;
-        /* Du cote oppose a la courbe : dessous si elle descend, dessus si elle monte */
+        /* From the side opposite the curve: below if it goes down, above if it goes up */
         int32_t ly = previous_value > newest_value ? py + 10 : py - 38;
         if (ly < 0) {
             ly = py + 10;

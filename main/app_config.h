@@ -30,13 +30,13 @@
 
 /* Cadence G7 et fraicheur */
 #define GLY_CADENCE_DEFAULT_S       300
-#define GLY_AGE_FRESH_MAX_MIN       6    /* < 6 min  : A JOUR */
-#define GLY_AGE_STALE_MIN           10   /* >= 10 min : DONNEES ANCIENNES */
-#define GLY_DELTA_MIN_S             150  /* delta seulement entre mesures consecutives (2,5 a 7,5 min) */
+#define GLY_AGE_FRESH_MAX_MIN       6    /* < 6 min: A JOUR */
+#define GLY_AGE_STALE_MIN           10   /* >= 10 min: DONNEES ANCIENNES */
+#define GLY_DELTA_MIN_S             150  /* delta only between consecutive measures (2.5 to 7.5 min) */
 #define GLY_DELTA_MAX_S             450
 
 /* Plages d'affichage et statistiques (mg/dL) ; the warning thresholds are in the adjustments */
-#define GLY_RANGE_VERY_LOW          54   /* couleur d'accent "tres basse" (affichage seulement) */
+#define GLY_RANGE_VERY_LOW          54   /* accent color "tres basse" (view only) */
 #define GLY_RANGE_LOW               70
 #define GLY_RANGE_HIGH              180
 #define GLY_RANGE_VERY_HIGH         250
@@ -44,6 +44,6 @@
 
 /* Cadence Dexcom */
 #define GLY_READING_PERIOD_S        300  /* one measure G7 every 5 minutes */
-#define GLY_READING_MARGIN_S        20   /* delai de publication via le telephone */
+#define GLY_READING_MARGIN_S        20   /* period of publication via the telephone */
 #define GLY_MIN_REQUEST_INTERVAL_S  30   /* never less than 30 s between two requests */
 #define GLY_LOCKOUT_PAUSE_S         3600 /* compte bloque temporairement : 60 min */

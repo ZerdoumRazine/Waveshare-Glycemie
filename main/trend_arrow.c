@@ -14,9 +14,9 @@
 #include "ui_common.h"
 
 /*
- * Icone de tendance 2.5D : disque lumineux flou derriere (enfant, ombre coloree LVGL) et fleche pleine dessinee a la
- * steals after children (event LV_EVENT_DRAW_POST) : tige arrondie et pointe triangulaire. Aucun objet par
- * segment, aucune image. trend_arrow_set_glow() regle l'intensite du disque (respiration lente de l'accueil).
+ * 2.5D trend icon: blurred behind light disc (child, color shadow) LVGL) and fleche full drawing
+ * steels after children (event) LV_EVENT_DRAW_POST) : rounded stem and triangular tip. No object by
+ * segment, no images. trend_arrow_set_glow()'intensite du disque (respiration lente de l'reception).
  */
 
 typedef struct {
@@ -44,7 +44,7 @@ static void draw_arrow(lv_layer_t *layer, const arrow_ctx_t *ctx, float cx, floa
 {
     const float rad = angle_deg * (float)M_PI / 180.0f;
     const float dx = cosf(rad);
-    const float dy = -sinf(rad); /* axe Y de l'ecran vers le bas */
+    const float dy = -sinf(rad); /* Y axis of the screen downwards */
     const float px = -dy;
     const float py = dx;
     const float tip_x = cx + dx * length / 2.0f;
@@ -180,7 +180,7 @@ void trend_arrow_set_glow(lv_obj_t *arrow, lv_opa_t opa)
     if (ctx != NULL && ctx->glow != opa) {
         ctx->glow = opa;
         if (has_arrow(ctx->trend)) {
-            ui_glow_set(ctx->halo, ctx->color, opa); /* invalide le disque (et la fleche qui le recouvre) */
+            ui_glow_set(ctx->halo, ctx->color, opa); /* invalidate the disc (and the flap that covers it) */
         }
     }
 }

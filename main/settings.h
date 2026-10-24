@@ -2,7 +2,7 @@
  * The declarations below are shared with other firmware modules.
  */
 /*
- * Persistent user settings (NVS, espace "settings") : volume, voix, alertes, seuils, luminosite.
+ * Persistent user settings (NVS, space "settings") : volume, voice, alerts, thresholds, luminosite.
  * The changes are saved in different (2 s) by a dediee spot: never from the interface.
  */
 /* Public interface / Interface publique
@@ -26,11 +26,11 @@ typedef enum {
 
 typedef struct {
     uint8_t volume_level;    /* volume_level_t, recalculated after volume_pct */
-    uint8_t volume_pct;      /* volume general effectif 0..100 (enregistre en NVS) */
+    uint8_t volume_pct;      /* effective general volume 0.10 (records in NVS) */
     bool voice;              /* annonces vocales */
     bool alerts;             /* alertes sonores */
     bool ramp;               /* volume croissant si alerte critique non acquittee */
-    bool very_low_always;    /* alerte tres basse audible meme en MUTE */
+    bool very_low_always;    /* alert very low audible even in MUTE */
     uint16_t thr_very_low;   /* mg/dL */
     uint16_t thr_low;
     uint16_t thr_high;
@@ -39,16 +39,16 @@ typedef struct {
 } settings_t;
 
 /* Mode nuit : blob NVS The above adjustment blob remains unchanged.
- * La luminosite jour est settings_t.brightness. */
+ * Luminosis day is settings_t.brightness. */
 typedef struct {
     bool enabled;            /* mode nuit selon l'horaire */
     bool black;              /* old choice "black screen" : guard for format NVS, without effect (minimalist night screen) */
-    uint16_t start_min;      /* debut, en minutes depuis minuit (22:00 = 1320) */
+    uint16_t start_min;      /* in minutes since midnight (22:00 = 1320) */
     uint16_t end_min;        /* fin (07:00 = 420) */
     uint8_t brightness;      /* luminosite nuit 1..100 % */
 } night_settings_t;
 
-/* Commandes vocales locales (ESP-SR, micros de la carte) : blob NVS separe (cle "vcmd") */
+/* Local voice commands (ESP-SR, map microphones): blob NVS separated "vcmd") */
 typedef struct {
     bool enabled;            /* Listen to active microphones */
     bool wake_word;          /* "Bonjour ESP" requires before ordering */
@@ -65,7 +65,7 @@ void settings_vcmd_get(voice_cmd_settings_t *out);
 void settings_vcmd_set(const voice_cmd_settings_t *in);
 
 /* Langue de l'interface : cle NVS separated (one byte), the other blocks remain unchanged.
- * settings_lang_set() applique la langue immediatement et demande l'enregistrement. */
+ * settings_lang_set() apply the language immediately and request registration. */
 lang_t settings_lang_get(void);
 void settings_lang_set(lang_t lang);
 uint32_t settings_revision(void);

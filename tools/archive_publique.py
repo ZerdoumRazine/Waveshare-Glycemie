@@ -4,27 +4,27 @@
 # Design note: Never archive the personal working directory indiscriminately.
 # Exports only tracked Git files and rejects unsafe publication artefacts.
 #
-r"""Fabrique et controle l'archive publique du depot, a partir de ce que Git suit reellement.
+"""Fabrique et controle l'archive publique du depot, a partir de ce que Git suit reellement.
 
-Un .gitignore ne nettoie PAS une archive faite en copiant un dossier : journaux, identifiants ou
-firmware personnel s'y retrouvent. Cet outil part donc de `git archive HEAD`, puis :
-  - relit le ZIP, nom par nom, et refuse tout element interdit (majuscules comprises) ;
+A .gitignore does not clean PAS an archive made by copying a folder: logs, identifiers or
+personal firmware can be found there. This tool therefore starts from `git archive HEAD`, then:
+  - read it again ZIP, name by name, and refuses any prohibited element (including majuscules);
   - EXTRAIT l'archive et examine son CONTENU (identifiants reels, adresses de courriel, chemins
-    personnels) avec tools/controle_donnees_perso.py ;
-  - verifie que les fichiers obligatoires sont presents et que l'archive n'est pas vide ;
-  - verifie que l'archive correspond bien a l'etat termine du projet (rien de non commite) ;
-  - controle en plus les fichiers livres a cote (programme compile, application Windows) ;
-  - EFFACE l'archive si elle est refusee : une archive refusee ne doit pas rester parmi les
-    fichiers prets a partager.
+    personal) with tools/controle_donnees_perso.py ;
+  - verifies that mandatory files are present and that'archive n'is not empty;
+  - Verifies that l'archive correspond bien a l'state completes the project (nothing non-committe);
+  - Controls additional book files (compile program, Windows application);
+  - EFFACE the archive if it is refused: an archive refuses must not remain among the
+    files ready to share.
 
-Un controle qui n'a rien pu lire est un ECHEC, jamais une reussite.
+A control that could not read anything is a ECHECNever a success.
 
 Usage :
-    python tools\archive_publique.py
-    python tools\archive_publique.py --sortie D:\partage
-    python tools\archive_publique.py --livre tools\pc_app\dist\GlycemieConnexion.exe
-    python tools\archive_publique.py --accepter-modifications   (archive un etat non commite, a eviter)
-Code de sortie 0 seulement si tout est propre.
+    python tools\\archive_publique.py
+    python tools\\archive_publique.py --exit D:\\share
+    python tools\\archive_publique.py --livre tools\\pc_app\\dist\\GlycemieConnexion.exe
+    python tools\\archive_publique.py -- accept-modifications (archive a non-commit state, a avoid)
+Output code 0 only if everything is clean.
 """
 import argparse
 import hashlib
@@ -41,7 +41,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import controle_donnees_perso as cdp  # noqa: E402
 
 # Everything that should JAMAIS exit: IDs, health data, personal binary, caches.
-# The reasons apply SANS tenir compte de la casse (.BIN, .Pcm, PRIVATE/... sont vises aussi).
+# The reasons applied SANS consider the breakage (.BIN.Pcm, PRIVATE/... are also targeted).
 INTERDITS = [
     # private/ stays in the repository with its only .gitignore (the folder must exist): everything else is forbidden
     (r'(^|/)private/(?!\.gitignore$).+', 'identifiants prives'),
@@ -68,7 +68,7 @@ ATTENDUS = ['README.md', 'README_FR.md', 'LICENSE', 'CREDITS.md', 'CMakeLists.tx
             'tools/pc_app/construire_exe.ps1',
             'docs/TUTORIEL_VOIX_FR.md', 'docs/VOICE_TUTORIAL_EN.md',
             'docs/RETOUR_ARRIERE_FR.md', 'screenshots/01_accueil.png']
-MINIMUM_FICHIERS = 100   # un depot complet ; en dessous, l'archive est suspecte
+MINIMUM_FICHIERS = 100   # a complete deposit; below, the archive is suspicious
 
 
 def git(*args):
@@ -78,7 +78,7 @@ def git(*args):
 
 # Inspect the actual bytes, including nested archives, instead of trusting filenames.
 def controler_contenu(dossier, secrets):
-    """Examine le contenu reellement extrait de l'archive. Renvoie (trouvailles, fichiers lus)."""
+    """Examine the content extracted from the archive. Returns (street, read files)."""
     trouves, lus = [], 0
     for base, _, fichiers in os.walk(dossier):
         for nom in fichiers:

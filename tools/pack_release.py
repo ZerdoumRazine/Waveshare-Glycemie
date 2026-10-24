@@ -4,10 +4,10 @@
 # Design note: Release ZIP files must be traced to the tested source commit.
 # Packages exact firmware outputs with checksums and Windows installer.
 #
-"""Prépare une archive d'installation vérifiable à partir d'un build ESP-IDF validé.
+"""Prepare an archive d'installation vérifiable à partir d'a build ESP-IDF validated.
 
-Aucun compte utilisateur ni accès réseau. Ne prend jamais de fichiers sous private/.
-Les noms de binaires et offsets ciblent uniquement Waveshare ESP32-P4 rev1.3.
+No user account or network access. Never take files under private/.
+The binary and offset names only target Waveshare ESP32-P4 rev1.3.
 """
 from __future__ import annotations
 

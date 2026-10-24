@@ -2,7 +2,7 @@
  * Host tests use simulated dependencies, never personal readings.
  */
 /*
- * Controles du module d'identifiants (main/credentials.c), compile tel quel sur le PC.
+ * Controls of the ID module (main/credentials.c) compiles as is on the PC.
  *
  * What these tests guarantee, without material:
  *   - the user can enter, reread, modify and delete accesses without recompiling;
@@ -67,7 +67,7 @@ int main(void)
 
     section("Saisies refusees : rien n'est enregistre a moitie");
     CHECK_EQ_I(credentials_set_wifi(NULL, MDP_WIFI), ESP_ERR_INVALID_ARG, "nom de reseau absent");
-    remplir(buf, CRED_SSID_MAX, 'x'); /* CRED_SSID_MAX caracteres : un de trop */
+    remplir(buf, CRED_SSID_MAX, 'x'); /* CRED_SSID_MAX characters: one of too many */
     CHECK_EQ_I(credentials_set_wifi(buf, MDP_WIFI), ESP_ERR_INVALID_ARG, "nom de reseau trop long");
     remplir(buf, CRED_PASS_MAX, 'y');
     CHECK_EQ_I(credentials_set_wifi(SSID_TEST, buf), ESP_ERR_INVALID_ARG, "mot de passe Wi-Fi trop long");

@@ -15,29 +15,29 @@
 /* To call with lock LVGL (bsp_display_lock) */
 bool ui_main_create(void);
 
-/* Capture de l'ecran envoyee sur la console serie (outil de developpement) */
+/* Capture of the screen sent to the serial console (development tool) */
 void ui_snapshot_dump(void);
 
-/* Test d'affichage : vieillit artificiellement la derniere mesure (0 = desactive) */
+/* Display test: artificially ages last measurement (0 = desactive) */
 void ui_test_set_age_offset(int minutes);
 
-/* Commandes console (toute tache) : page 0..5, plage du graphique 3/6/12/24 h */
+/* Console commands (any stain): page 0.5, range of Chart 3/6/12/24 h */
 void ui_request_page(int page);
 void ui_request_chart_hours(int hours);
-/* Confirmation NOUVEAU CAPTEUR (0) / NOUVEAU CATHETER (1) sur la page CONSOMMABLES ; autre valeur : fermeture */
+/* Confirmation NOUVEAU CAPTEUR (0) / NOUVEAU CATHETER (1) on the page CONSOMMABLES ; other value: closure */
 void ui_request_consumable_dialog(int kind);
-/* Commande vocale confirmee (toute tache) : l'heure actuelle devient l'heure de depart, enregistree par la tache LVGL.
- * Retourne un numero de demande ; ui_consumable_new_result() : 0 en cours, 1 enregistre, -1 heure invalide. */
+/* Voice command confirmed (any stain): l'heure actuelle devient l'time of departure, recorded by the spot LVGL.
+ * Returns a request number; ui_consumable_new_result() : 0 in progress, 1 saves, -1 hour invalid. */
 uint32_t ui_request_consumable_new(int kind);
 int ui_consumable_new_result(uint32_t seq);
 void ui_request_alert_button(bool acknowledge);
 void ui_request_settings_scroll(int y);
-/* Changement de langue de l'interface (lang_t) : applique par la tache LVGLwhich reconstructs the pages.
+/* Language change of the interface (lang_t) : applies by the LVGLwhich patch rebuilds the pages.
  * Callable from a button callback or from the console; no effect if the value is off range. */
 void ui_request_lang(int lang);
 
-/* Diagnostic de la tache LVGL (toute tache) */
+/* Diagnosis of spot LVGL (all spots) */
 int64_t ui_heartbeat_age_ms(void);         /* anciennete du dernier rafraichissement periodique (1 s) */
-void ui_request_render_stress(int seconds, int mode); /* test d'endurance du rendu : 1 plein ecran, 2 petites zones */
+void ui_request_render_stress(int seconds, int mode); /* Performance endurance test: 1 full screen, 2 small areas */
 void ui_print_stats(void);
 void ui_graph_print_explore(void); /* etat de l'exploration tactile du graphique */

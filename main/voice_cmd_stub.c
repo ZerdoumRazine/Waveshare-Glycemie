@@ -4,18 +4,18 @@
  */
 
 /*
- * Commandes vocales ABSENTES de cette compilation (GLY_VOICE_CMD=OFF).
+ * Voice commands ABSENTES of this compilation (GLY_VOICE_CMD=OFF).
  *
- * Raison : la reconnaissance locale (ESP-SR MultiNet) exists only in English and Chinese. The sentences
+ * Reason: local recognition (ESP-SR MultiNet) exist only in English and Chinese. The awards
  * French were approached with English phones, which gave scores barely above the
  * "New sensor" recognized in an English sentence of the
- * television). Aucun modele espagnol, allemand, italien ou portugais n'existe : la promesse "six langues"
+ * television). No Spanish, German, Italian or Portuguese model exists: the promise "six langues"
  * could not be held properly without paid remote service. See docs/LIMITATIONS_FR.md.
  *
  * The ANNONCES PARLEES (microSD voice bank, six languages) and ALERTES SONORES ne sont pas concernees :
  * they continue to work. All actions are accessible to the touch.
  *
- * This file replaces voice_cmd.c : meme interface, aucune ecoute, aucun micro ouvert, aucun modele charge.
+ * This file replaced voice_cmd.c: same interface, no listen, no open microphone, no load model.
  */
 /*
  * Public-build stubs keep touch and audio features while disabling voice-command listening.

@@ -2,7 +2,7 @@
  * The declarations below are shared with other firmware modules.
  */
 /*
- * Trend Icon 2.5D drawing with primitives LVGL (lisible a distance, aucune image ni police requise).
+ * Trend Icon 2.5D drawing with primitives LVGL (readable at distance, no images or font required).
  */
 /* Public interface / Interface publique
  * Trend symbol drawing; an icon is not a medical prediction.

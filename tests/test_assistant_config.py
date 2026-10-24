@@ -6,13 +6,13 @@
 #
 """Controles de l'assistant de configuration par USB (tools/assistant_config.py).
 
-Deux proprietes comptent plus que les autres :
-  1. aucun mot de passe n'est affiche, ni ecrit dans un fichier ;
-  2. des acces qui fonctionnent ne sont JAMAIS remplaces par des acces invalides : les nouveaux
-     sont essayes, puis enregistres seulement apres reussite ET confirmation.
+Two owners count more than the others:
+  1. no password is displayed or written in a file;
+  2. accesses that work are not JAMAIS replacements with invalid accesses: new
+     are tried, then recorded only after success AND confirmation.
 
-Les essais utilisent un appareil simule (aucune liaison serie, aucun materiel) : ils ne prouvent rien
-sur le cable ni sur le firmware reel, seulement sur la logique de l'assistant.
+The tests use a simulated device (no serial link, no material): they prove nothing
+on the cable or on the firmware real, only on the logic of the assistant.
 
 Usage : python tests\\test_assistant_config.py
 """
@@ -44,9 +44,9 @@ def check(nom, ok, detail=''):
 
 
 class AppareilSimule(object):
-    """Console du firmware simulee, avec la distinction essai / enregistre.
+    """Console of the firmware simulates, with the distinction trial / save.
 
-    enregistre_* : ce que l'appareil garderait apres une coupure de courant.
+    record *: what the device would keep after a power outage.
     essai_*      : valeurs en cours d'essai, perdues si elles ne sont pas confirmees.
     """
 
@@ -165,7 +165,7 @@ class AppareilSimule(object):
 
 
 class Journal(object):
-    """Capture tout ce que l'assistant affiche, pour verifier qu'aucun secret n'y figure."""
+    """Capture all that l'assistant affiche, pour verifier qu'There is no secret."""
 
     def __enter__(self):
         self.texte = io.StringIO()
@@ -181,7 +181,7 @@ class Journal(object):
 
 
 def reponses(*valeurs):
-    """Remplace les questions posees a l'utilisateur par des reponses preparees."""
+    """Replaces the questions asked to the user with prepared answers."""
     suite = list(valeurs)
 
     def demande(texte, defaut=''):
@@ -190,7 +190,7 @@ def reponses(*valeurs):
 
 
 def mdp_fixes(*valeurs):
-    """Remplace getpass : meme refus du caractere | que la vraie saisie."""
+    """Replaces getpass: same refusal of character as the real seizure."""
     suite = list(valeurs)
 
     def saisie(texte):
@@ -208,7 +208,7 @@ ANCIENS = (((ANCIEN_SSID, ANCIEN_MDP)), (ANCIEN_USER, ANCIEN_MDP_DEX, 'ous'))
 # Feed deterministic network states to the serial assistant without hardware.
 def scenario(essais, mdp_wifi=MDP_WIFI, mdp_dex=MDP_DEX, ssid=SSID, user=USER, region='1',
              muet=False, confirmation='oui', deja=ANCIENS):
-    """Configuration complete sur un appareil simule -> (code, appareil, texte affiche)."""
+    """Full configuration on a device simulates -> (code, device, text displays)."""
     simule = AppareilSimule(essais, muet=muet, deja=deja)
     app = ac.Appareil(simule)
     with Journal() as j:
@@ -281,7 +281,7 @@ def main():
     code, simule, texte = scenario(etapes, muet=True)
     check('cable debranche en cours de route : anciens acces conserves', anciens_intacts(simule))
 
-    # --- 4. Choix de la region -----------------------------------------------------------------
+    # --- 4. Choice of region -----------------------------------------------------------------
     for choix, attendu in (('1', 'ous'), ('2', 'us'), ('3', 'jp'), ('', 'ous'), ('9', 'ous')):
         _, simule, _ = scenario([(ac.ETAT_REUSSI, 'ok')], region=choix)
         check('region "%s" -> %s' % (choix or 'reponse vide', attendu),
@@ -289,7 +289,7 @@ def main():
     check('les trois regions du firmware sont proposees',
           sorted(code for code, _ in ac.REGIONS.values()) == ['jp', 'ous', 'us'])
 
-    # --- 5. Echecs : chaque cause est expliquee en clair ---------------------------------------
+    # --- 5. Failures: Each cause is explained in plain language ----------------------------------------
     for cle, attendu in (('wifi', '2,4 GHz'), ('internet', 'Internet'), ('dexcom_refuse', 'refuse'),
                          ('dexcom_bloque', 'bloque'), ('dexcom_reseau', 'injoignable'),
                          ('dexcom_vide', 'incomplet'), ('memoire', 'Memoire'),

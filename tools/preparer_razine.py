@@ -4,21 +4,21 @@
 # Design note: Refuse to overwrite an existing repository or folder.
 # Exports a safe tracked-file snapshot without overwriting an existing repository.
 #
-r"""Prepare la copie publiable du projet (dossier Razine) a partir de ce que Git suit reellement.
+"""Prepare the published copy of the project (Razine folder) from what Git actually follows.
 
-Pourquoi cette methode : copier un dossier a la main laisse passer des journaux, des sauvegardes ou
-un firmware personnel. Ici, le contenu vient de `git archive HEAD` : seuls les fichiers enregistres
-dans le depot en font partie, et le dossier private\ n'en fait jamais partie.
+Why this method: copying a folder by hand leaves logs, backups or
+a personal firmware. Here, the content comes from `git archive HEAD` : only files saved
+in the deposit are part of it, and the private\\ folder is never part of it.
 
-La copie est ensuite verifiee : fichiers interdits, secrets connus, adresses de courriel,
-chemins personnels (tools/controle_donnees_perso.py). Ce controle reste heuristique.
-La destination doit etre un dossier INEXISTANT : le script refuse de remplacer une
-copie ou un depot Git deja presents. Aucun historique Git n'est modifie.
+The copy is then verified: prohibited files, known secrets, email addresses,
+personal paths (tools/controle_donnees_perso.py). This control remains heuristic.
+The destination must be a file INEXISTANT : the script refuses to replace a
+copy or deposit Git already present. No history Git is not changed.
 
 Usage :
-    python tools\preparer_razine.py
-    python tools\preparer_razine.py --dossier D:\partage\waveshare-glycemie
-    python tools\preparer_razine.py --accepter-modifications   (a eviter : etat non commite)
+    python tools\\preparer_razine.py
+    python tools\\preparer_razine.py --dossier D:\\partage\\waveshare-glycemie
+    python tools\\preparer_razine.py --accepter-modifications   (a eviter : etat non commite)
 """
 import argparse
 import os
@@ -41,7 +41,7 @@ def git(*args):
 
 
 def enlever_lecture_seule(fonction, chemin, _erreur):
-    """Les objets Git sont en lecture seule : on enleve l'attribut avant d'effacer."""
+    """Git objects are read only: you remove l'attribut avant d'Clear."""
     try:
         os.chmod(chemin, 0o700)
         fonction(chemin)
@@ -85,7 +85,7 @@ def main():
               'Choisissez un NOUVEAU dossier pour ne rien ecraser : %s' % cible)
         return 1
 
-    # --- 1. Contenu : exactement ce que Git suit, a l'etat enregistre --------------------------
+    # --- 1. Content: exactly what Git follows, has the state records ---------------------------
     temporaire = tempfile.mkdtemp(prefix='razine-')
     zip_temp = os.path.join(temporaire, 'depot.zip')
     fait = git('archive', '--format=zip', '-o', zip_temp, 'HEAD')
@@ -97,7 +97,7 @@ def main():
     with zipfile.ZipFile(zip_temp) as zf:
         zf.extractall(extrait)
 
-    # --- 2. Verification AVANT de remplacer la copie existante --------------------------------
+    # --- 2. Verification AVANT replace existing copy --------------------------------
     secrets = cdp.secrets_reels()
     problemes = []
     noms = []
@@ -129,7 +129,7 @@ def main():
         shutil.rmtree(temporaire, ignore_errors=True)
         return 1
 
-    # --- 3. Copie SANS remplacement de dossier existant ni modification d'historique --------
+    # --- 3. Copy SANS replacement of existing folder or change of history ---------
     shutil.copytree(extrait, cible)
     shutil.rmtree(temporaire, ignore_errors=True)
 

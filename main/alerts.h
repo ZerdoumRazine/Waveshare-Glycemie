@@ -3,7 +3,7 @@
  */
 /*
  * Alert Manager: very low / low / high / very high, lack of data,
- * rappels du capteur. Anti-repetition : acquittement, rappel differe (snooze), repetitions limitees,
+ * Sensor reminders. Anti-repetition: acquittal, different recall (snooze), limit repetitions,
  * volume croissant (RAMP) for critical alert. Glycemic alerts require recent action.
  */
 /* Public interface / Interface publique
@@ -30,14 +30,14 @@ typedef enum {
 
 typedef struct {
     alert_type_t type;  /* alerte a presenter (non acquittee, non reportee), ALERT_NONE sinon */
-    int value;          /* mg/dL, minutes without data, or sensor/catheter recall number */
+    int value;          /* mg/dL, minutes without data, gold sensor/catheter number */
     char title[48];
     char message[96];
-    uint32_t seq;       /* identifiant de la levee de cette alerte : nouvelle valeur a chaque nouvelle levee */
+    uint32_t seq;       /* Identifier of the wake of this alert: new value to each new lift */
     alert_type_t style; /* apparence (couleur) : type, ou type simule par l'alerte de test */
     alert_type_t ongoing; /* low / very low / high / very high or lack of current data,
-                             meme acquittee ou reportee (indicateur persistant), ALERT_NONE sinon */
-    bool ongoing_test;  /* condition simulee par l'alerte de test (aucune vraie condition en cours) */
+                             even acquitted or deferred (persistent indicator), ALERT_NONE if not */
+    bool ongoing_test;  /* condition simulated by the test alert (no real condition in progress) */
 } alert_view_t;
 
 esp_err_t alerts_start(void);
@@ -49,10 +49,10 @@ const char *alerts_title(alert_type_t type); /* "GLYCEMIE BASSE"... ("" for ALER
 /* Test (console): plays the sound and voice of the alert without changing the states */
 void alerts_test_sound(alert_type_t type, int value);
 
-/* Alerte de test affichee (OK / RAPPEL DANS 30 MIN) without touching Dexcom data or real alerts.
+/* Display test alert (OK / RAPPEL DANS 30 MIN) without touching Dexcom data or real alerts.
  * as = ALERT_TEST : general test alert; as = a true type: complete simulation of this type with the value
  * (sign, indicator, sound, voice), marks "(test)" in the message and indicator, never logged on the
- * microSD ; la condition simulee reste affichee par l'indicateur jusqu'a alerts_test_stop(). */
+ * microSD; the simulated condition remains displayed by l'indicateur jusqu'a alerts_test_stop(). */
 void alerts_test_start(alert_type_t as, int value);
 void alerts_test_stop(void);
 void alerts_print_status(void);

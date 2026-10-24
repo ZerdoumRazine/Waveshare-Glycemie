@@ -36,9 +36,9 @@ static const char *TAG = "glycemie";
 
 /* Battement de coeur surveille par app_main (tache bloquee = redemarrage) */
 static volatile int64_t s_heartbeat_us;
-/* Autorisation de la tentative unique (console "dexcom_auth") */
+/* Authorization of the single attempt (console) "dexcom_auth") */
 static volatile bool s_arm_request;
-/* Test de fiabilite : session invalide injectee a la prochaine lecture (console "dexcom_test_session") */
+/* Fiability test: invalid session injected at next reading (console "dexcom_test_session") */
 static volatile bool s_test_bad_session;
 static int64_t s_last_request_us;
 
@@ -61,7 +61,7 @@ static volatile bool s_demo_ended;
 /* Nouvelles mesures reelles (ecriture microSD) */
 static glucose_new_readings_cb_t s_new_readings_cb;
 
-/* Cache de l'historique 24 h, de la plus recente a la plus ancienne */
+/* Historical cover 24 hours, from the most recent to the oldest */
 static glucose_point_t *s_cache; /* PSRAM */
 static int s_cache_count;
 
@@ -116,7 +116,7 @@ static int32_t next_poll_delay_s(int64_t latest_wt_ms)
     if (wait_s >= GLY_MIN_REQUEST_INTERVAL_S) {
         return (int32_t)(wait_s > period_s ? period_s : wait_s);
     }
-    /* La mesure suivante est attendue mais pas encore publiee */
+    /* The following action is expected but not yet published */
     if (age_s < 7 * 60) {
         return 30;
     }
@@ -126,7 +126,7 @@ static int32_t next_poll_delay_s(int64_t latest_wt_ms)
     return 90;
 }
 
-/* Attend le Wi-Fi, puis l'heure (au plus 60 s) */
+/* Wait for Wi-Fi, then time (at most 60 seconds) */
 static void wait_network_ready(void)
 {
     int time_wait_s = 0;
@@ -196,7 +196,7 @@ static void stop_on_refusal(dexcom_client_t *client, dex_result_t r)
 /* Tentative UNIQUE authentication for never valid identifiers. True so successful. */
 static bool single_authentication_attempt(dexcom_client_t *client)
 {
-    probe_until_ok(client); /* aucun identifiant envoye */
+    probe_until_ok(client); /* no ID sent */
     wait_network_ready();
 
     if (dex_guard_set(DEX_GUARD_IN_PROGRESS, "tentative unique en cours") != ESP_OK) {
@@ -363,7 +363,7 @@ static void demo_task(void *arg)
             for (int k = 0; k < GLY_HISTORY_MAX; k++) {
                 const int64_t slot = newest_slot - k;
                 if (sc == DEMO_SPARSE && k >= 120) {
-                    break; /* 10 h de mesures sur 24 h : couverture insuffisante */
+                    break; /* 10 hours of 24-hour measurements: insufficient coverage */
                 }
                 if (sc == DEMO_GAP && (k == 1 || (k >= 30 && k < 42))) {
                     continue; /* 1-hour hole and previous missing measurement */
@@ -484,7 +484,7 @@ static void glucose_task(void *arg)
     int64_t next_backfill_us = 0;
 
     for (;;) {
-        /* Mode demo : aucune requete Dexcom, l'historique reel est purge a la sortie */
+        /* Demo mode: no Dexcom request, real history is purged at output */
         while (s_demo != DEMO_OFF) {
             wait_seconds(1);
         }
@@ -549,7 +549,7 @@ static void glucose_task(void *arg)
             stop_on_refusal(&client, r); /* ne revient pas */
         }
         if (s_demo != DEMO_OFF || s_demo_ended) {
-            continue; /* resultat ignore : le mode demo a ete active pendant la requete */
+            continue; /* result not known: demo mode was activated during request */
         }
 
         if (r == DEX_OK) {

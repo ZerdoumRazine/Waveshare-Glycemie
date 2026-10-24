@@ -4,9 +4,9 @@
 /*
  * Carte microSD (optionnelle) : historique CSV quotidien et journal d'evenements.
  *
- * - Montage APRES le demarrage du Wi-Fi heberge (le controleur SDMMC is shared with theESP32-C6).
+ * - Assembly APRES the start of the Wi-Fi heberge (the controller SDMMC is shared with theESP32-C6).
  * - Never automatic formatting: an unrecognized file system stops writing; only the command
- *   console "sd_format EFFACER" formate (FAT32, cluster 32 KB) a map to the unrecognized file system.
+ *   console "sd_format EFFACER" formatted (FAT32, cluster 32 KB) a map to the unrecognized file system.
  * - The main operation never depends on the card: removal or error -> demontage, etat
  *   "unavailable", new spatial attempts, then resumption of history without duplicate.
  * - Dossiers : /glycemie/history (AAAA-MM-JJ.csv), /glycemie/audio (voice : banque vocale WAV),
@@ -31,12 +31,12 @@ esp_err_t sd_storage_start(void);
 bool sd_storage_ready(void);
 
 /* Access to files from another spot (audio, console), never from the interface: protect against a
- * demontage simultane de la carte. ESP_ERR_NOT_FOUND : card unavailable or file missing. */
+ * simultaneous map montage. ESP_ERR_NOT_FOUND : card unavailable or file missing. */
 esp_err_t sd_storage_read_file(const char *path, uint8_t *buf, size_t max, size_t *len);
 /* Console (read only): displays a file of /glycemie/logs (journal AAAA-MM-JJ.log, consumables.csv) */
 void sd_storage_print_log(const char *name);
 /* Precise reading of a /glycemia file by the console (base64 + CRC-32), without modifying anything:
- * sert a sauvegarder la carte quand elle ne peut pas etre sortie de l'appareil. */
+ * serves to save the card when it cannot be removed from the device. */
 void sd_storage_dump_file(const char *rel);
 esp_err_t sd_storage_write_file(const char *path, const uint8_t *data, size_t len); /* .tmp puis renommage */
 /* Create a folder if it does not exist (voice bank of a language). ESP_OK s'il existe deja. */
@@ -50,7 +50,7 @@ void sd_storage_refresh_voice_files(void);
 
 /* Parcours de /glycemie/audio/voice (console), ou de son sous-dossier de langue si subdir est renseigne :
  * cb is called for each FICHIER (subfolders are not known); returns the number of files,
- * -1 si la carte est indisponible. free_mb recoit l'espace libre de la carte. */
+ * -1 if the card is unavailable. free_mb receives the free space of the map. */
 typedef void (*sd_voice_file_cb_t)(const char *name, long size, void *ctx);
 int sd_storage_list_voice(const char *subdir, sd_voice_file_cb_t cb, void *ctx, uint32_t *free_mb);
 

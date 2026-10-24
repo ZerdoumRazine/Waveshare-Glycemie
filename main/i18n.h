@@ -5,12 +5,12 @@
  * Langue de l'interface (6 langues europeennes).
  *
  * Only TEXTES AFFICHES are translated. Voice announcements remain in French:
- * la banque vocale de la microSD (voix Google Chirp 3 HD) n'existe qu'en francais, et
+ * the voice bank of the microSD (voice Google Chirp 3 HD) n'existe qu'in French, and
  * local voice recognition keeps its original sentences. The newspapers, the console
  * and files CSV also remain in French, so that the recordings
  * anciens et nouveaux restent comparables.
  *
- * The language is recorded in the NVS (espace "settings", cle "lang" : un seul octet,
+ * The language is recorded in the NVS (space "settings", key "lang" : one byte,
  * separate from the "v1" block of other adjustments which is therefore never invalid).
  */
 /* Public interface / Interface publique
@@ -37,7 +37,7 @@ typedef enum {
     S_NAV_HOME = 0, S_NAV_GRAPH, S_NAV_TODAY, S_NAV_CONSUM, S_NAV_SETTINGS,
     S_DEMO_MODE, S_TIME_NOT_SYNCED,
 
-    /* Fraicheur de la donnee */
+    /* Data Breaker */
     S_FRESH_OK, S_FRESH_LATE, S_FRESH_STALE, S_FRESH_WAITING,
 
     /* Tendances (ordre de trend_t, l'indice 0 est vide) */
@@ -93,14 +93,14 @@ typedef enum {
     S_ALERT_OK, S_ALERT_SNOOZE, S_ALERT_NO_DATA_MSG,
     S_REMIND_SENSOR_24H, S_REMIND_SENSOR_2H, S_REMIND_CATHETER_2H,
 
-    /* Ecran nuit */
+    /* Night screen */
     S_NIGHT_PREVIEW, S_LAST_READING,
 
     /* Hard, age and short dates (specifiers %d must remain in the same order) */
     S_DUR_DH, S_DUR_HM, S_DUR_H, S_DUR_MIN,
     S_AGE_UNKNOWN, S_AGE_LESS_1MIN, S_AGE_MIN, S_AGE_HM, S_DATE_DAY_HM,
 
-    /* Assistant de configuration (premiere mise en route) et section CONNEXION Adjustments */
+    /* Configuration Assistant (first start) and Section CONNEXION Adjustments */
     S_SETUP_WELCOME, S_SETUP_INTRO, S_SETUP_LANG, S_SETUP_START, S_SETUP_DEMO_TRY,
     S_SETUP_WIFI_TITLE, S_SETUP_WIFI_HELP, S_SETUP_SCANNING, S_SETUP_NO_NETWORK, S_SETUP_RESCAN,
     S_SETUP_HIDDEN, S_SETUP_NETWORK_NAME, S_SETUP_WIFI_PASS, S_SETUP_SHOW,

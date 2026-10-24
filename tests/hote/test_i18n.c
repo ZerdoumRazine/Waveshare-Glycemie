@@ -2,7 +2,7 @@
  * Host tests use simulated dependencies, never personal readings.
  */
 /*
- * Tests de la table de traduction (main/i18n.c compile tel quel).
+ * Translation table tests (main/i18n.c compile as is).
  *
  * Real danger is not a spelling error: it is an absent format specifier or
  * different from one language to another. "Day %d / %d" translated to "Day %d" would read an argument
@@ -27,7 +27,7 @@ static void specs(const char *s, char *out, size_t size)
         }
         p++;
         if (*p == '%' || *p == '\0') {
-            continue; /* "%%" : un pourcentage litteral, pas un argument */
+            continue; /* "%%" : a literary percentage, not an argument */
         }
         while (*p != '\0' && strchr("0123456789.+- #'", *p) != NULL) {
             p++;

@@ -217,7 +217,7 @@ esp_err_t nvs_set_blob(nvs_handle_t h, const char *key, const void *value, size_
     return ESP_OK;
 }
 
-/* Contenu brut tel qu'il serait ecrit en flash : sert a verifier qu'aucun mot de passe n'y est en clair. */
+/* Gross content as'il serait ecrit en flash : sert a verifier qu'There is no clear password. */
 const void *fake_nvs_blob(const char *ns, const char *key, size_t *len)
 {
     for (int i = 0; i < NVS_MAX_ENTRIES; i++) {

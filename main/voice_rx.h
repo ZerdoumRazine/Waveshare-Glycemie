@@ -2,7 +2,7 @@
  * Shared declarations for the implementation.
  */
 /*
- * Reception de la banque vocale par le cable USB-serie de la console (outil temporaire, PC :
+ * Reception of voice bank by cable USB- console series (temporary tool, PC:
  * tools/voice/sd_voice_upload.py) : copy in /glycemie/audio/voice/ without removing the microSD or using the
  * reseau. Integrite : CRC32 of each file received in memory, then reread on the card after writing.
  *
@@ -13,11 +13,11 @@
  *                                     -> VRX OK <nom> <taille> <crc32> | VRX ERR <raison>
  *   vrx_dir <code> [read] language folder of the following commands (/glycemie/audio/voice/<code>) :
  *                                     created as needed, except in "read" mode or it must exist (no writing);
- *                                     "vrx_dir -" revient a la racine (banque francaise) -> VRX DIR ...
+ *                                     "vrx_dir -" returns to the root (French bank) -> VRX DIR ...
  *   vrx_list [crc]                 -> VRX FILE <nom> <taille> [crc32] ... puis
- *                                     VRX LIST folder= files= bytes= libre_mo= ; le dossier est celui choisi
+ *                                     VRX LIST folder= files= bytes= libre_mo= the folder is the one chosen
  *                                     par vrx_dir : verification en LECTURE SEULE de n'importe quelle langue
- *   vrx_inject <taille> <crc32>    (test K19) PCM 16 bits mono 16 kHz recu comme vrx_put then add to the signal
+ *   vrx_inject <size> <crc32> (test K19) PCM 16 bits mono 16 kHz received as vrx_put then add to the signal
  *                                     Voice listening microphones, without writing anything on the map -> VRX OK inject ...
  *   vrx_end                        -> VRX END, back to 115200 (automatic after 30 s without order)
  */

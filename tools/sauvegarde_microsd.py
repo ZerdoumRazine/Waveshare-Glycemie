@@ -4,22 +4,22 @@
 # Design note: A backup should be checked, not just copied.
 # Makes a verified file copy from removable media without writing to the card.
 #
-r"""Copier et VERIFIER le contenu de la microSD, sans jamais la modifier.
+"""Copy and VERIFIER the content of the microSD, without ever changing it.
 
-La carte n'est que LUE : aucun fichier n'y est ecrit, deplace ou efface, et elle n'est jamais
-formatee. Si Windows propose de la reparer ou de la formater, refusez.
+Map n'est que LUE : aucun fichier n'it is written, replaced or erased, and it is never
+formatee. If Windows proposes to repair or format it, refuse.
 
 Deroulement :
-  1. chaque fichier est lu, son empreinte SHA-256 calculee, puis copie dans le dossier de sauvegarde ;
-  2. ensuite, TOUT est relu des deux cotes et compare (carte et copie) : c'est la verification ;
-  3. un manifeste (manifeste.json) et un fichier d'empreintes (SHA256SUMS.txt) sont enregistres.
+  1. each file is read, its footprint SHA-256 calculates and then copies in the backup folder;
+  2. Then, TOUT is read from both sides and compares (map and copy): this is the verification;
+  3. a manifest (manifest.json) and a fingerprint file (SHA256SUMS.txt) are recorded.
 
-La sauvegarde va dans private\sauvegardes\ : un dossier prive, jamais publie.
+The backup goes into private\\sauvegardes\\: a private folder, never published.
 
 Usage :
-    python tools\sauvegarde_microsd.py --lister          montre les lecteurs amovibles
-    python tools\sauvegarde_microsd.py --lecteur E:      copie et verifie
-    python tools\sauvegarde_microsd.py --lecteur E: --verifier-seulement   compare a une copie existante
+    python tools\\sauvegarde_microsd.py --lister shows removable drives
+    python tools\\sauvegarde_microsd.py --reader E: copy and verify
+    python tools\\sauvegarde_microsd.py --reader E: --check-only compare to an existing copy
 """
 import argparse
 import datetime
@@ -72,7 +72,7 @@ def empreinte(chemin):
 
 # Walk files read-only and preserve their relative names.
 def parcourir(racine):
-    """[(chemin relatif, taille)] de tous les fichiers, en lecture seule."""
+    """[(relative path, size)] of all files, read-only."""
     fichiers = []
     for base, dossiers, noms in os.walk(racine):
         dossiers[:] = [d for d in dossiers if d.upper() not in ('SYSTEM VOLUME INFORMATION',
@@ -161,7 +161,7 @@ def main():
             destination = os.path.join(cible, rel)
             os.makedirs(os.path.dirname(destination), exist_ok=True)
             try:
-                shutil.copyfile(source, destination)   # lecture de la carte, ecriture sur le PC
+                shutil.copyfile(source, destination)   # reading the map, writing on the PC
             except OSError as err:
                 print('   ILLISIBLE : %s (%s)' % (rel, err))
                 continue

@@ -4,12 +4,12 @@
 # Design note: Logs may contain health data; keep them out of the public repository.
 # Captures serial diagnostics while redacting known credentials and personal details.
 #
-"""Capture du journal serie de l'ESP32-P4 avec masquage des secrets.
+"""Capture of the serial newspaperESP32P4 with secret masking.
 
-Aucune ecriture en flash : ouverture du port, reset optionnel par RTS (comme esptool hard_reset),
+No flash writing: port opening, optional reset by RTS (as esptool hard_reset),
 lecture, commandes console optionnelles ("info", "snap").
-Les valeurs de private/device_secrets.h et tout UUID (session, compte) sont masques
-avant affichage et avant ecriture du journal.
+The values of private/device_secrets.h and all UUID (session, account) are masks
+before displaying and writing the journal.
 """
 import argparse
 import base64

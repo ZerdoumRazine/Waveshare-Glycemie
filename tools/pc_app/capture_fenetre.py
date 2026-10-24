@@ -4,13 +4,13 @@
 # Design note: Show fictitious examples instead of personal credentials or glucose history.
 # Captures the Windows configuration window for screenshots without changing device data.
 #
-r"""Capture la fenetre de l'application Windows, pour les tutoriels (jamais le bureau autour).
+"""Capture the Windows application window, for tutorials (never the desktop around).
 
-Lance l'application, attend sa fenetre, photographie EXACTEMENT son rectangle, puis la ferme.
-Les ecrans a affichage agrandi (4K) sont pris en compte : les coordonnees sont lues en pixels reels.
+Launch the app, wait its window, photograph EXACTEMENT Her rectangle, then shut up.
+The expanded display screens (4K) are taken into account: the coordinates are read in real pixels.
 
 Usage :
-    python tools\pc_app\capture_fenetre.py dist\GlycemieConnexion.exe ..\..\screenshots\pc_app\01.png
+    python tools\\pc_app\\capture_fenetre.py dist\\GlycemieConnexion.exe ..\\..\\screenshots\\pc_app\\01.png
 """
 import ctypes
 import os
@@ -31,7 +31,7 @@ user32 = ctypes.windll.user32
 
 # Use the real window bounds rather than an arbitrary crop.
 def cadre_visible(hwnd):
-    """Rectangle REELLEMENT visible de la fenetre : sans l'ombre portee, donc sans bout de bureau."""
+    """Rectangle REELLEMENT visible from the window: without the shadow door, therefore without a piece of office."""
     rect = wintypes.RECT()
     try:
         # DWMWA_EXTENDED_FRAME_BOUNDS = 9
@@ -46,7 +46,7 @@ def cadre_visible(hwnd):
 
 
 def fenetres_du_processus(pids):
-    """[(handle, titre)] des fenetres visibles appartenant a l'un de ces processus."""
+    """[(handle, title)] visible windows belonging to one of these processes."""
     trouvees = []
     PROTO = ctypes.WINFUNCTYPE(ctypes.c_bool, wintypes.HWND, wintypes.LPARAM)
 
@@ -67,7 +67,7 @@ def fenetres_du_processus(pids):
 
 # Locate the application process before selecting a visible window.
 def pids_du_nom(nom):
-    """PID de tous les processus portant ce nom (PyInstaller en lance deux : parent et enfant)."""
+    """PID all processes bearing this name (PyInstaller launches two: parent and child)."""
     sortie = subprocess.run(['tasklist', '/FI', 'IMAGENAME eq %s' % nom, '/FO', 'CSV', '/NH'],
                             capture_output=True, text=True).stdout
     pids = set()
@@ -92,7 +92,7 @@ def main():
         user32.SetProcessDPIAware()
 
     if exe.lower().endswith(('.py', '.pyw')):
-        nom = os.path.basename(sys.executable)   # fenetre portee par python.exe
+        nom = os.path.basename(sys.executable)   # window worn by python. exe
         commande = [sys.executable, exe]
     else:
         nom = os.path.basename(exe)

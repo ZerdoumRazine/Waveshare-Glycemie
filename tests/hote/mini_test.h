@@ -1,7 +1,7 @@
 /* Small assertion helpers for host-side regression tests.
  * Test and configuration interface only; no live patient data is included.
  */
-/* Mini cadre d'assertions : aucune dependance, code de sortie 1 si un controle echoue. */
+/* Mini statement frame: no dependency, output code 1 if a check fails. */
 /* Minimal assertion helpers shared by host-compiled C test suites.
  */
 #pragma once

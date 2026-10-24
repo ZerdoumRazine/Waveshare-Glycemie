@@ -2,7 +2,7 @@
  * The declarations below are shared with other firmware modules.
  */
 /*
- * Client Dexcom Share natif ESP-IDF (esp_http_client + TLS verifie par le bundle de certificats).
+ * Dexcom Client Share native ESP-IDF (esp_http_client + TLS verifies by the certificate bundle).
  *
  * Protocol after pydexcom (MIT, gagebenne/pydexcom, commit 3447aa08) :
  *   1. POST General/AuthenticatePublisherAccount  {accountName, password, applicationId} -> accountId
@@ -10,9 +10,9 @@
  *   3. POST Publisher/ReadPublisherLatestGlucoseValues?sessionId=..&minutes=..&maxCount=..  corps {}
  * Europe = region "ous" : https://shareous1.dexcom.com/ShareWebServices/Services/
  * Identifiant d'application US/OUS : d89443d2-327c-4a6f-89e5-496bbb0317db
- * (pydexcom const.py : DEXCOM_APPLICATION_ID_OUS = DEXCOM_APPLICATION_ID_US ; l'ID d8665ade... est celui du Japon).
+ * (pydexcom const.py: DEXCOM_APPLICATION_ID_OUS = DEXCOM_APPLICATION_ID_US ; the ID d8665ade... is that of Japan).
  *
- * API non officielle : ce module isole entierement le service distant.
+ * API unofficial: this module completely isolates the remote service.
  */
 /* Public interface / Interface publique
  * Dexcom Share HTTPS client types, timestamps and result codes.
@@ -25,7 +25,7 @@
 typedef enum {
     DEX_OK = 0,
     DEX_ERR_CONFIG,        /* identifiants absents */
-    DEX_ERR_NETWORK,       /* DNS, TCP, TLS, delai depasse */
+    DEX_ERR_NETWORK,       /* DNS, TCP, TLSTime to go */
     DEX_ERR_SERVER,        /* HTTP inattendu, JSON invalide, code inconnu */
     DEX_ERR_SESSION,       /* SessionIdNotFound / SessionNotValid */
     DEX_ERR_AUTH,          /* identifiant ou mot de passe refuse : ne pas reessayer */
@@ -41,10 +41,10 @@ typedef enum {
     DEX_STEP_READ = 3,         /* Publisher/ReadPublisherLatestGlucoseValues */
 } dex_step_t;
 
-/* Diagnostic de la derniere requete en echec (aucune donnee sensible) */
+/* Diagnosis of last failed request (no sensitive data) */
 typedef struct {
     dex_step_t step;
-    int http_status;       /* 0 si aucune reponse HTTP */
+    int http_status;       /* 0 if no answer HTTP */
     bool request_sent;     /* the request (and therefore the identifiers) may have left */
     char esp_error[40];    /* erreur ESP-IDF reseau/TLS */
     char code[64];         /* champ Code de Dexcom */
@@ -66,7 +66,7 @@ bool dexcom_client_configured(const dexcom_client_t *client);
 bool dexcom_has_session(const dexcom_client_t *client);
 void dexcom_invalidate_session(dexcom_client_t *client);
 
-/* Test DNS + TLS du serveur Dexcom SANS identifiants (aucune authentification) */
+/* Test DNS + TLS Dexcom server SANS identifiers (no authentication) */
 dex_result_t dexcom_probe_tls(dexcom_client_t *client, int *http_status);
 
 /* 2 step connection (Step 1 is skipped if the account ID is already known) */

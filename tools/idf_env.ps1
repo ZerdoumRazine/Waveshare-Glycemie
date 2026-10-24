@@ -11,10 +11,10 @@
 # environment variables Windows nor in the PATH permanent.
 #
 # Deux modes :
-#  1. ESP-IDF installe DANS le projet (tools\esp-idf-v5.5.5 + tools\espressif) : detecte tout seul.
+#  1. ESP-IDF install DANS the project (tools\esp-idf-v5.5.5 + tools\espressive): detects on its own.
 #  2. ESP-IDF installe ailleurs : definir IDF_PATH before calling this script, for example
 #         $env:IDF_PATH = 'C:\Espressif\frameworks\esp-idf-v5.5.5'
-#     ou utiliser directement le raccourci "ESP-IDF 5.5 PowerShell" fourni par l'installateur.
+#     or use the shortcut directly "ESP-IDF 5.5 PowerShell" supplied by the installer.
 
 $ProjectRoot = Split-Path -Parent $PSScriptRoot
 

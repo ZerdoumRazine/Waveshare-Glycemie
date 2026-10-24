@@ -4,11 +4,11 @@
 # Design note: Catch unintentional binaries and secrets before a public release.
 # Check tracked paths, third-party notices and public-source invariants.
 #
-r"""Controles du depot avant publication : coherence du projet et absence de donnees privees.
+"""Depot controls before publication: project consistency and lack of private data.
 
-Ne compile rien et n'accede pas a la carte. A lancer depuis la racine du projet :
-    python tests\test_depot.py
-Code de sortie 0 seulement si tous les controles passent.
+Don't compile anything and don't access the card. To be launched from the root of the project:
+    python tests\\test_depot.py
+Output code 0 only if all controls pass.
 """
 import io
 import os
@@ -32,7 +32,7 @@ def check(nom, ok, detail=''):
 
 # Use the tracked Git file list, not arbitrary temporary build output.
 def fichiers_versionnes():
-    """Ce que Git publierait reellement ; a defaut (pas de depot Git), tout l'arbre sauf les exclusions."""
+    """What Git would actually publish; a default (no deposit Git), all the tree except exclusions."""
     try:
         sortie = subprocess.run(['git', '-C', ROOT, 'ls-files', '-z'], capture_output=True, timeout=60)
         suivis = [n for n in sortie.stdout.decode('utf-8').split('\0') if n]
@@ -119,7 +119,7 @@ def main():
         lues.append((ch[0], ch[3], ch[4]))
     check('partitions.csv : disposition d\'origine + partition model', lues == attendu, str(lues))
 
-    # 5. Profil de revision ESP32-P4 rev1.3 (obligatoire sur cette carte)
+    # 5. Review profile ESP32-P4 rev1.3 (required on this card)
     profil = textes.get('config/esp32p4_rev1_3.defaults', '')
     check('profil pre-v3 : CONFIG_ESP32P4_SELECTS_REV_LESS_V3=y', 'CONFIG_ESP32P4_SELECTS_REV_LESS_V3=y' in profil)
     check('profil pre-v3 : CONFIG_ESP32P4_REV_MIN_100=y', 'CONFIG_ESP32P4_REV_MIN_100=y' in profil)
@@ -129,7 +129,7 @@ def main():
     check('garde-fou de revision dans main/CMakeLists.txt',
           'CONFIG_ESP32P4_SELECTS_REV_LESS_V3' in textes.get('main/CMakeLists.txt', ''))
 
-    # 6. Sources : tout ce qui est compile existe, tout ce qui existe est compile
+    # 6. Sources: All that is compiled exists, all that exists is compiled
     cm = textes.get('main/CMakeLists.txt', '')
     bloc = cm.split('SRCS', 1)[1].split('INCLUDE_DIRS', 1)[0] if 'SRCS' in cm else ''
     # Sources cited in SRCS, plus those chosen by a variable (e.g. GLY_VOICE_CMD_SRC,
@@ -155,7 +155,7 @@ def main():
     check('l\'ancienne voix Windows reste facultative dans la compilation',
           'GLY_VOICE_OLD_PCM' in cm and 'if(EXISTS' in cm)
 
-    # 7. Interface : 5 pages, la page STATS a ete retiree volontairement
+    # 7. Interface: 5 pages, page STATS a was voluntarily withdrawn
     pages = textes.get('main/ui_pages.h', '')
     noms = re.findall(r'UI_PAGE_([A-Z]+)', pages)
     check('5 pages declarees (ACCUEIL, GRAPHIQUE, AUJOURD\'HUI, CONSOMMABLES, REGLAGES)',
@@ -178,7 +178,7 @@ def main():
     check('assistant tactile : erreurs des identifiants controlees',
           's_saisie_refusee' in ui_src and 'if (err != ESP_OK)' in ui_src)
 
-    # 8. Versions de la pile logicielle historiquement validees
+    # 8. Historically valid software stack versions
     comp = textes.get('main/idf_component.yml', '')
     for nom, motif in (('ESP-IDF >= 5.5.5', r'version:\s*">=5\.5\.5"'),
                        ('BSP Waveshare 3.0.1', r'version:\s*"==3\.0\.1"'),
@@ -196,7 +196,7 @@ def main():
     binaires = sorted(rel for rel, _ in tous if os.path.splitext(rel)[1].lower() in ('.bin', '.elf', '.obj', '.a'))
     check('aucun binaire de firmware dans le depot', not binaires, ', '.join(binaires))
 
-    # 10. Captures d'ecran : vraies captures de la carte (1024 x 600)
+    # 10. Screenshots: real map catches (1024 x 600)
     dossier = os.path.join(ROOT, 'screenshots')
     pngs = sorted(n for n in os.listdir(dossier) if n.endswith('.png')) if os.path.isdir(dossier) else []
     check('au moins une capture par page', len(pngs) >= 5, ', '.join(pngs))

@@ -24,7 +24,7 @@ static const char *TAG = "capteur";
 #define KEY_OLD_REMINDERS "remind"  /* former mask (48 h, 24 h, 12 h, grace, end of grace - 2 h): read, never written */
 
 static SemaphoreHandle_t s_mutex;
-static int64_t s_start_s;       /* 0 = aucun capteur */
+static int64_t s_start_s;       /* 0 = no sensor */
 static uint8_t s_done_mask;
 static volatile uint32_t s_revision;
 
@@ -64,7 +64,7 @@ static esp_err_t persist(void)
     return err;
 }
 
-/* Rappels deja depasses a l'enregistrement : marques comme faits (pas de rafale de rappels perimes) */
+/* Reminders already passed the registration: marks as facts (no burst of reminders perimes) */
 /* Avoid generating a burst of expired reminders after a clock adjustment. */
 static void mark_past_reminders(int64_t now_s)
 {
@@ -85,8 +85,8 @@ esp_err_t sensor_session_init(void)
             s_start_s = 0;
         }
         if (nvs_get_u8(h, KEY_REMINDERS, &s_done_mask) != ESP_OK) {
-            /* masque absent (versions precedentes) : 24 h deja signale si l'ancien 24 h ou un rappel plus tardif l'a
-             * ete, 2 h si l'ancienne echeance l'a ete ; aucune ecriture ici, l'heure de pose reste intacte */
+            /* mask absent (previous versions): 24 hours already indicates if l'ancien 24 h ou un rappel plus tardif l'a
+             * 2 h if l'ancienne echeance l'a was; no writing here, the time of installation remains intact */
             uint8_t old = 0;
             if (nvs_get_u8(h, KEY_OLD_REMINDERS, &old) != ESP_OK) {
                 old = 0;
@@ -111,7 +111,7 @@ void sensor_session_get(int64_t now_s, sensor_status_t *out)
     }
     out->known = true;
     out->start_s = start;
-    out->due_s = start + SENSOR_SESSION_S; /* 10 jours exactement : la grace ne prolonge pas le compteur */
+    out->due_s = start + SENSOR_SESSION_S; /* 10 days exactly: grace does not extend the meter */
     const int64_t elapsed = now_s - start;
     out->day = elapsed < 0 ? 1 : (int)(elapsed / (24 * 3600)) + 1;
     if (out->day > 10) {
@@ -189,7 +189,7 @@ void sensor_session_mark_reminder_done(int reminder)
         return;
     }
     xSemaphoreTake(s_mutex, portMAX_DELAY);
-    /* older reminders are also considered as reports; NVS ecrite seulement si le masque change */
+    /* older memories are also considered as reports; NVS writes only if the mask changes */
     uint8_t mask = s_done_mask;
     for (int i = 0; i <= reminder; i++) {
         mask |= (uint8_t)(1u << i);

@@ -4,32 +4,32 @@
 # Design note: Only documented public resources should enter a release.
 # Builds the deliverable folders from clean sources, not from a personal device backup.
 #
-r"""Assemble le dossier a remettre : sources, application Windows, installation, microSD, tutoriels.
+"""Assemble the folder to submit: sources, Windows application, installation, microSD, tutorials.
 
 Organisation produite :
 
     paquet_a_remettre/
         LISEZMOI.txt              par ou commencer (francais, puis anglais)
-        code_source/              export propre du depot public (sans historique)
+        code_source/ own export of public deposit (without history)
         application_windows/      GlycemieConnexion.exe + sa notice
         installation_ecran/       programme public + installer.ps1 + procedure exacte
-        microSD/                  contenu a copier tel quel sur la carte
-            glycemie/audio/voice/ francais a la racine, en/ es/ de/ it/ pt/ pour le reste
+        microSD/ content to copy as is on the map
+            glycemie/audio/voice/ French at the root, in/ es/ de/ it/ pt/ for the rest
         tutoriels/                guides et captures
-        telechargements/          les memes elements en ZIP, prets a distribuer
-        notices/                  manifestes, provenance et empreintes des banques vocales
-        SHA256SUMS.txt            empreinte de chaque fichier du paquet
+        the same elements in ZIP, ready to distribute
+        notices/ manifests, source and fingerprints of voice banks
+        SHA256SUMS.txt prints each file in the package
 
-Ce dossier est destine a etre donne ou publie. Il ne contient JAMAIS : le dossier private\,
-un programme compile depuis le dossier personnel, un journal local, une sauvegarde d'appareil,
-ni le contenu de la microSD personnelle (les sons viennent des paquets publics de dist_voix\).
+This file is intended to be given or published. It contains JAMAIS : the private\\ folder,
+a program compiles from the personal folder, a local log, a device backup,
+or the content of personal microSD (the sounds come from public packages of dist_voix\\).
 
-Chaque fichier est verifie (tools/controle_donnees_perso.py). Si quelque chose de personnel est
-trouve, le paquet est EFFACE : un paquet refuse ne doit pas rester parmi les fichiers a remettre.
+Each file is checked (tools/controle_donnees_perso.py). If something personal is
+find, the package is EFFACE : a package refuses must not remain among the files to be delivered.
 
 Usage :
-    python tools\preparer_paquet.py
-    python tools\preparer_paquet.py --sans-zip      (plus rapide, sans les archives)
+    python tools\\preparer_paquet.py
+    python tools\\preparer_paquet.py -- without-zip (faster, without archives)
 """
 import argparse
 import hashlib
@@ -54,7 +54,7 @@ HORS_CARTE = ('manifest.csv', 'SHA256SUMS.txt', 'PROVENANCE.md', 'LISEZMOI_READM
 
 # Fingerprint the exact sources so a binary can be traced back to its build.
 def empreinte_sources(racine):
-    """Empreinte du CONTENU de tout ce qui entre dans le firmware : main, components, config, CMake."""
+    """Print of CONTENU everything that comes into the firmware: hand, components, config, CMake."""
     h = hashlib.sha256()
     elements = []
     for dossier in ('main', 'components', 'config'):
@@ -103,11 +103,11 @@ def zipper(dossier, archive, base=''):
 
 # Preserve the one French root directory and five language subfolders expected by firmware.
 def construire_microsd(cible, notices):
-    r"""Extrait les six banques publiques aux emplacements attendus par le firmware.
+    """Extract the six public banks at the locations expected by the firmware.
 
-    main/voice.c lit :   /sdcard/glycemie/audio/voice/<fichier>.wav        (francais)
-                         /sdcard/glycemie/audio/voice/<langue>/<fichier>.wav
-    Les paquets de dist_voix\ sont deja dans cette forme : rien n'est deplace ni renomme.
+    main/voice.c bed: /sdcard/glycemie/audio/voice/<file>.wav (english)
+                         /sdcard/glycemie/audio/voice/<language>/<file>.wav
+    Packages of dist_voix\\ are already in this form: nothing is replaced or renamed.
     """
     compte = {}
     for nom in sorted(os.listdir(BANQUES)):
@@ -160,7 +160,7 @@ def main():
         return 1
 
     # An old compilation must never be taken for the last version.
-    # On compare le CONTENU firmware sources (not their date: regenerate public copy
+    # We compare the CONTENU firmware sources (not their date: regenerate public copy
     # makes them all "recent" without changing anything) to the fingerprint recorded at the compilation.
     attendue = os.path.join(LIVRAISON, 'sources.sha256')
     actuelle = empreinte_sources(SOURCES)
@@ -302,7 +302,7 @@ def main():
                 lignes.append('%s  %s' % (hashlib.sha256(f.read()).hexdigest(), nom))
         ecrire(os.path.join(archives, 'SHA256SUMS.txt'), '\n'.join(lignes) + '\n')
 
-    # --- 8. Empreintes de tout le paquet --------------------------------------------------------
+    # --- 8. Prints of the whole package --------------------------------------------------------
     lignes, total, nb = [], 0, 0
     for base, _, fichiers in os.walk(cible):
         for nom in sorted(fichiers):

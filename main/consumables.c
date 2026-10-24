@@ -5,7 +5,7 @@
 
 /*
  * Maintains infusion-set dates, configurable intervals and reminders in persistent storage.
- * Keeps the dates and recalls of the catheter in persistent memory.
+ * Keeps the dates and recalls of the catheter in persist memory.
  */
 #include "consumables.h"
 
@@ -38,7 +38,7 @@ static const char *TAG = "consommables";
 #define CSV_HEADER        "timestamp,type,event\n"
 
 static SemaphoreHandle_t s_mutex;
-static int64_t s_cath_start_s; /* 0 = aucun changement enregistre */
+static int64_t s_cath_start_s; /* 0 = no change recorded */
 static uint8_t s_cath_done;
 static uint8_t s_cath_hours = CATHETER_DEFAULT_H;
 static volatile uint32_t s_revision;
@@ -61,7 +61,7 @@ static int64_t catheter_reminder_time(int reminder, int64_t start_s, int hours)
 }
 
 /* Verrou pris */
-/* Persist a confirmed catheter change so an ordinary reboot preserves the date. */
+/* Persist a confirmed catheter change so an regular reboot preserves the date. */
 static esp_err_t persist_catheter(void)
 {
     s_revision++;
@@ -103,7 +103,7 @@ static esp_err_t persist_logged(consumable_t c)
     return err;
 }
 
-/* Rappels deja depasses a l'enregistrement : marques comme faits (pas de rafale de rappels perimes) */
+/* Reminders already passed the registration: marks as facts (no burst of reminders perimes) */
 /* Skip overdue historical reminders rather than replaying them after every restart. */
 static void mark_past_catheter_reminders(int64_t now_s)
 {
@@ -127,7 +127,7 @@ esp_err_t consumables_init(void)
             s_cath_start_s = 0;
         }
         if (nvs_get_u8(h, KEY_REMINDERS, &s_cath_done) != ESP_OK) {
-            /* masque absent (versions precedentes) : rappel 2 h deja signale si l'ancien 2 h ou l'echeance l'a ete */
+            /* mask absent (previous versions): reminder 2 hours already indicates if l'ancien 2 h ou l'ture */
             uint8_t old = 0;
             if (nvs_get_u8(h, KEY_OLD_REMINDERS, &old) != ESP_OK) {
                 old = 0;
@@ -140,8 +140,8 @@ esp_err_t consumables_init(void)
         nvs_close(h);
     }
 
-    /* Marqueurs de l'historique : absents au premier demarrage de cette version -> la date deja enregistree est
-     * consideree comme journalisee (aucune ligne CSV without actual confirmation) */
+    /* History markers: absent at the first start of this version -> the date already saved is
+     * considered as a newspaper (no line CSV without actual confirmation) */
     sensor_status_t sensor;
     sensor_session_get((int64_t)time(NULL), &sensor);
     const int64_t current[CONSUMABLE_COUNT] = {sensor.known ? sensor.start_s : 0, s_cath_start_s};
@@ -279,7 +279,7 @@ void catheter_mark_reminder_done(int reminder)
         return;
     }
     xSemaphoreTake(s_mutex, portMAX_DELAY);
-    /* older reminders are also considered as reports; NVS ecrite seulement si le masque change */
+    /* older memories are also considered as reports; NVS writes only if the mask changes */
     uint8_t mask = s_cath_done;
     for (int i = 0; i <= reminder; i++) {
         mask |= (uint8_t)(1u << i);

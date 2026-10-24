@@ -5,8 +5,8 @@
 cmake_minimum_required(VERSION 3.16)
 
 # Profil de revision ESP32-P4: the map is a rev1.3 (pre-v3).
-# Le profil officiel Waveshare est ajoute EN DERNIER to take precedence over project failures.
-# main/CMakeLists.txt refuse en plus toute configuration resolue rev3.x.
+# The official Waveshare profile is added EN DERNIER to take precedent over project failures.
+# main/CMakeLists.txt Also refuses any resolute rev3.x configuration.
 set(SDKCONFIG_DEFAULTS
     "${CMAKE_CURRENT_LIST_DIR}/sdkconfig.defaults"
     "${CMAKE_CURRENT_LIST_DIR}/config/esp32p4_rev1_3.defaults"

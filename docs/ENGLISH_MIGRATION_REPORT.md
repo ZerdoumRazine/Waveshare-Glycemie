@@ -12,3 +12,11 @@ This migration must pass automated regressions and ESP-IDF compilation.
 - english_full_guides: 16
 - removed_FR_duplicate_lines: 204
 - translated_fragments: 2944
+
+## Final English-only cleanup
+
+Mixed-language maintainer comments and Python docstrings were normalized to English. The executable C/Python code, UI labels, voice banks, language tables, protocol fields and third-party source remain unchanged. All Python AST nodes except docstrings were compared, as were C non-comment sources.
+
+- edited_files: 105
+- translated_comment_lines: 872
+- translated_docstrings: 89
