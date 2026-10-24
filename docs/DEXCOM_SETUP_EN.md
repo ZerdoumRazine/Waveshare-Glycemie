@@ -1,141 +1,48 @@
-# Dexcom Share Configuration
+# Dexcom Share configuration and data handling
 
-The device reads the measurements via **Dexcom Share**, the service that allows a person
-followed by sharing blood sugar with relatives. It never dialogues with the sensor, and
-does not write **never** anything on Dexcom: all queries are read.
+WaveShare Glycémie reads glucose data through **Dexcom Share**, not directly from the G7 sensor. The data path is G7 sensor → official Dexcom phone application → Dexcom Share servers → Internet → Waveshare display. The device sends no commands to the sensor and does not change Dexcom data.
 
-Complete chain: G7 sensor → Phone Dexcom app → Dexcom servers Share →
-Internet → Wi-Fi → screen.
+## Before configuring the display
 
----
+1. In the official Dexcom phone application, enable **Share** and ensure it has an active follower. The phone must be able to upload readings to Dexcom.
+2. Keep the phone and display connected to the Internet. When uploads stop, the display must show the age of its last reading rather than implying it is current.
+3. Use the **publisher account** associated with the person sharing the readings, not a follower's account.
 
-## 1. Dexcom, first and foremost
+## Enter your own credentials
 
-1. In the Dexcom app of the phone carrying the sensor, activate **Share**
-   ("Share") and create at least one subscriber ("Follower"). The division must be **active**:
-   Without a subscriber, the Share service does not publish anything.
-2. The phone must remain connected to the Internet: it is it that pushes the measurements to
-   Dexcom. If the phone is offline, the screen will display "Data ANCIENNES ».
+For the public firmware, select **Settings → Connection** on the touchscreen or complete the first-run wizard. Enter your Wi-Fi password, Dexcom Share account and region. The wizard performs a trial connection; it saves the replacement credentials only after a successful result and explicit confirmation.
 
-## 2. What account to use
+The alternative `GlycemieConnexion.exe` Windows application uses the USB serial cable. No source code edit or rebuild is required. The historical `private/device_secrets.h` method is only for local private builds; never publish a resulting binary or flash backup.
 
-> The firmware authenticates with the account **which shares** (the *publisher*), i.e.
-> the person carrying the sensor — **not** a subscriber account.
+## Account regions
 
-**Recommended method (K22) :** on the screen, open **REGALS → CONNEXION**
-or follow the assistant that appears at the first boot. Seizing Your Own
-account Dexcom Share and choose the region. Connection is tried before
-confirmation; IDs need not be included in the code.
-
-A Windows application `GlycemieConnexion.exe` also allows
-cable configuration USB.
-
-**Former developer method only:** Custom firmware
-can incorporate values into `private/device_secrets.h`, off deposit.
-**Never distribute the binary** of such firmware.
-
-## 3. Region
-
-| Region | Value | Server |
+| Account region | Code | Share endpoint |
 |---|---|---|
-| Europe / outside the United States | `"ous"` | `shareous1.dexcom.com` |
-| United States | `"us"` | `share2.dexcom.com` |
+| Europe / outside the US | `ous` | `shareous1.dexcom.com` |
+| United States | `us` | `share2.dexcom.com` |
 
-**Only the region `ous` was actually used and validated.** Code accepts `us`but
-This path has never been tried on an American account.
+Only the **OUS** region was exercised with a real account during this project's original development. Other regions exist in the code but should not be described as tested on real accounts. The application identifiers and protocol paths follow established Dexcom Share client behavior, including the third-party references documented in [Third-party licences](THIRD_PARTY_LICENSES_EN.md).
 
-Application ID used: `d89443d2-327c-4a6f-89e5-496bbb0317db`, the
-*pydexcom* (`DEXCOM_APPLICATION_ID_OUS = DEXCOM_APPLICATION_ID_US`). Identifier
-`d8665ade-…` in former projects Arduino is the one of **Japan**:
-Not working here.
+## Why authentication has a persistent guard
 
-## 4. Authentication lock — read before the first start
+Repeated rejected login attempts can lock a Dexcom account. `main/dexcom_guard.c` maintains a persistent attempt state linked to a short fingerprint of the selected credentials. It distinguishes unknown, in-progress, validated, refused and inconclusive attempts.
 
-Dexcom temporarily blocks an account after several authentication failures. For
-a bug or a restart loop never locks the account, `main/dexcom_guard.c`
-recorded in NVS status of authentication, linked to a ** short footprint** of
-identifiers (never the identifiers themselves):
+The firmware records that it is about to attempt a login **before** sending the network request. If a restart interrupts an uncertain attempt, the device does not blindly retry in a loop. With the current setup wizard, the user explicitly initiates a test; the older serial diagnostic path used `dexcom_status` and `dexcom_auth` commands. Do not repeat login attempts rapidly when a password or session is rejected.
 
-| State | Behaviour |
-|---|---|
-| **INCONNU** | no authentication until a single attempt is allowed |
-| **TENTATIVE EN COURS** | recorded *before* the consignment; after a restart, no new attempt |
-| **VALIDE** | Normal operation: connection to boot, automatic session renewal |
-| **REFUSE** | refused IDs or blocked account: no more attempts, even after restarting |
-| **NON CONCLUANT** | identifiers sent without verdict (network or server): more automatic attempt |
+## Read-only protocol and refresh policy
 
-**With the assistant K22**, the user initiates an attempt to
-connection and can confirm the recording when the test succeeds:
-the console is **not required** for normal installation.
+The client performs the Share calls `AuthenticatePublisherAccount`, `LoginPublisherAccountById`, and `ReadPublisherLatestGlucoseValues`. The display uses reading timestamps and fields such as `Value` and `Trend`; it does not invent measurements in gaps.
 
-**On the old compilation method**, the authentication lock
-may require manual authorization. The console control of
-Historical diagnosis is:
+The implementation's historical refresh policy includes a full 24-hour history request on startup, short reads around expected new measurements, hourly catch-up of recent history, and periodic full-history refreshes. The 24-hour in-memory cache can hold up to **288 readings**. UI pages draw from this cache instead of making separate network calls.
 
-```powershell
-python tools\serial_capture.py --port COM7 --duration 60 --send "3:dexcom_status" --send "6:dexcom_auth" --log dexcom.log
-```
+Connection failures, expired sessions, and missing data must remain distinguishable from a valid recent glucose reading. Catch-up and deduplication aim to avoid duplicate CSV history rows.
 
-- `dexcom_status` displays the current state.
-- `dexcom_auth` allows **an** attempt, only if the state is INCONNU.
+## Privacy and demo mode
 
-If the request never left the card (DNS, TCP ou TLS in failure), it is not counted
-as an attempt: the state returns to INCONNU. Change IDs in
-`device_secrets.h` hands over state to INCONNU (a new authorisation will be required).
+Access tokens, passwords and account credentials should not appear in logs or screenshots. The USB capture tool attempts to redact known secrets; this is a safeguard, **not a guarantee** that every sensitive value has been found. Keep serial logs and full-device backups private. NVS credential obfuscation is reversible and is **not encryption**.
 
-## 5. What the device reads
+Demo mode uses fictitious history without a Dexcom account. Supported serial scenarios include `demo normal`, `demo low`, `demo verylow`, `demo high`, `demo veryhigh`, `demo gap`, `demo stale`, `demo sparse`, and `demo off`. Use these for demonstrations and UI checks, never for clinical decisions.
 
-Three calls from theAPI Share, all read:
+## Reliability and medical limitations
 
-1. `AuthenticatePublisherAccount`
-2. `LoginPublisherAccountById`
-3. `ReadPublisherLatestGlucoseValues`
-
-Fields used: `WT` (time stamping of the measurement), `ST`, `DT`, `Value` (mg/dL), `Trend`.
-
-Reading policy (24 h cache in PSRAMup to 288 measures, merger without duplication):
-
-- on start: 24 full hours (1,440 min);
-- next: short reading at each new measurement expected (last measurement + 5 min 20 s),
-  never less than 30 s between two requests;
-- catch up with the last 3 hours every hour;
-- complete review of 24 hours every 6 hours;
-- Pages GRAPHIQUE et AUJOURD'HUI *Never** Dexcom: they read the cache.
-
-In case of network failure or expired session, the reconnection is automatic (observed in
-6 seconds after a voluntary Wi-Fi switch). Missed measurements are caught on return,
-without duplicate in history CSV.
-
-## 6. Journalization and privacy
-
-- No ID, password, session token or UUID is written in newspapers,
-  on the microSD or on the screen. Dexcom error messages are logged with the step,
-  code HTTP and Dexcom code, the rest being **masked**.
-- `tools/serial_capture.py` mask in addition, on the fly, any value present in
-  `private/device_secrets.h` and all UUIDBefore writing the paper.
-- Le SSID Wi-Fi is not updated either.
-
-## 7. Without account Dexcom
-
-The demo mode allows you to install, try and present the device without any
-account: it generates 24 hours of data **fictitious** in memory, with a banner " MODE DEMO" to
-the screen, and does not write anything on the microSD.
-
-```
-demo normal      courbe réaliste autour de 150 mg/dL
-demo low         descente vers 64
-demo verylow     descente vers 48 (déclenche l'alerte très basse)
-demo high        montée vers 265
-demo veryhigh    montée vers 330
-demo gap         trou d'une heure dans l'historique
-demo stale       dernière mesure vieille de 18 min (DONNÉES ANCIENNES)
-demo sparse      10 h de mesures sur 24 h (couverture insuffisante)
-demo off         retour aux données réelles (les données simulées sont effacées)
-```
-
-## 8. Warning
-
-Dexcom Share is **not** a API documented. This project is based on the
-observed behavior and on the work of *pydexcom*: a Dexcom side change can
-Discontinue service without notice. This is one of the reasons why this display
-must never replace the official alarms of the sensor and telephone.
+Dexcom Share is an undocumented service interface and may change without notice. The availability of a network connection does not establish the safety or freshness of a reading. WaveShare Glycémie is an **experimental supplementary display**; official Dexcom monitoring and alarms remain essential, and this project must not be used to make treatment decisions.
