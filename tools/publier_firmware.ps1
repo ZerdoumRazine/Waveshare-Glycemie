@@ -5,28 +5,20 @@
 #
 <#
 .SYNOPSIS
-    Prepare files to download: program PUBLIC screen + Windows app + prints.
+    Stage public firmware and the Windows utility from sanitized sources.
 
 .DESCRIPTION
-    The program has been compiled since COPIE PUBLIQUE (Razine file), which contains no
-    Identifier: neither Wi-Fi nor Dexcom account. The user will enter his own after
-    installation, on touch screen or with Windows application.
-
-    Never compile the program from the personal work folder: this one contains your
-    identifiants (private\device_secrets.h is copied for your own device).
-
-    Result in delivery\ (outside deposit):
-        glycemie_display.bin, bootloader.bin, partition-table.bin program
-        GlycemieConnexion.exe                                        l'application Windows
-        install. ps1 installation in one control
-        SHA256SUMS.txt prints of everything
+    Compile only from a clean public source copy without personal Wi-Fi
+    or Dexcom credentials. Build the Windows USB application and package
+    firmware, installer and SHA-256 checksums in the delivery directory.
+    Never use a personal firmware image for a public release.
 
 .EXAMPLE
     powershell -ExecutionPolicy Bypass -File tools\publier_firmware.ps1
 #>
 param(
-    [switch]$SansExe,     # ne pas refabriquer l'application Windows
-    [switch]$Propre       # recompiler le firmware de zero
+    [switch]$SansExe,     # Reuse an already built Windows application.
+    [switch]$Propre       # Rebuild firmware from scratch.
 )
 $ErrorActionPreference = 'Stop'
 
@@ -51,8 +43,8 @@ if ($Propre) { $arguments += '-Clean' }
 if ($LASTEXITCODE -ne 0) { throw "La compilation a echoue (code $LASTEXITCODE)." }
 
 # build. ps1 compiles in a working copy ASCII when the path contains an accent
-# The outsider imposes an array: without it, a single result would be a chain,
-# and $outputs[0] would send back its first LETTRE.
+# Wrap results in an array even for one build directory: otherwise indexing
+# the result would return a character from a string.
 $sorties = @(@(
     (Join-Path $publique 'build'),
     (Join-Path $env:TEMP 'wsg-build-razine\build')
@@ -82,7 +74,7 @@ if (-not $SansExe) {
 }
 if (Test-Path $exe) { Copy-Item $exe $livraison -Force } else { Write-Warning "Application absente : $exe" }
 
-# --- 3. Installation in one order, for the person who charges ------------------------------
+# --- 3. USB installation script for the end user ------------------------------
 @'
 <#
     Install WaveShare Glycemie program on screen, via cable USB.
@@ -90,8 +82,8 @@ if (Test-Path $exe) { Copy-Item $exe $livraison -Force } else { Write-Warning "A
     Before: Connect the screen to the PC with a cable USB-C of DONNEES, and shut down every monitor serie.
     Then: right click on this file -> Run with PowerShell. Count two minutes.
 
-    This script n'efface pas la carte (pas d'erase_flash) : it replaced the program, the table of
-    partitions and primer. Adjustments, consumable dates and microSD are preserved.
+    This script does not run erase_flash. It writes only the program, bootloader
+    and partition table. Stored preferences and microSD are preserved.
 #>
 param([string]$Port = '')
 $ErrorActionPreference = 'Stop'
@@ -134,7 +126,7 @@ Write-Host "C'est installe. L'ecran redemarre et affiche l'assistant de configur
 Write-Host "Choisissez la langue, le reseau Wi-Fi, puis saisissez votre compte Dexcom."
 '@ | Set-Content -Path (Join-Path $livraison 'installer.ps1') -Encoding UTF8
 
-# --- 3 bis. Imprint SOURCES qui ont produit ce programme ------------------------------------
+# --- 3b. Fingerprint the firmware source inputs ------------------------------------
 # It later verifies that the book program comes from these sources, whatever
 # be the dates of the files (renewing the public copy makes them all "recent").
 # The path of the project contains an accent: we pass it in ARGUMENT (one string, encoded)
@@ -144,7 +136,7 @@ if ($LASTEXITCODE -ne 0 -or -not $empreinte) { throw "Empreinte des sources impo
 "$empreinte  sources du firmware (main, components, config, CMakeLists, sdkconfig.defaults, partitions.csv)" |
     Set-Content -Path (Join-Path $livraison 'sources.sha256') -Encoding ascii
 
-# --- 4. Empreintes --------------------------------------------------------------------------------
+# --- 4. Integrity checksums --------------------------------------------------------------------------------
 $lignes = Get-ChildItem $livraison -File | Where-Object { $_.Name -ne 'SHA256SUMS.txt' } |
     Sort-Object Name | ForEach-Object {
         '{0}  {1}' -f (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLower(), $_.Name

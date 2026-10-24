@@ -5,25 +5,23 @@
 #
 <#
 .SYNOPSIS
-    Manufactures the Windows application "WaveShare Glycemie — connection" (one .exe file).
+    Build GlycemieConnexion.exe, the Windows USB setup application.
 
 .DESCRIPTION
-    The result, dist\GlycemieLogin.exe, opens by double-click: the end user has
-    NI need of NI Python d'aucune bibliotheque. L'Executable embarks the interpretation, tkinter and
-    tools\assistant_config.py (the same dialog as the command line assistant).
+    PyInstaller bundles Python, Tkinter and tools/assistant_config.py into a
+    standalone EXE. End users do not need to install Python or other libraries.
+    Run this builder after changing the Windows interface or serial assistant.
 
-    To execute once after each modification of the application or assistant:
-        powershell -ExecutionPolicy Bypass -File tools\pc_app\construire_exe.ps1
-
-    Prerequisites on the development PC only: Python 3 and PyInstall
+    Development prerequisite:
         py -3 -m pip install pyinstaller
 
 .NOTES
-    The executable is PAS signe : Windows peut afficher « Editeur inconnu » au premier lancement
-    (SmartScreen). This is explained in the tutorial. Nothing is sent over the Internet by the app.
+    The executable is not code-signed. Windows SmartScreen may display
+    an unknown publisher warning. See the English installation guide.
+    The utility exchanges device configuration only over a local USB cable.
 #>
 param(
-    [switch]$Propre   # repart de zero (supprime build\ et dist\)
+    [switch]$Propre   # Clean previous build and dist directories.
 )
 $ErrorActionPreference = 'Stop'
 
@@ -38,7 +36,7 @@ foreach ($f in @($script, $assistant)) {
     if (-not (Test-Path $f)) { throw "Fichier introuvable : $f" }
 }
 
-# Python : py -3 si disponible, sinon python du PATH
+# Prefer the Windows py launcher; fall back to python on PATH.
 $python = 'python'
 if (Get-Command py -ErrorAction SilentlyContinue) { $python = 'py' }
 $argsPy = @()
@@ -55,9 +53,8 @@ if ($Propre) {
 
 Write-Host "Construction de l'application Windows..." -ForegroundColor Cyan
 # --noconsole: no black windows; --onefile: one .exe to give to the user
-# --paths + --hidden-import: assistant_config.py is loaded like MODULE, so that PyInstiller
-# analyse aussi ses propres imports (getpass, re, argparse, winreg...). Embarque en simple donnee,
-# these modules would be missing and'application ne s'Would not open.
+# assistant_config is imported dynamically; force PyInstaller to include its
+# Python dependencies instead of treating it as a plain data file.
 & $python @argsPy -m PyInstaller `
     --noconfirm --clean --onefile --noconsole `
     --name GlycemieConnexion `

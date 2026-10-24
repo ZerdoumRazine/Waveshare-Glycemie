@@ -3,7 +3,7 @@
 # Design note: Generated audio may have separate redistribution conditions.
 # Generate legacy Windows speech samples for private development, not public distribution.
 #
-# Generate French vocal extracts (WAV 16 kHz, 16 bits, mono) with Windows voice en-FR installs.
+# Generate optional French 16-kHz, 16-bit mono WAV speech using an installed fr-FR voice.
 # No Internet dependence, no installation. Output: tools\voice\wav\<id>.wav
 # Usage : powershell -ExecutionPolicy Bypass -File tools\voice\gen_voice.ps1
 
@@ -13,7 +13,7 @@ Add-Type -AssemblyName System.Speech
 $outDir = Join-Path $PSScriptRoot 'wav'
 New-Item -ItemType Directory -Force $outDir | Out-Null
 
-# identifier -> text pronounce
+# Audio file identifier -> recorded phrase.
 $clips = [ordered]@{
     'p_tres_basse'    = 'Attention, glycémie très basse.'
     'p_basse'         = 'Attention, glycémie basse.'

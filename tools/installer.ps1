@@ -5,18 +5,19 @@
 #
 <#
 .SYNOPSIS
-    Install the public version on the Waveshare ESP32-P4-WIFI6-Touch-LCD-7B.
+    Install the public firmware on Waveshare ESP32-P4-WIFI6-Touch-LCD-7B.
+
 .DESCRIPTION
-    Only works with the three binary files provided in the same archive.
-    Does not format microSD or partition NVS. Do not use on another card.
-    No installation is performed without verification and manual confirmation.
+    Require matching firmware images, SHA-256 checksums, supported chip revision
+    and explicit approval. Do not erase NVS or format microSD. This installer
+    must not be used on an unverified board revision.
 #>
 param([string]$Port = "")
 $ErrorActionPreference = 'Stop'
 $dir = Split-Path -Parent $MyInvocation.MyCommand.Path
 
-# The public version contains no identifiers. Accesses are seized
-# After installation by the touch assistant or GlycemieLogin.exe.
+# The public firmware does not contain credentials. Configure them using
+# the touchscreen wizard or GlycemieConnexion.exe after installation.
 $required = @('glycemie_display.bin', 'bootloader.bin', 'partition-table.bin')
 foreach ($name in $required) {
     if (-not (Test-Path (Join-Path $dir $name))) {

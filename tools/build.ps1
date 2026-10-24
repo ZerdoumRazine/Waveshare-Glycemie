@@ -6,30 +6,25 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-    Compile firmware glycemie_display.
+    Build the Waveshare ESP32-P4 firmware using ESP-IDF 5.5.5.
 
 .DESCRIPTION
-    ESP-IDF can not compile from a path containing an accentuated character: ccache,
-    ldgen.py and the link editor fail all three. If the project root contains a
-    accent, this script copies the project into a working folder ASCII (under the temporary file
-    user, never rated the project) and compiles there. Otherwise he compiles on the spot.
-
-    Private/ is not JAMAIS erased by copying and its presence is checked before
-    compile: a firmware without login but without Wi-Fi or Dexcom.
+    If a project path contains non-ASCII characters, the script builds from
+    a separate ASCII-safe temporary copy. A private credentials header, when
+    present, is copied only to that local workspace. Never publish the
+    resulting personal firmware binary.
 
 .PARAMETER Clean
-    Starts from an empty compilation (fullclean) and emptys the work folder.
+    Remove previous build output and start from a clean configuration.
 
 .PARAMETER Flash
-    Flash the app after a successful compilation (idf.py -p <port> app-flash).
+    Optionally flash the built application after validation.
 
 .PARAMETER Port
-    Port serie, COM7 par defaut.
+    USB serial COM port (default COM7).
 
 .EXAMPLE
-    powershell -ExecutionPolicy Bypass -File tools\build.ps1
     powershell -ExecutionPolicy Bypass -File tools\build.ps1 -Clean
-    powershell -ExecutionPolicy Bypass -File tools\build.ps1 -Flash -Port COM7
 #>
 param(
     [switch]$Clean,
@@ -45,7 +40,7 @@ function Test-Ascii([string]$text) {
     return -not ($text -match '[^\u0000-\u007F]')
 }
 
-# --- 1. Dossier de compilation -------------------------------------------------------------------
+# --- 1. Build workspace -------------------------------------------------------------------
 if (Test-Ascii $Root) {
     $Work = $Root
     Write-Host "Compilation sur place : $Work"
@@ -62,8 +57,8 @@ if (Test-Ascii $Root) {
     if ($LASTEXITCODE -ge 8) { throw "Copie de travail impossible (robocopy $LASTEXITCODE)" }
     $priv = Join-Path $Work 'private'
     New-Item -ItemType Directory -Force $priv | Out-Null
-    # Identifiers are copied from what they differ: otherwise an old working copy
-    # Would keep a Wi-Fi or Dexcom account perime without any mention.
+    # Refresh local credentials when needed so the work copy cannot silently
+    # retain an outdated Wi-Fi or Dexcom account.
     $src = Join-Path $Root 'private\device_secrets.h'
     $dst = Join-Path $priv 'device_secrets.h'
     if (Test-Path $src) {
@@ -76,7 +71,7 @@ if (Test-Ascii $Root) {
     }
 }
 
-# --- 2. Identifiants ------------------------------------------------------------------------------
+# --- 2. Optional local credentials ------------------------------------------------------------------------------
 $secrets = Join-Path $Work 'private\device_secrets.h'
 if (-not (Test-Path $secrets)) {
     Write-Warning "private\device_secrets.h est absent."
@@ -86,7 +81,7 @@ if (-not (Test-Path $secrets)) {
     Start-Sleep -Seconds 10
 }
 
-# --- 3. Environnement ESP-IDF ---------------------------------------------------------------------
+# --- 3. ESP-IDF environment ---------------------------------------------------------------------
 if (-not $env:IDF_PATH) {
     $local = Join-Path $Root 'tools\esp-idf-v5.5.5'
     if (Test-Path $local) { $env:IDF_PATH = $local }
@@ -95,14 +90,14 @@ if (-not $env:IDF_PATH) {
     throw "IDF_PATH n'est pas defini. Ouvrez la fenetre 'ESP-IDF 5.5 PowerShell', ou definissez `$env:IDF_PATH. Voir docs\INSTALLATION_EN.md."
 }
 if (-not $env:IDF_TOOLS_PATH) {
-    # Installation "in the project": the tools are ratedESP-IDF (tools\espressif).
+    # Look for a compatible ESP-IDF Python toolchain in the project workspace.
     foreach ($candidat in @((Join-Path (Split-Path -Parent $env:IDF_PATH) 'espressif'),
                             (Join-Path $Root 'tools\espressif'))) {
         if (Test-Path (Join-Path $candidat 'python_env')) { $env:IDF_TOOLS_PATH = $candidat; break }
     }
 }
 $env:PYTHONUTF8 = '1'
-# IDF_CCACHE_ENABLE is tested not empty by ESP-IDF : "0" l'ACTIVE. The variable must be removed.
+# ESP-IDF enables ccache when the variable exists, even with value "0".
 Remove-Item Env:IDF_CCACHE_ENABLE -ErrorAction SilentlyContinue
 
 # activate.py writes its progress on stderr: without this, ErrorActionPreference = 'Stop'
@@ -119,16 +114,15 @@ Remove-Item Env:IDF_CCACHE_ENABLE -ErrorAction SilentlyContinue
 $idfPython = Join-Path $env:IDF_TOOLS_PATH 'python_env\idf5.5_py3.12_env\Scripts\python.exe'
 if (-not (Test-Path $idfPython)) { $idfPython = 'python' }
 
-# --- 4. Compilation --------------------------------------------------------------------------------
+# --- 4. Build --------------------------------------------------------------------------------
 Push-Location $Work
 try {
     if ($Clean) { & $idfPython "$env:IDF_PATH\tools\idf.py" fullclean *>&1 | Out-Null }
     $logDir = Join-Path $Root 'tools\logs'
     New-Item -ItemType Directory -Force $logDir | Out-Null
     $log = Join-Path $logDir ('build_{0:yyyyMMdd_HHmmss}.log' -f (Get-Date))
-    # Commandes vocales locales : absentes par defaut (voir main/CMakeLists.txt).
-    # Value is TOUJOURS pass: Cmake keeps in cache what was given him ounce, so
-    # a compilation made after a -Vocal would keep voice commands without saying anything.
+    # Explicitly set the voice-recognition option on each build so an earlier
+    # local -Vocal build cannot accidentally alter the next firmware image.
     $defines = @(if ($Vocal) { '-DGLY_VOICE_CMD=ON' } else { '-DGLY_VOICE_CMD=OFF' })
     & $idfPython "$env:IDF_PATH\tools\idf.py" @defines build *>&1 | Tee-Object -FilePath $log | Out-Null
     $code = $LASTEXITCODE

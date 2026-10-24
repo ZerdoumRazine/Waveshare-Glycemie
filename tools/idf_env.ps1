@@ -3,18 +3,14 @@
 # Design note: Keep the toolchain separate from released source files.
 # Locate and activate the exact ESP-IDF toolchain needed by this project.
 #
-# Environnement ESP-IDF v5.5.5 for glycemie_display.
-# To dot-source in each PowerShell session, from anywhere or:
-#     . <racine du projet>\tools\idf_env.ps1
+# Load ESP-IDF 5.5.5 into the current PowerShell session:
+#     . <project-root>\tools\idf_env.ps1
+# The script does not persistently change the user's Windows PATH.
+# Use a locally installed ESP-IDF at tools\esp-idf-v5.5.5, or set IDF_PATH
+# to a different compatible installation before running it.
 #
-# All variables are limited to the current process: nothing is written in the
-# environment variables Windows nor in the PATH permanent.
-#
-# Deux modes :
-#  1. ESP-IDF install DANS the project (tools\esp-idf-v5.5.5 + tools\espressive): detects on its own.
-#  2. ESP-IDF installe ailleurs : definir IDF_PATH before calling this script, for example
-#         $env:IDF_PATH = 'C:\Espressif\frameworks\esp-idf-v5.5.5'
-#     or use the shortcut directly "ESP-IDF 5.5 PowerShell" supplied by the installer.
+# Example:
+#     $env:IDF_PATH = 'C:\Espressif\frameworks\esp-idf-v5.5.5'
 
 $ProjectRoot = Split-Path -Parent $PSScriptRoot
 
