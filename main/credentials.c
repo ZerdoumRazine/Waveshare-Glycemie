@@ -3,11 +3,7 @@
  * Design note: Do not overwrite working credentials until the replacement passes verification.
  */
 
-/*
- * Manages saved Wi-Fi/Dexcom access separately from unconfirmed trial settings.
- * Separate registered identifiers from new unconfirmed accesses.
- * This is a supplementary display: official Dexcom alarms remain authoritative.
- */
+/* Keep stored Wi-Fi/Dexcom credentials separate from connection trials. */
 #include "credentials.h"
 
 #include <stdio.h>
@@ -30,8 +26,8 @@ static credentials_t s_cred;
 static bool s_from_build;
 static bool s_demo;
 
-/* Test in progress: copy of previous accesses, return if the test is cancelled or failed.
- * s_cred then contains the values tested, but the permanent memory keeps the old ones. */
+/* Snapshot the current credentials before a trial. Trial values are held in RAM;
+ * the last working credentials remain stored in NVS until confirmation. */
 static credentials_t s_avant;
 static bool s_avant_from_build;
 static bool s_essai;
@@ -46,8 +42,8 @@ static const struct {
 };
 #define REGION_COUNT (int)(sizeof(k_regions) / sizeof(k_regions[0]))
 
-/* Interference: OR exclusive with a key drive of the address MAC. It's not encryption.
- * (see credentials.h): it only avoids reading a plain password in a flash dump. */
+/* Reversible MAC-derived XOR obfuscation avoids plain-text flash strings.
+ * It is not encryption and does not protect against physical access. */
 /* Obfuscate NVS bytes, but do not mistake this reversible step for encryption. */
 static void scramble(uint8_t *data, size_t len)
 {
@@ -103,7 +99,7 @@ esp_err_t credentials_init(void)
     memset(&s_cred, 0, sizeof(s_cred));
     strlcpy(s_cred.dexcom_region, "ous", sizeof(s_cred.dexcom_region));
     memset(&s_avant, 0, sizeof(s_avant));
-    s_essai = false; /* an equivalent restart'annulation d'one test not confirmed */
+    s_essai = false; /* A reboot also cancels an unconfirmed trial. */
 
     nvs_handle_t h;
     bool lu = false;
@@ -112,7 +108,7 @@ esp_err_t credentials_init(void)
         size_t size = sizeof(stored);
         if (nvs_get_blob(h, NVS_KEY, &stored, &size) == ESP_OK && size == sizeof(stored)) {
             scramble((uint8_t *)&stored, sizeof(stored));
-            /* guaranteed chain ends: a NVS abime shall not cause reading outside the area */
+            /* Reject a damaged NVS record before any fixed-size string can overrun its buffer. */
             stored.wifi_ssid[sizeof(stored.wifi_ssid) - 1] = '\0';
             stored.wifi_password[sizeof(stored.wifi_password) - 1] = '\0';
             stored.dexcom_user[sizeof(stored.dexcom_user) - 1] = '\0';
@@ -133,7 +129,7 @@ esp_err_t credentials_init(void)
     }
 
     if (!lu) {
-        /* First start, or device already configures to the compilation (original device) */
+        /* On first boot, use optional legacy build defaults only when no saved record exists. */
         strlcpy(s_cred.wifi_ssid, GLY_WIFI_SSID, sizeof(s_cred.wifi_ssid));
         strlcpy(s_cred.wifi_password, GLY_WIFI_PASSWORD, sizeof(s_cred.wifi_password));
         strlcpy(s_cred.dexcom_user, GLY_DEXCOM_USERNAME, sizeof(s_cred.dexcom_user));
@@ -206,7 +202,7 @@ esp_err_t credentials_set_dexcom(const char *user, const char *password, const c
     return persist();
 }
 
-/* ---- Essai de nouveaux acces (voir credentials.h) ----------------------------------------- */
+/* Temporary changes: the user must test and confirm before persisting them. */
 
 bool credentials_trial_active(void)
 {
@@ -216,7 +212,7 @@ bool credentials_trial_active(void)
 void credentials_trial_begin(void)
 {
     if (s_essai) {
-        return; /* a trial is already underway: the original accesses are already rated */
+        return; /* Retain the original snapshot when a trial is already in progress. */
     }
     xSemaphoreTake(s_mutex, portMAX_DELAY);
     s_avant = s_cred;
@@ -266,12 +262,12 @@ esp_err_t credentials_trial_commit(void)
         return ESP_ERR_INVALID_STATE;
     }
     xSemaphoreTake(s_mutex, portMAX_DELAY);
-    s_from_build = false; /* these are now accesses seized by the user */
+    s_from_build = false; /* Persisted values now belong to the user rather than the old build defaults. */
     xSemaphoreGive(s_mutex);
     const esp_err_t err = persist();
     if (err != ESP_OK) {
-        /* Nothing could be written: we keep the values in memory (the connection in
-         * and the test remains open to try again. */
+        /* Keep the trial open if NVS persistence fails, allowing a retry without
+ * losing the previous saved credentials. */
         ESP_LOGE(TAG, "Enregistrement impossible : les acces precedents restent en memoire permanente");
         return err;
     }
@@ -302,18 +298,15 @@ void credentials_trial_cancel(void)
  */
 esp_err_t credentials_clear(void)
 {
-    /* First delete storage identify NVS. Lock
-     * Dexcom is in another space NVS : the two spaces cannot
-     * not to be modified in an atomic manner. So it must never be
-     * erase AVANT confirmation of the recording of a configuration
-     * empty, otherwise allow attempts to connect with
-     * old accesses after a mistake NVS. */
+    /* Credentials and Dexcom's login guard use separate NVS namespaces; they
+ * cannot be updated atomically. Persist the empty credential record first,
+ * before clearing auxiliary login state, to prevent old credentials from
+ * being reused after an incomplete erase. */
     esp_err_t err;
 
-    /* Keep l'ancien etat en RAM tant que l'configuration writing
-     * empty was not confirmed. Clearing the Key NVS would be insufficient:
-     * on an old customised firmware, compile IDs would be
-     * automatically resumed at the next start. */
+    /* Preserve both active and trial settings in RAM until saving the empty
+ * record succeeds. Removing a key alone could re-enable credentials embedded
+ * by an old private firmware when the device restarts. */
     credentials_t precedent, essai_precedent;
     bool origine_precedente, demo_precedent, essai_actif_precedent, origine_essai_precedente;
     xSemaphoreTake(s_mutex, portMAX_DELAY);
@@ -329,8 +322,7 @@ esp_err_t credentials_clear(void)
     s_demo = false;
     xSemaphoreGive(s_mutex);
 
-    /* explicitly enter an empty block in NVS to prevent any return
-     * implicit in identifiers embedded by an old compilation. */
+    /* Writing an explicit empty record prevents fallback to compiled-in defaults. */
     err = persist();
     if (err != ESP_OK) {
         xSemaphoreTake(s_mutex, portMAX_DELAY);
@@ -355,11 +347,9 @@ esp_err_t credentials_clear(void)
     memset(&precedent, 0, sizeof(precedent));
     memset(&essai_precedent, 0, sizeof(essai_precedent));
 
-    /* Espace reel du verrou : "dexcom" (dexcom_guard.c), et non "dexguard".
-     * Its erasure is secondary: it contains only a short print
-     * of former identifiers and will not allow to reconstitute the
-     * configuration qui vient d'etre retiree.
-     * A breakdown here does not turn an effective erasure into a failure. */
+    /* The authentication guard is stored in the separate "dexcom" namespace.
+ * It contains only a non-reversible identifier fingerprint. Failure to clear
+ * that secondary state does not undo successfully persisted credential removal. */
     nvs_handle_t h;
     err = nvs_open("dexcom", NVS_READWRITE, &h);
     if (err == ESP_OK) {
@@ -399,7 +389,8 @@ void credentials_masked_wifi(char *buf, size_t size)
     xSemaphoreGive(s_mutex);
 }
 
-/* "antoine.dupont@exemple.fr" -> "a***@exemple.fr" ; "utilisateur" -> "u***" */
+/* Example masks: an email address becomes "a***@example.org";
+ * a short username becomes "u***". Never print raw credentials. */
 void credentials_masked_dexcom(char *buf, size_t size)
 {
     xSemaphoreTake(s_mutex, portMAX_DELAY);

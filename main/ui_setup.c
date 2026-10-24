@@ -3,10 +3,8 @@
  * Design note: Trial values are not persisted until validated and confirmed.
  */
 
-/*
- * Guides first-time Wi-Fi and Dexcom configuration with a reversible connection trial.
- * Guides the initial configuration by protecting existing accesses.
- */
+/* First-run wizard for choosing language, Wi-Fi and Dexcom Share details.
+ * A reversible credential trial protects the last working configuration. */
 #include "ui_pages.h"
 
 #include <stdio.h>
@@ -21,29 +19,19 @@
 #include "touch_diag.h"
 #include "wifi_manager.h"
 
-/*
- * Start-up assistant (touch screen): language, Wi-Fi network, Dexcom account, verification.
- * No one needs to recompile the firmware or plug in a PC to put their own identifiers.
- *
- * - L'assistant occupe tout l'screen (superior layer of LVGL) and opens alone as long as noting is
- *   information; it is reproduced from BACKGROUND > CONNEXION > Amend.
- * - The two long operations (network search, connection test) run in their own
- *   spots: the spot LVGL is never blocked. The promotion is reread every second by ui_setup_tick().
- * - Passwords are screen masks, never logged, and erased from the memory of the interface
- *   at the close of the assistant as after recording (credentials.c, space NVS separe).
- * - LES ACCES PRECEDENTS NE SONT JAMAIS PERDUS : the entry is a test (credentials_trial_*). The
- *   connection is about new values, but nothing is saved before pressing "Save".
- *   A failure, a abandonment, a power cut: the device keeps its previous accesses.
- * - After recording, the device starts again: the services (Wi-Fi, Dexcom) go back clean with
- *   new identifiers, without recovery code has hot hard to verify.
- */
+/* The touchscreen wizard appears above all normal pages until configured.
+ * Wi-Fi scans and login tests run asynchronously to avoid blocking LVGL.
+ * Passwords stay masked and are cleared from the wizard's temporary fields.
+ * Connection trials never replace stored credentials without successful
+ * validation and the user's explicit Save confirmation. Aborted or failed
+ * attempts keep the previously stored credentials intact. */
 
 #define RESEAUX_MAX 14
 
 typedef enum {
     ETAPE_LANGUE = 0,
     ETAPE_WIFI,
-    ETAPE_NOM_RESEAU,   /* reseau masque : saisie du nom */
+    ETAPE_NOM_RESEAU,   /* Hidden network: manually enter the SSID. */
     ETAPE_MDP_WIFI,
     ETAPE_DEXCOM,
     ETAPE_VERIF,
@@ -56,7 +44,7 @@ static lv_obj_t *s_contenu;     /* area rebuilt at each stage */
 static lv_obj_t *s_btn_retour;
 static lv_obj_t *s_btn_suivant;
 static lv_obj_t *s_kb;          /* sharing keyboard */
-static lv_obj_t *s_ta;          /* champ en cours de saisie */
+static lv_obj_t *s_ta;          /* Text field currently receiving keyboard input. */
 
 static etape_t s_etape;
 static bool s_premier;          /* first start (no access to pages) */
@@ -71,7 +59,7 @@ static lv_obj_t *s_verif_txt;
 static lv_obj_t *s_verif_detail;
 static bool s_confirmation;     /* successfully tested: the recording awaits the support of the user */
 
-/* Network search: dediee spot, results read by spot LVGL */
+/* Run Wi-Fi scanning outside LVGL; the UI polls the results. */
 static wifi_reseau_t s_reseaux[RESEAUX_MAX];
 static volatile int s_nb_reseaux;
 static volatile bool s_scan_en_cours;
@@ -108,7 +96,7 @@ static void lancer_scan(void)
 }
 
 /* ------------------------------------------------------------------------- */
-/* Fabrique d'elements */
+/* UI element constructors. */
 
 static void vider_contenu(void)
 {
@@ -179,7 +167,7 @@ static void on_afficher_mdp(lv_event_t *e)
 /* ------------------------------------------------------------------------- */
 /* Actions */
 
-/* Accesses seized are ESSAYES : the previous ones remain recorded until confirmation. */
+/* Newly entered credentials are tested before they can be saved. */
 static bool s_saisie_refusee; /* never display an old test as successful */
 
 /* Reject invalid fields and test the temporary account before offering to save it. */
@@ -339,7 +327,7 @@ static void on_suivant(lv_event_t *e)
 }
 
 /* ------------------------------------------------------------------------- */
-/* Etapes */
+/* Wizard step rendering. */
 
 static void bouton_bas(lv_obj_t *btn, const char *texte_btn, bool visible)
 {
@@ -522,7 +510,7 @@ void ui_setup_create(void)
     s_kb = lv_keyboard_create(s_root);
     lv_obj_set_size(s_kb, UI_SCR_W, 280);
     lv_obj_align(s_kb, LV_ALIGN_BOTTOM_MID, 0, 0);
-    lv_obj_set_style_text_font(s_kb, &lv_font_montserrat_20, 0); /* integree font: keyboard symbols */
+    lv_obj_set_style_text_font(s_kb, &lv_font_montserrat_20, 0); /* Embedded font includes on-screen keyboard glyphs. */
     lv_obj_add_event_cb(s_kb, on_clavier, LV_EVENT_ALL, NULL);
     lv_obj_add_flag(s_kb, LV_OBJ_FLAG_HIDDEN);
 }
@@ -560,7 +548,7 @@ void ui_setup_close(void)
     if (credentials_trial_active()) {
         credentials_trial_cancel();
         if (credentials_has_wifi()) {
-            wifi_manager_apply_credentials(0); /* without waiting: the spot LVGL must not block */
+            wifi_manager_apply_credentials(0); /* Trigger reconnection asynchronously to keep LVGL responsive. */
         }
     }
     s_confirmation = false;
@@ -573,7 +561,7 @@ bool ui_setup_visible(void)
     return s_root != NULL && !lv_obj_has_flag(s_root, LV_OBJ_FLAG_HIDDEN);
 }
 
-/* Call every second by the spot LVGL : progress of the search and connection test */
+/* Called each second from LVGL to advance background connection tests. */
 void ui_setup_tick(void)
 {
     if (!ui_setup_visible()) {
