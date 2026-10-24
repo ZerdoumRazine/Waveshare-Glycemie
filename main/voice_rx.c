@@ -1,12 +1,11 @@
 /*
  * voice_rx.c: Serial transfer of WAV files to the microSD.
- * FR: Transfert série des fichiers WAV vers la microSD.
  * Design note: Verify-only operations must never write to the card.
  */
 
 /*
  * Transfers pre-generated WAV files through a bounded serial protocol to microSD.
- * Transfère les banques WAV par USB-série avec contrôles d'intégrité.
+ * Transfer banks WAV par USB- series with integrity checks.
  */
 #include "voice_rx.h"
 
@@ -30,7 +29,7 @@ static const char *TAG = "voix_rx";
 
 #define CONSOLE_BAUD     115200
 #define FILE_MAX         (256 * 1024)
-#define CHUNK            896  /* < tampon de reception UART de la console (1024 octets) : aucun debordement possible */
+#define CHUNK            896  /* < receiving buffer UART console (1024 bytes): no overflow possible */
 #define CHUNK_TIMEOUT_MS 3000
 #define IDLE_END_US      (30 * 1000000LL)
 
@@ -41,16 +40,16 @@ typedef struct {
 } list_ctx_t;
 
 static const uart_port_t k_port = (uart_port_t)CONFIG_ESP_CONSOLE_UART_NUM;
-static uint8_t *s_buf;   /* fichier recu (PSRAM) */
-static uint8_t *s_check; /* relecture sur la carte (PSRAM) */
+static uint8_t *s_buf;   /* file received (PSRAM) */
+static uint8_t *s_check; /* rereading on the map (PSRAM) */
 static bool s_session;
-/* Sous-dossier de la banque en cours de copie : "" pour le francais (racine de SD_VOICE_DIR),
- * sinon le code de la langue ("en", "es", "de", "it", "pt"). Remis a zero a chaque session. */
+/* Sub-folder of the bank in the process of copying: "" for the French (root of SD_VOICE_DIR),
+ * otherwise the language code ("en", "es", "de", "it", "pt"). Remis a zero at every session. */
 static char s_subdir[8];
 
 static int64_t s_last_us;
 
-/* Reponse du protocole, envoyee immediatement : le PC attend chaque acquittement avant le bloc suivant */
+/* Protocol response, sent immediately: PC waits for each acquittal before next block */
 static void reply(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
 
 static void reply(const char *fmt, ...)
@@ -111,7 +110,7 @@ static void end_session(const char *why)
 /* Verify microSD readiness and negotiate a temporary faster serial baud rate. */
 static void cmd_begin(const char *args)
 {
-    s_subdir[0] = '\0'; /* chaque session repart de la banque francaise (racine) */
+    s_subdir[0] = '\0'; /* each session starts from the French bank (root) */
     const long baud = args[0] != '\0' ? strtol(args, NULL, 10) : CONSOLE_BAUD;
     if (baud != 115200 && baud != 230400 && baud != 460800 && baud != 921600) {
         reply("VRX BEGIN ERR debit\n");
@@ -140,7 +139,7 @@ static void cmd_begin(const char *args)
     set_baud((uint32_t)baud);
 }
 
-/* Blocs binaires acquittes un par un dans s_buf */
+/* binary blocks acquit one by one in s_buf */
 static bool receive(const char *name, size_t size)
 {
     size_t got = 0;
@@ -164,7 +163,7 @@ static bool receive(const char *name, size_t size)
     return true;
 }
 
-/* Test K19 : son recu en memoire puis ajoute au signal des micros de l'ecoute vocale (aucune ecriture sur la carte) */
+/* Test K19 : his receipt in memory then adds to the signal of the microphones of the voice listen (no writing on the card) */
 static void cmd_inject(const char *args)
 {
     char crc_hex[16];
@@ -190,7 +189,7 @@ static void cmd_inject(const char *args)
     reply("VRX OK inject %lu %08" PRIx32 "\n", size, crc);
 }
 
-/* Chemin complet d'un fichier de la banque, dans le sous-dossier choisi par vrx_dir */
+/* Full path of a bank file, in the subfolder chosen by vrx_dir */
 static void voice_path(const char *name, char *out, size_t size)
 {
     if (s_subdir[0] == '\0') {
@@ -200,9 +199,9 @@ static void voice_path(const char *name, char *out, size_t size)
     }
 }
 
-/* "vrx_dir en" : les vrx_put suivants ecrivent dans /glycemie/audio/voice/en (cree au besoin).
- * "vrx_dir en lecture" : verification seule, le dossier n'est PAS cree et doit deja contenir des fichiers.
- * "vrx_dir -" revient a la racine, ou vit la banque francaise. */
+/* "vrx_dir in": vrx_put next write in /glycemie/audio/voice/en (cree au besoin).
+ * "vrx_dir read" : verification alone, the file is PAS creates and must already contain files.
+ * "vrx_dir -" comes back to the root, or lives the French bank. */
 static void cmd_dir(const char *args)
 {
     char code[8];
@@ -218,13 +217,13 @@ static void cmd_dir(const char *args)
         return;
     }
     for (const char *p = code; *p != '\0'; p++) {
-        if (*p < 'a' || *p > 'z') { /* code ISO en minuscules uniquement : jamais de ".." ni de "/" */
+        if (*p < 'a' || *p > 'z') { /* code ISO in tiny only: never ".." nor "/" */
             reply("VRX ERR arguments\n");
             return;
         }
     }
     if (lecture) {
-        /* aucune ecriture : le dossier doit deja exister et contenir des fichiers */
+        /* no writing: the folder must already exist and contain files */
         uint32_t free_mb = 0;
         if (sd_storage_list_voice(code, NULL, NULL, &free_mb) <= 0) {
             reply("VRX ERR dossier %s absent ou vide\n", code);
@@ -310,7 +309,7 @@ static void cmd_list(const char *args)
         s_check = heap_caps_malloc(FILE_MAX, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
     }
     uint32_t free_mb = 0;
-    /* Le listage suit le dossier choisi par vrx_dir : verification en LECTURE SEULE de n'importe quelle langue */
+    /* Enumerate the language directory selected by vrx_dir without writing to the card. */
     const int count = sd_storage_list_voice(s_subdir, list_file, &ctx, &free_mb);
     if (count < 0) {
         reply("VRX LIST ERR microSD indisponible\n");

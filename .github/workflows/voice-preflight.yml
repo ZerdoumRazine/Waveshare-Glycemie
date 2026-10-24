@@ -1,6 +1,5 @@
-# EN: Validate real WAV banks against the manifest and reject private data.
-# FR: Vérifie les WAV et refuse les fichiers privés.
-name: Vérification audio microSD
+# Validate real WAV banks against the manifest and reject private data.
+name: Verify microSD audio
 
 on:
   pull_request:
@@ -17,7 +16,7 @@ permissions:
 
 jobs:
   voice-bank:
-    name: Vérifier les six langues et la provenance
+    name: Check six voice languages and provenance
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -25,11 +24,10 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Tester les garde-fous hors ligne
+      - name: Test offline safety checks
         run: python tests/test_release_voice_archive.py
-      # EN: v0.1.0 is archived as a draft; check the published v0.2.0 assets instead.
-      # FR: v0.1.0 est archivée ; vérifier directement les ressources v0.2.0.
-      - name: Télécharger la banque audio de la préversion actuelle
+      # v0.1.0 is archived as a draft; check the published v0.2.0 assets instead.
+      - name: Download existing pre-release voice bank
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -39,7 +37,7 @@ jobs:
             --pattern 'SHA256SUMS-voix.txt' \
             --dir _voice
           (cd _voice && sha256sum -c SHA256SUMS-voix.txt)
-      - name: Vérifier 2376 WAV, formats et absence de fichiers privés
+      - name: Verify 2,376 WAV files and privacy
         run: |
           python - <<'PY'
           import csv

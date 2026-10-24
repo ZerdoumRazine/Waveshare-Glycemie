@@ -1,22 +1,14 @@
 /* consumables.h: Consumables lifecycle and reminders interface.
- * FR: Interface de suivi et rappel des consommables.
  * Keep this header focused on the contracts used by other modules.
  */
-/*
- * Consommables : capteur Dexcom G7 (suivi dans sensor_session.c) et site de perfusion / catheter.
- *
- * NOUVEAU CAPTEUR / NOUVEAU CATHETER (bouton avec confirmation, ou commande vocale confirmee) : l'heure actuelle
- * (SNTP) devient l'heure de depart, enregistree en NVS, sans aucune saisie de date ni d'heure. Une ligne est ajoutee
- * a /glycemie/logs/consumables.csv pour chaque confirmation reelle ("2026-09-15 16:42,G7,new") ; si la microSD est
- * indisponible, la ligne est ecrite a son retour (marqueur NVS, jamais de doublon ni de ligne pour une restauration).
- *
- * Catheter : intervalle 72 h par defaut (48 h possible), un seul rappel a usage unique 2 h avant l'echeance, puis
- * "A CHANGER" a l'echeance. C'est un rappel configure par l'utilisateur, pas une recommandation therapeutique.
- */
-/* Public interface / Interface publique
- * EN: Catheter dates, reminders and their persistence contract.
- * FR: Dates, rappels et sauvegarde du cathéter.
- */
+/* Consumables lifecycle: sensor sessions live in sensor_session.c and
+ * infusion-set dates live here. A confirmed replacement records the current
+ * synchronized time in NVS and is logged to microSD once. When the card is
+ * unavailable, the pending record is written on remount without duplication.
+ * The infusion-set interval is user-selectable (48 or 72 hours); its single
+ * reminder is two hours before the due time. These are user preferences,
+ * not clinical recommendations. */
+/* Shared APIs for replacement dates, reminders and persistence. */
 #pragma once
 
 #include <stdbool.h>
@@ -24,51 +16,53 @@
 #include "esp_err.h"
 
 typedef enum {
-    CONSUMABLE_SENSOR = 0,  /* capteur Dexcom G7 */
-    CONSUMABLE_CATHETER,    /* site de perfusion / catheter */
+    CONSUMABLE_SENSOR = 0,  /* Dexcom G7 sensor */
+    CONSUMABLE_CATHETER,    /* Infusion-set component. */
     CONSUMABLE_COUNT,
 } consumable_t;
 
 typedef enum {
-    CATHETER_REMIND_2H = 0, /* 2 h avant l'echeance (seul rappel) */
+    CATHETER_REMIND_2H = 0, /* 2 hours before completion (only recall) */
     CATHETER_REMIND_COUNT,
 } catheter_reminder_t;
 
 typedef struct {
     bool known;
-    int64_t start_s;        /* heure du changement (epoch UTC) */
-    int64_t due_s;          /* echeance = changement + intervalle */
+    int64_t start_s;        /* Confirmed replacement time as UTC epoch seconds. */
+    int64_t due_s;          /* Due time = replacement time plus selected interval. */
     int interval_h;         /* 48 ou 72 */
-    int day;                /* jour 1..days_total */
+    int day;                /* Day 1.days_total */
     int days_total;
-    bool overdue;           /* echeance depassee */
-    int64_t remaining_s;    /* avant l'echeance (negatif si depassee) */
-    int progress_pct;       /* avancement sur l'intervalle */
+    bool overdue;           /* True after the scheduled due time. */
+    int64_t remaining_s;    /* before maturity (negative if exceeded) */
+    int progress_pct;       /* Percentage of elapsed interval. */
 } catheter_status_t;
 
-esp_err_t consumables_init(void); /* apres sensor_session_init() */
+esp_err_t consumables_init(void); /* After sensor_session_init() */
 
-/* Heure actuelle -> heure de depart (NVS + ligne CSV en attente). ESP_ERR_INVALID_STATE si l'heure SNTP n'est pas
- * valide. source : "bouton", "voix" ou "console" (journal uniquement). Pas depuis une tache a pile en PSRAM. */
+/* Set the confirmed change time to the synchronized UTC epoch. Persist it
+ * in NVS and queue a CSV log entry. Reject the action if the system clock
+ * is not reliable. Accepted sources: button, voice or serial console.
+ * Call from a task with a safe internal-RAM stack, not a PSRAM-stack worker. */
 esp_err_t consumable_start_now(consumable_t c, const char *source);
-const char *consumable_name(consumable_t c); /* "NOUVEAU CAPTEUR"... */
+const char *consumable_name(consumable_t c); /* Stable name used by the existing serial/log protocol. */
 
 void catheter_get(int64_t now_s, catheter_status_t *out);
 int catheter_interval_h(void);
 void catheter_set_interval_h(int hours); /* 48 ou 72 */
 
-/* Incremente a chaque modification (capteur ou catheter) : rafraichissement de l'affichage */
+/* Incremented with each modification (sensor or catheter): refreshing the display */
 uint32_t consumables_revision(void);
 
-/* Rappel du catheter en cours (heure passee, echeance non atteinte), -1 sinon ; *done : deja presente (NVS) */
+/* Return due reminder index, or -1 if none is due; *done reports NVS state. */
 int catheter_current_reminder(int64_t now_s, bool *done);
-void catheter_mark_reminder_done(int reminder); /* presente ou acquitte : memorise en NVS */
+void catheter_mark_reminder_done(int reminder); /* Persist presented or acknowledged reminder state in NVS. */
 void catheter_reset_reminders(void);
 const char *catheter_reminder_text(int reminder);
 
-/* Tache microSD, carte montee : ecrit les lignes CSV en attente */
+/* Flush pending consumable history rows when microSD is mounted. */
 void consumables_sd_flush(void);
 
-/* Console : etat, restauration exacte d'une date reelle apres un test (aucune ligne CSV), effacement */
+/* Console: state, exact restoration of a real date after a test (no line CSV), effacement */
 void consumables_print(void);
 esp_err_t consumable_restore(consumable_t c, int64_t start_s, int reminders_mask);

@@ -1,16 +1,15 @@
 #!/usr/bin/env python3
 # Repackages validated speech WAVs and their provenance.
-# FR: Reconditionne les WAV vérifiés et leur provenance.
+#
 # Design note: Reject unrelated files such as logs or personal histories.
-# EN: Validates original six-language WAVs and writes an audio-only release ZIP.
-# FR: Vérifie les six banques WAV et crée une archive sans données privées.
-"""Controle et repaquette uniquement les WAV nécessaires à la microSD du projet.
+# Validates original six-language WAVs and writes an audio-only release ZIP.
+#
+"""Validate and repackage the historical six-language WAV release for microSD.
 
-Entrée : paquet microSD historique v0.1.0, téléchargé depuis la Release PRIVÉE.
-Sortie : archive microSD v0.2.0, sans fichier utilisateur, cache ou journal,
-et empreinte SHA-256 indépendante.
-Ce programme ne contacte ni Dexcom ni Google, et ne crée aucun fichier audio.
-"""
+Check the original archive's SHA-256, the expected WAV names, and the supported
+PCM audio format. Include only approved recordings and a fresh provenance
+notice; exclude patient files, logs and unrelated archive entries. This tool
+does not synthesize audio or contact Dexcom or Google."""
 from __future__ import annotations
 
 import argparse
@@ -27,45 +26,30 @@ ROOT = Path(__file__).resolve().parent.parent
 LANGUAGES = ("fr", "en", "es", "de", "it", "pt")
 WAV_NAME = re.compile(r"^[A-Za-z0-9_-]+\.wav$", re.ASCII)
 BASE = "glycemie/audio/voice/"
-NOTICE = """WaveShare Glycémie — ANNONCES VOCALES / SPOKEN ANNOUNCEMENTS
-================================================================
-Français
---------
-Cette archive contient 2 376 fichiers WAV destinés aux annonces du projet
-WaveShare Glycémie (396 annonces × 6 langues), rangés pour une carte microSD.
-Ces fichiers ont été produits avec Google Cloud Text-to-Speech,
-voix Chirp 3 HD Aoede. Le modèle de synthèse vocale n'est PAS inclus.
-Google confirme que les fichiers audio générés peuvent être utilisés dans
-des applications ou des médias, sous réserve des conditions applicables :
+NOTICE = """WaveShare Glycémie — speech audio provenance
+===========================================
+
+This archive contains 2,376 WAV files for optional spoken announcements
+(396 recordings in each of six languages), arranged for the display's
+microSD card.
+
+These recordings were generated with Google Cloud Text-to-Speech using
+Chirp 3 HD Aoede voices. No Google speech synthesis model is included.
+Google documents use of generated audio in applications and media, subject
+to the applicable terms and laws:
 https://docs.cloud.google.com/text-to-speech/docs/basics
 https://docs.cloud.google.com/text-to-speech/quotas
 https://cloud.google.com/terms
 
-L'archive est fournie exclusivement comme ressource de cet afficheur.
-Les WAV ne sont PAS soumis à la licence MIT du code et aucun droit sur
-les modèles, les marques ou les services Google n'est revendiqué.
-Ce projet est indépendant de Google et n'est ni approuvé ni affilié.
-Les scripts sources de génération sont fournis séparément dans le dépôt,
-pour fabriquer les annonces depuis son propre compte Google.
-Les bips d'alerte restent fonctionnels sans ces WAV.
-Ce dispositif expérimental n'est pas certifié pour un usage médical.
+The recordings are application audio resources, NOT original source code
+licensed under this project's MIT licence. No rights in Google's speech
+models, services or trademarks are claimed. This independent project is
+not affiliated with or endorsed by Google.
 
-English
--------
-This archive contains 2,376 WAV files for WaveShare Glycémie speech
-announcements (396 files × 6 languages), laid out for a microSD card.
-The recordings were produced with Google Cloud Text-to-Speech,
-Chirp 3 HD Aoede voices. No voice synthesis model is included.
-Google states that generated audio can be used in applications and media,
-subject to its terms and applicable law (links above).
-These files are provided as this display's audio assets, NOT under the
-project's MIT source-code licence. No licence to Google's voice models,
-brands or services is granted or claimed, and the project is not
-affiliated with or endorsed by Google.
-The source-code generator is provided separately so users can create
-their own audio with their own Google Cloud account.
-Audible fallback beeps still work without these WAV files.
-This experimental display is not certified for medical use.
+The repository provides a separate generator so users can create their own
+recordings with their own Google Cloud account. The display's alert beeps
+continue to work without the WAV files. This experimental supplementary
+glucose display is not certified for medical use.
 """
 
 
@@ -130,9 +114,9 @@ def main() -> None:
         for info in source.infolist():
             if info.is_dir():
                 continue
-            # L'ancien ZIP comporte aussi une notice de téléchargement créée
-            # localement. Ne jamais la réutiliser dans le paquet publiable :
-            # une notice de provenance neutre est régénérée ci-dessous.
+            # The old ZIP also includes a download package created
+            # local. Never reuse it in the published package:
+            # a neutral provenance statement is regenerated below.
             if info.filename in ("LISEZMOI.txt",):
                 continue
             path = PurePosixPath(info.filename)
@@ -154,7 +138,7 @@ def main() -> None:
             counts[lang].add(filename)
             if info.file_size > 500_000 or info.file_size < 44:
                 raise ValueError("Taille WAV anormale : " + info.filename)
-            data = source.read(info)  # zipfile vérifie CRC32 durant la lecture
+            data = source.read(info)  # zipfile checks CRC32 while reading
             check_wav(data, info.filename)
             dest.writestr(info.filename, data)
         for lang in LANGUAGES:

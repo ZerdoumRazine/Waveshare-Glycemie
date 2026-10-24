@@ -1,12 +1,11 @@
 /*
  * trend_arrow.c: Maps Dexcom trend states to arrow rendering.
- * FR: Convertit les tendances Dexcom en flèches.
  * Design note: Unknown trend is not the same as a stable trend.
  */
 
 /*
  * Draws a trend icon and halo using LVGL primitives shared with the home view.
- * Dessine l'icône de tendance et son halo lumineux.
+ * Draw the trend icon and its bright halo.
  */
 #include "trend_arrow.h"
 
@@ -15,9 +14,9 @@
 #include "ui_common.h"
 
 /*
- * Icone de tendance 2.5D : disque lumineux flou derriere (enfant, ombre coloree LVGL) et fleche pleine dessinee a la
- * volee apres les enfants (evenement LV_EVENT_DRAW_POST) : tige arrondie et pointe triangulaire. Aucun objet par
- * segment, aucune image. trend_arrow_set_glow() regle l'intensite du disque (respiration lente de l'accueil).
+ * 2.5D trend icon: blurred behind light disc (child, color shadow) LVGL) and fleche full drawing
+ * steels after children (event) LV_EVENT_DRAW_POST) : rounded stem and triangular tip. No object by
+ * segment, no images. trend_arrow_set_glow()'intensite du disque (respiration lente de l'reception).
  */
 
 typedef struct {
@@ -39,13 +38,14 @@ static lv_point_precise_t pt(float x, float y)
     return (lv_point_precise_t){(lv_value_precise_t)lroundf(x), (lv_value_precise_t)lroundf(y)};
 }
 
-/* Fleche centree en (cx, cy), orientee selon angle_deg (0 = droite, 90 = haut), longueur totale length */
+/* Draw an arrow centered at (cx, cy), oriented by angle_deg:
+ * 0 degrees points right and 90 points up. length is the full arrow size. */
 /* Draw the symbol after child objects to preserve legibility. */
 static void draw_arrow(lv_layer_t *layer, const arrow_ctx_t *ctx, float cx, float cy, float angle_deg, float length)
 {
     const float rad = angle_deg * (float)M_PI / 180.0f;
     const float dx = cosf(rad);
-    const float dy = -sinf(rad); /* axe Y de l'ecran vers le bas */
+    const float dy = -sinf(rad); /* Y axis of the screen downwards */
     const float px = -dy;
     const float py = dx;
     const float tip_x = cx + dx * length / 2.0f;
@@ -61,7 +61,7 @@ static void draw_arrow(lv_layer_t *layer, const arrow_ctx_t *ctx, float cx, floa
     lv_draw_line_dsc_t line;
     lv_draw_line_dsc_init(&line);
     line.p1 = pt(tail_x, tail_y);
-    line.p2 = pt(base_x + dx * head_len * 0.25f, base_y + dy * head_len * 0.25f); /* la tige rentre dans la pointe */
+    line.p2 = pt(base_x + dx * head_len * 0.25f, base_y + dy * head_len * 0.25f); /* the stem enters the tip */
     line.width = (int32_t)lroundf((float)ctx->size * 0.11f);
     line.color = core;
     line.round_start = 1;
@@ -133,7 +133,7 @@ lv_obj_t *trend_arrow_create(lv_obj_t *parent, int32_t size, const lv_font_t *fa
     ctx->glow = LV_OPA_40;
     lv_obj_set_user_data(cont, ctx);
 
-    /* Lueur : noyau de 16 % et flou de 34 % de l'icone (tache douce sans contour, contenue dans l'icone) */
+    /* Light: 16% core and 34% blur of the icon (soft patch without outline, contained in the icon) */
     const int32_t disc = size * 16 / 100;
     ctx->halo = ui_glow(cont, disc, disc, ctx->color, ctx->glow, size * 34 / 100);
     lv_obj_center(ctx->halo);
@@ -181,7 +181,7 @@ void trend_arrow_set_glow(lv_obj_t *arrow, lv_opa_t opa)
     if (ctx != NULL && ctx->glow != opa) {
         ctx->glow = opa;
         if (has_arrow(ctx->trend)) {
-            ui_glow_set(ctx->halo, ctx->color, opa); /* invalide le disque (et la fleche qui le recouvre) */
+            ui_glow_set(ctx->halo, ctx->color, opa); /* invalidate the disc (and the flap that covers it) */
         }
     }
 }

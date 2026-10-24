@@ -1,26 +1,14 @@
 #!/usr/bin/env python3
 # Creates and verifies a removable-card backup.
-# FR: Sauvegarde et vérifie la carte microSD.
+#
 # Design note: A backup should be checked, not just copied.
-# EN: Makes a verified file copy from removable media without writing to the card.
-# FR: Copie et vérifie la microSD sans jamais la modifier.
-r"""Copier et VERIFIER le contenu de la microSD, sans jamais la modifier.
+# Makes a verified file copy from removable media without writing to the card.
+#
+"""Back up and verify microSD card contents without modifying the original.
 
-La carte n'est que LUE : aucun fichier n'y est ecrit, deplace ou efface, et elle n'est jamais
-formatee. Si Windows propose de la reparer ou de la formater, refusez.
-
-Deroulement :
-  1. chaque fichier est lu, son empreinte SHA-256 calculee, puis copie dans le dossier de sauvegarde ;
-  2. ensuite, TOUT est relu des deux cotes et compare (carte et copie) : c'est la verification ;
-  3. un manifeste (manifeste.json) et un fichier d'empreintes (SHA256SUMS.txt) sont enregistres.
-
-La sauvegarde va dans private\sauvegardes\ : un dossier prive, jamais publie.
-
-Usage :
-    python tools\sauvegarde_microsd.py --lister          montre les lecteurs amovibles
-    python tools\sauvegarde_microsd.py --lecteur E:      copie et verifie
-    python tools\sauvegarde_microsd.py --lecteur E: --verifier-seulement   compare a une copie existante
-"""
+List available drives, copy selected files to a separate destination, and
+verify size or checksum information. Keep patient histories and device logs
+out of public repositories and release packages."""
 import argparse
 import datetime
 import hashlib
@@ -38,7 +26,7 @@ BLOC = 1 << 20
 
 # List candidate media; the user must identify the correct card.
 def lecteurs_amovibles():
-    """[(lettre, nom, taille_Go, libre_Go, systeme_de_fichiers, amovible)] vus par Windows."""
+    """List Windows removable drives with label, size, free space and filesystem details."""
     if sys.platform != 'win32':
         return []
     requete = ("Get-CimInstance Win32_LogicalDisk | ForEach-Object { "
@@ -72,7 +60,7 @@ def empreinte(chemin):
 
 # Walk files read-only and preserve their relative names.
 def parcourir(racine):
-    """[(chemin relatif, taille)] de tous les fichiers, en lecture seule."""
+    """Enumerate relative file paths and sizes without modifying the source tree."""
     fichiers = []
     for base, dossiers, noms in os.walk(racine):
         dossiers[:] = [d for d in dossiers if d.upper() not in ('SYSTEM VOLUME INFORMATION',
@@ -151,7 +139,7 @@ def main():
         os.makedirs(cible, exist_ok=True)
         print('Copie vers : %s' % cible)
 
-    # --- 1. Copie (la carte n'est que lue) ---------------------------------------------------
+    # --- 1. Copy (card is only read) ---------------------------------------------------
     manifeste = {'date': horodatage, 'lecteur': lettre, 'volume': nom_volume,
                  'format': systeme, 'taille_go': round(taille_go, 2), 'fichiers': []}
     copies = 0
@@ -161,7 +149,7 @@ def main():
             destination = os.path.join(cible, rel)
             os.makedirs(os.path.dirname(destination), exist_ok=True)
             try:
-                shutil.copyfile(source, destination)   # lecture de la carte, ecriture sur le PC
+                shutil.copyfile(source, destination)   # reading the map, writing on the PC
             except OSError as err:
                 print('   ILLISIBLE : %s (%s)' % (rel, err))
                 continue
@@ -170,7 +158,7 @@ def main():
                 print('   %d/%d fichiers...' % (copies, len(fichiers)))
         print('%d fichier(s) copie(s).' % copies)
 
-    # --- 2. Verification : tout est relu des DEUX cotes et compare ----------------------------
+    # --- 2. Verification: everything is read from DEUX cotes et compare ----------------------------
     print('\nVerification (relecture de la carte et de la copie)...')
     identiques, differents, manquants, illisibles = 0, [], [], []
     for rel, taille in fichiers:

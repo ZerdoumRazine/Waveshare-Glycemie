@@ -1,39 +1,25 @@
 /* voice_cmd.h: Experimental voice-command recognition API.
- * FR: API de reconnaissance vocale expérimentale.
  * Shared declarations for the implementation.
  */
-/*
- * Commandes vocales LOCALES avec les micros ES7210 de la carte (ESP-SR 2.5.3 d'Espressif, aucune reconnaissance dans
- * le cloud, aucune connexion).
+/* Experimental ESP-SR voice recognition on the device's local microphones.
+ * The standard public firmware disables this subsystem.
  *
- * - Commandes : "GLYCEMIE", "ENREGISTRER NOUVEAU CAPTEUR" puis "CONFIRMER CAPTEUR" (K19), "NOUVEAU CATHETER",
- *   reconnues par MultiNet7 (mn7_en) a partir de phonemes ecrits pour la prononciation francaise (Espressif ne
- *   fournit ni MultiNet francais ni WakeNet francais personnalise en libre-service), et en meme temps les
- *   equivalents anglais "GLUCOSE" et "NEW CATHETER". Reponses toujours en francais. K19 (2026-09-21) : les phrases
- *   courtes "NOUVEAU CAPTEUR" / "NEW SENSOR" sont retirees ("New sensor" provoquait les annonces spontanees).
- *   Option : mot d'eveil officiel francais WakeNet9L "Bonjour ESP" avant la commande.
- * - Modeles dans la partition "model" (srmodels.bin genere et flashe par le composant esp-sr, placee apres les
- *   partitions d'origine, au-dela de 16 Mo) : lus une fois en PSRAM puis charges par srmodel_load() ; aucune
- *   dependance a la microSD. Premiere ecoute 60 s apres la mise sous tension ; jamais de demarrage automatique apres
- *   une panique ou un watchdog (pas de boucle de redemarrage possible).
- * - "GLYCEMIE" : reponse immediate avec la voix Chirp de la microSD (valeur + tendance, ou "Donnees anciennes").
- * - Capteur (K19) : "ENREGISTRER NOUVEAU CAPTEUR" ne modifie rien ; reponse "Nouveau capteur. Dites confirmer
- *   capteur." ; seule la phrase DIFFERENTE "CONFIRMER CAPTEUR", entendue dans les 10 s qui suivent la fin de
- *   l'annonce, enregistre l'heure actuelle (NVS, historique microSD) ; sinon annulation automatique, puis
- *   "ENREGISTRER NOUVEAU CAPTEUR" ignore pendant 5 min (aucune annonce repetee). Seuils propres a ces deux phrases,
- *   plus stricts que ceux des commandes de lecture. Le bouton tactile NOUVEAU CAPTEUR ne depend pas de la voix.
- * - "NOUVEAU CATHETER" : une seule detection ne modifie JAMAIS un compteur ; reponse "Repetez pour confirmer",
- *   deuxieme detection de la meme commande dans les 10 s qui suivent la fin de la phrase -> heure actuelle
- *   enregistree, "... enregistre" ; sinon annulation automatique.
- * - Detection suspendue pendant toute lecture audio (alertes, voix, bips) et 0,6 s apres : l'appareil ne reagit pas
- *   a sa propre voix. Modeles remis a zero a la reprise.
- * - Taches : lecture des micros et detection dans la tache "voixcmd" (pile en PSRAM) ; l'enregistrement NVS est fait
- *   par la tache LVGL (ui_request_consumable_new).
- */
-/* Public interface / Interface publique
- * EN: Optional experimental recognition API; not enabled in the public firmware.
- * FR: API expérimentale des commandes vocales, non activée dans la version publique.
- */
+ * MultiNet7 recognizes a small set of phonetic command candidates, including
+ * glucose readback and changes to sensor or infusion-set dates. A sensor
+ * replacement is a two-stage operation: the first detection announces
+ * the pending action, and a different confirmation command is required
+ * within ten seconds. Infusion-set replacement likewise needs an explicit
+ * second detection. Unconfirmed requests never change NVS state.
+ *
+ * The recognition models are loaded from the dedicated flash partition.
+ * Recognition is suspended during device audio playback to reduce false
+ * triggers. Recognition tasks never write NVS directly: confirmed actions
+ * are handed to the LVGL task for execution.
+ *
+ * Historical language and scoring experiments are not evidence that voice
+ * commands are safe for clinical decisions. All public functions are
+ * accessible through touch controls without recognition enabled. */
+/* Optional recognition control and diagnostics; disabled in public builds. */
 #pragma once
 
 #include <stdbool.h>
@@ -44,31 +30,30 @@
 typedef enum {
     VOICE_CMD_NONE = 0,
     VOICE_CMD_GLUCOSE,   /* "Glycemie" */
-    VOICE_CMD_SENSOR,    /* capteur : "Enregistrer nouveau capteur" puis "Confirmer capteur" */
-    VOICE_CMD_CATHETER,  /* "Nouveau catheter" */
+    VOICE_CMD_SENSOR,    /* A sensor change requires two different consecutive command detections. */
+    VOICE_CMD_CATHETER,  /* Infusion-set change requires a confirmation window. */
 } voice_cmd_id_t;
 
-/* Au demarrage, apres audio_out_init() : demarre l'ecoute si elle est activee dans les reglages */
+/* At the start, after audio_out_init() : start listening if it is active in the settings */
 esp_err_t voice_cmd_init(void);
 
-/* Reglages modifies (RÉGLAGES ou console) : demarre / arrete l'ecoute, applique le mot d'eveil et le gain */
+/* Apply recognition settings from Settings or serial diagnostics. */
 void voice_cmd_apply_settings(void);
 
 bool voice_cmd_running(void);
 
-/* Texte de la pastille du bandeau superieur ("" si aucune commande en cours) ; tache LVGL */
+/* Text of the upper headband tablet ("" if no current order) ; spot LVGL */
 void voice_cmd_ui_hint(char *buf, size_t size);
 
-/* Etat (RÉGLAGES > COMMANDES VOCALES) : "a l'ecoute", "arretees", "erreur ..." */
+/* Human-readable recognition status for the interface. */
 const char *voice_cmd_status_text(void);
 
 /* Console */
 void voice_cmd_print_info(void);
-/* Detection simulee d'une phrase MultiNet (1 glycemie, 3 catheter, 4 glucose, 5 enregistrer nouveau capteur,
- * 6 confirmer capteur) avec sa probabilite : meme chemin qu'une vraie detection (seuil, confirmation, anti-repetition) */
+/* Inject a simulated command through the ordinary confidence and confirmation filters. */
 void voice_cmd_simulate(int mn_id, float prob);
-/* Test : son PCM 16 bits mono 16 kHz ajoute au signal des micros en temps reel (console vrx_inject) */
+/* Inject 16-bit mono PCM test audio at 16 kHz into the microphone path. */
 bool voice_cmd_inject(const uint8_t *pcm, size_t bytes);
-void voice_cmd_set_level_log(bool on);        /* niveau des micros chaque seconde */
-void voice_cmd_set_decode_log(bool on);       /* chaine decodee par MultiNet (reglage des phonemes) */
+void voice_cmd_set_level_log(bool on);        /* microphone level every second */
+void voice_cmd_set_decode_log(bool on);       /* MultiNet decode string (phone fixes) */
 void voice_cmd_add_phrase(int mn_id, const char *phonemes); /* variante temporaire (perdue au redemarrage) */

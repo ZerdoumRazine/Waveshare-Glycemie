@@ -1,12 +1,11 @@
 /*
  * settings.c: Persistent preferences, thresholds and display options.
- * FR: Préférences, seuils et options persistantes.
  * Design note: Updating one setting must not reset unrelated values.
  */
 
 /*
  * Validates UI options loaded from NVS and batches non-urgent writes.
- * Valide les réglages enregistrés et évite les écritures NVS inutiles.
+ * Validates saved settings and avoids writing NVS inutiles.
  */
 #include "settings.h"
 
@@ -26,7 +25,7 @@ static const char *TAG = "reglages";
 #define NVS_KEY       "v1"
 #define NVS_KEY_NIGHT "nuit"
 #define NVS_KEY_VCMD  "vcmd"
-#define NVS_KEY_LANG  "lang" /* un seul octet, separe du bloc "v1" */
+#define NVS_KEY_LANG  "lang" /* one byte, separate from the block "v1" */
 
 static SemaphoreHandle_t s_mutex;
 static settings_t s_settings;
@@ -34,7 +33,7 @@ static night_settings_t s_night;
 static voice_cmd_settings_t s_vcmd;
 
 static const voice_cmd_settings_t k_vcmd_defaults = {
-    .enabled = false, /* activation apres mesure de la memoire (RÉGLAGES ou console vcmd_on) */
+    .enabled = false, /* after-memory activation (REGULATIONS or console vcmd_on) */
     .wake_word = false,
     .mic_gain_db = 30,
 };
@@ -50,7 +49,7 @@ static const night_settings_t k_night_defaults = {
 };
 
 static const settings_t k_defaults = {
-    .volume_level = VOLUME_LOW, /* premier demarrage : volume faible */
+    .volume_level = VOLUME_LOW, /* first start: low volume */
     .volume_pct = 35,
     .voice = true,
     .alerts = true,
@@ -87,7 +86,7 @@ static void sanitize(settings_t *s)
     if (s->volume_pct > 100) {
         s->volume_pct = 100;
     }
-    /* Le pourcentage fait foi : bouton allume seulement s'il correspond exactement a un prereglage */
+    /* The percentage is true: button only lights if it corresponds exactly to a prefix */
     s->volume_level = VOLUME_CUSTOM;
     for (int level = VOLUME_MUTE; level <= VOLUME_MAX; level++) {
         if (settings_level_volume((volume_level_t)level) == s->volume_pct) {
@@ -133,7 +132,7 @@ static void saver_task(void *arg)
     (void)arg;
     for (;;) {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-        /* regroupe les changements rapides (curseur) : une ecriture NVS au plus toutes les 2 s */
+        /* group rapid changes (cursor): a writing NVS not more than 2 s */
         while (ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(2000)) != 0) {
         }
         settings_t copy;
@@ -295,7 +294,7 @@ void settings_lang_set(lang_t lang)
     s_revision++;
     xSemaphoreGive(s_mutex);
     if (s_saver != NULL) {
-        xTaskNotifyGive(s_saver); /* enregistrement differe, comme les autres reglages */
+        xTaskNotifyGive(s_saver); /* recording different, like other settings */
     }
     ESP_LOGI(TAG, "Langue de l'interface : %s", lang_code(lang));
 }

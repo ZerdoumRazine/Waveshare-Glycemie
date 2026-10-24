@@ -1,12 +1,11 @@
 /*
  * ui_consumables.c: Sensor dates, infusion-set changes and stock controls.
- * FR: Dates des capteurs, cathéters et gestion des stocks.
  * Design note: A user action must not decrement an item twice.
  */
 
 /*
  * Implements touchscreen confirmation for sensor, infusion set and stock changes.
- * Gère les confirmations tactiles des changements et des stocks.
+ * Manages tactile confirmations of changes and stocks.
  */
 #include "i18n.h"
 #include "ui_pages.h"
@@ -20,13 +19,9 @@
 
 static const char *TAG = "ui_conso";
 
-/*
- * CONSOMMABLES : deux grandes sections, CAPTEUR G7 et SITE DE PERFUSION (catheter), et sous chacune une carte STOCK.
- * NOUVEAU CAPTEUR / NOUVEAU CATHETER : une seule confirmation, puis l'heure actuelle devient l'heure de depart
- * (aucune saisie de date ni d'heure) ; le stock renseigne perd alors une unite (une seule fois par changement).
- * STOCK : [-] quantite [+], appui sur la quantite = saisie directe ; "NON RENSEIGNE" tant que l'utilisateur n'a rien
- * saisi (aucune decrementation ne la transforme en 0) ; mention discrete "STOCK FAIBLE" au seuil.
- */
+/* The consumables page has sensor and infusion-set sections, each with
+ * stock controls. A confirmed replacement records the current time and
+ * decreases inventory once; merely opening the dialog changes nothing. */
 
 #define SEC_Y    12
 #define SEC_W    482
@@ -98,7 +93,7 @@ void ui_consumables_close_dialog(void)
     }
 }
 
-/* Fond plein ecran qui bloque les appuis ; la boite reste sur l'ecran actif (capture incluse) */
+/* Full screen background that blocks the supports; the box remains on the active screen (capture included) */
 static lv_obj_t *dialog_backdrop(const char *name)
 {
     lv_obj_t *backdrop = lv_obj_create(lv_screen_active());
@@ -169,7 +164,7 @@ static void on_new(lv_event_t *e)
 }
 
 /* ------------------------------------------------------------------------- */
-/* Stock : saisie directe de la quantite */
+/* Stock: direct capture of quantity */
 
 static void qty_refresh(void)
 {
@@ -318,7 +313,7 @@ static void stock_create(lv_obj_t *page, stock_item_t item, int32_t x, const cha
     lv_obj_set_style_bg_grad_color(s->set, UI_G_ACCENT_DEEP, 0);
     lv_obj_set_style_bg_grad_dir(s->set, LV_GRAD_DIR_VER, 0);
     touch_diag_name(s->set, item == STOCK_SENSOR ? "RENSEIGNER capteur" : "RENSEIGNER catheter");
-    /* Etat initial coherent avec [-] et [+] visibles : RENSEIGNER masque (il recouvre le bouton [+]) */
+    /* Initial coherent state with [-] and [+] visible: RENSEIGNER mask (covers the button [+]) */
     lv_obj_add_flag(s->set, LV_OBJ_FLAG_HIDDEN);
 }
 
@@ -366,8 +361,8 @@ static void section_create(lv_obj_t *page, consumable_t c, int32_t x, const char
 
 void ui_consumables_create(lv_obj_t *page)
 {
-    /* Reconstruction (changement de langue) : les boites de dialogue sont filles de l'ecran, pas de
-     * la page. ui_main.c les ferme avant de reconstruire ; ces pointeurs sont remis a zero par surete. */
+    /* Reconstruction (language change): the dialog boxes are girls of the screen, no
+     * page. ui_main.c farm them before rebuilding; These points are back to zero by surete. */
     s_backdrop = NULL;
     s_dialog_when = NULL;
     s_qty_backdrop = NULL;
@@ -414,7 +409,7 @@ static void update_sensor(int64_t now_s)
     snprintf(buf, sizeof(buf), "%s : %s", tr(S_PLACED), when);
     ui_set_text(s->started, buf);
 
-    /* echeance = pose + 10 jours exactement : la grace Dexcom de 12 h ne prolonge pas le compteur */
+    /* echeance = pose + 10 days exactly: the Dexcom grace of 12 hours does not extend the counter */
     lv_color_t color;
     ui_format_duration(st.remaining_s, false, dur, sizeof(dur));
     if (st.expired) {
@@ -437,7 +432,7 @@ static void update_sensor(int64_t now_s)
     ui_set_text(s->detail, buf);
 }
 
-/* Present the catheter deadline according to the selected replacement interval. */
+/* Display the reminder schedule for the user-selected infusion-set interval. */
 static void update_catheter(int64_t now_s)
 {
     section_t *s = &s_sections[CONSUMABLE_CATHETER];
@@ -494,7 +489,7 @@ static void update_stock(stock_item_t item)
     }
     ui_set_text_color(s->value, known ? (low ? UI_G_HIGH : UI_G_TEXT) : UI_G_STALE);
     if (lv_obj_has_flag(s->minus, LV_OBJ_FLAG_HIDDEN) == known) {
-        /* bascule entre [-] quantite [+] et NON RENSEIGNE + RENSEIGNER */
+        /* switch between [-] quantite [+] and NON RENSEIGNE + RENSEIGNER */
         if (known) {
             lv_obj_remove_flag(s->minus, LV_OBJ_FLAG_HIDDEN);
             lv_obj_remove_flag(s->plus, LV_OBJ_FLAG_HIDDEN);
@@ -523,7 +518,7 @@ static void update_stock(stock_item_t item)
 void ui_consumables_update(const ui_data_t *d, bool force)
 {
     if (s_dialog_when != NULL && d->time_ok) {
-        /* l'heure enregistree sera celle de la confirmation : affichee a la minute */
+        /* the recorded time will be that of the confirmation: displayed per minute */
         char when[48];
         char buf[96];
         snprintf(when, sizeof(when), tr(S_DATE_DAY_HM), d->now_tm.tm_mday, d->now_tm.tm_mon + 1,

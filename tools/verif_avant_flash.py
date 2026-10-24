@@ -1,16 +1,14 @@
 #!/usr/bin/env python3
 # Checks firmware build settings before any device flash.
-# FR: Contrôle la compilation avant tout flash matériel.
+#
 # Design note: Target revision and partition offsets must match the actual board.
-# EN: Checks board revision, partition layout and binary headers before flashing.
-# FR: Vérifie révision, partitions et binaires avant installation.
-r"""Verifications automatiques AVANT tout flash de glycemie_display (ESP32-P4 rev1.3).
+# Checks board revision, partition layout and binary headers before flashing.
+#
+"""Run pre-flash validation checks for the Waveshare ESP32-P4 rev 1.3 build.
 
-Lecture seule : ce script n'accede pas a la carte. A lancer dans l'environnement ESP-IDF du projet :
-    . tools\idf_env.ps1      (ou export.ps1 / get_idf d'une installation ESP-IDF 5.5.5)
-    python tools\verif_avant_flash.py
-Code de sortie 0 uniquement si tous les controles passent.
-"""
+Confirm expected firmware outputs, target configuration and partition
+assumptions before invoking any installation procedure. This script validates
+artifacts; it does not flash the device."""
 import json
 import os
 import re
@@ -18,15 +16,15 @@ import subprocess
 import sys
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-PROJECT = ROOT  # le projet ESP-IDF est a la racine du depot
+PROJECT = ROOT  # the project ESP-IDF is at the root of the deposit
 BUILD = os.path.join(PROJECT, 'build')
 APP_BIN = os.path.join(BUILD, 'glycemie_display.bin')
 BOOT_BIN = os.path.join(BUILD, 'bootloader', 'bootloader.bin')
 PART_BIN = os.path.join(BUILD, 'partition_table', 'partition-table.bin')
 SECRETS = os.path.join(ROOT, 'private', 'device_secrets.h')
 
-# Disposition identique au firmware d'origine (backup_original/ANALYSE_PARTITIONS.txt), plus la partition "model"
-# des commandes vocales (ESP-SR) ajoutee le 2026-09-15 APRES les partitions d'origine (leurs offsets sont inchanges)
+# Provision identical to the original firmware (backup_original/ANALYSE_PARTITIONS.txt), plus partition "model"
+# Voice-recognition assets added on 2026-09-15 after the original partition layout
 ORIGINAL_PARTITIONS = [
     ('nvs', 'data', 'nvs', 0x9000, 0x6000),
     ('phy_init', 'data', 'phy', 0xF000, 0x1000),
@@ -70,7 +68,7 @@ def size_to_int(text):
 
 # Read chip revision metadata from the built image, not the filename.
 def image_revisions(path):
-    # esptool 4.x (environnement ESP-IDF 5.5) : l'en-tete etendu n'est affiche qu'avec --version 2
+    # esptool 4.x (environnement ESP-IDF 5.5): the en-tete etendu is only displayed with --version 2
     out = subprocess.run([sys.executable, '-m', 'esptool', '--chip', 'esp32p4', 'image_info', '--version', '2', path],
                          capture_output=True, text=True)
     text = out.stdout + out.stderr
@@ -142,7 +140,7 @@ def main():
     check('Bootloader : revisions v1.0 a v1.99 (image_info)', mini == '1.0' and maxi == '1.99',
           'min v%s, max v%s' % (mini, maxi))
 
-    # 5. Aucun secret dans la configuration versionnable
+    # 5. No secrets in versionable configuration
     secrets = []
     if os.path.exists(SECRETS):
         for m in re.finditer(r'#define\s+(GLY_\w+)\s+"((?:[^"\\]|\\.)*)"', open(SECRETS, encoding='utf-8').read()):

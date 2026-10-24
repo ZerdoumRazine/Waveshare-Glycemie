@@ -1,12 +1,11 @@
 /*
  * night_mode.c: Scheduled dim display and temporary wake-up.
- * FR: Écran atténué la nuit et réveil temporaire.
  * Design note: Urgent alerts still take priority in night mode.
  */
 
 /*
  * Controls the night display, brightness transitions and temporary touch previews.
- * Pilote le mode nuit, la luminosité et les aperçus tactiles.
+ * Pilot night mode, brightness and touch previews.
  */
 #include "night_mode.h"
 
@@ -26,8 +25,8 @@ static const char *TAG = "nuit";
 
 #define FADE_PERIOD_MS 40
 #define FADE_MS        1500                  /* transition douce du retroeclairage */
-#define TOUCH_AWAKE_US (30 * 1000000LL)      /* interface normale 30 s apres la derniere interaction */
-#define ALERT_AWAKE_US (45 * 1000000LL)      /* retour a l'ecran nuit 45 s apres la disparition du panneau d'alerte */
+#define TOUCH_AWAKE_US (30 * 1000000LL)      /* normal interface 30 s after the last interaction */
+#define ALERT_AWAKE_US (45 * 1000000LL)      /* return to the screen night 45 s after the disappearance of the warning sign */
 #define PREVIEW_US     (60 * 1000000LL)      /* apercu TEST MODE NUIT : 60 s au plus */
 
 #define NIGHT_COL_TIME lv_color_hex(0xAAB7CE)
@@ -35,16 +34,16 @@ static const char *TAG = "nuit";
 #define NIGHT_COL_HINT lv_color_hex(0xB07A00)
 
 typedef enum {
-    SIM_AUTO = 0, /* horaire reel */
+    SIM_AUTO = 0, /* Current local schedule. */
     SIM_NIGHT,    /* test : nuit simulee */
 } sim_t;
 
 static const char *const k_sim_names[] = {"horaire reel", "nuit simulee"};
 
-/* Ecran nuit : enfant de l'ecran au premier plan, opaque et cliquable (le premier toucher y reste) */
+/* Night screen: child of the screen in the foreground, opaque and clickable (the first touch remains there) */
 static lv_obj_t *s_screen;
 static lv_obj_t *s_time;
-static lv_obj_t *s_halo;  /* halo tres discret derriere la glycemie (ombre coloree, aucune image) */
+static lv_obj_t *s_halo;  /* halo very discreet behind the glycemia (color shade, no image) */
 static lv_obj_t *s_value;
 static lv_obj_t *s_arrow;
 static lv_obj_t *s_dot;
@@ -82,8 +81,8 @@ static void set_level(int level)
     static bool s_bsp_quiet;
     if (level != s_level) {
         if (s_level >= 0 && !s_bsp_quiet) {
-            /* bsp_display_brightness_set journalise chaque appel : traces d'information du BSP masquees des le premier
-             * changement apres le demarrage (les transitions en font plusieurs ; le mode nuit journalise ses etats) */
+            /* bsp_display_brightness_set log each call: traces of information of the BSP masks of the first
+             * change after the start (transitions make several; night mode logs its states) */
             esp_log_level_set("ESP32_P4_EV", ESP_LOG_WARN);
             s_bsp_quiet = true;
         }
@@ -138,7 +137,7 @@ static bool in_night_period(const night_settings_t *n, const ui_data_t *d)
 }
 
 /* ------------------------------------------------------------------------- */
-/* Ecran nuit minimaliste */
+/* Minimum night screen */
 
 static lv_obj_t *plain_obj(lv_obj_t *parent)
 {
@@ -164,7 +163,7 @@ static void set_text_color(lv_obj_t *label, lv_color_t *shown, lv_color_t color)
     }
 }
 
-/* Contenu mis a jour seulement s'il change (pas de redessin chaque seconde) */
+/* Content updated only if it changes (no redrawing every second) */
 static void refresh_screen(const ui_data_t *d)
 {
     char buf[96];
@@ -203,7 +202,7 @@ static void refresh_screen(const ui_data_t *d)
         char age[48];
         ui_format_age(d->age_s, age, sizeof(age));
         if (i18n_lang() == LANG_FR && age[0] == 'I') {
-            age[0] = 'i'; /* francais seulement : "Il y a 3 min" -> "il y a 3 min" */
+            age[0] = 'i'; /* English only: "Il y a 3 min" -> "il y a 3 min" */
         }
         snprintf(buf, sizeof(buf), "%s : %s  (%s)", tr(S_LAST_READING), hm, age);
         set_text(s_last, s_last_text, sizeof(s_last_text), buf);
@@ -272,7 +271,7 @@ static void evaluate(const ui_data_t *d, bool immediate)
         }
     }
 
-    /* Panneau d'alerte importante prioritaire : luminosite jour, retour a l'ecran nuit 45 s apres sa disparition */
+    /* High priority alert sign: luminosite day, back to the screen night 45 s after its disappearance */
     if (ui_alert_panel_visible() && wakes_screen(ui_alert_panel_style())) {
         if (s_preview) {
             s_preview = false;
@@ -287,7 +286,7 @@ static void evaluate(const ui_data_t *d, bool immediate)
             woke = true;
         }
     }
-    /* Interface normale visible la nuit (apres un toucher ou une alerte) : prolongee 30 s apres chaque interaction */
+    /* Normal interface visible at night (after touch or alert): prolongs 30 s after each interaction */
     if (night && (s_touch_until_us > now || s_alert_until_us > now)) {
         const int64_t last_touch_us = now - (int64_t)lv_display_get_inactive_time(NULL) * 1000;
         if (last_touch_us + TOUCH_AWAKE_US > s_touch_until_us) {
@@ -329,7 +328,7 @@ static void start_preview(void)
     ESP_LOGI(TAG, "Apercu du mode nuit : 60 s au plus, un toucher le termine (horaires inchanges)");
 }
 
-/* Toucher sur l'ecran nuit : ce toucher ne declenche rien sous le doigt */
+/* Touching the night screen: this touch does not trigger anything under the finger */
 static void on_screen_pressed(lv_event_t *e)
 {
     (void)e;
@@ -355,7 +354,7 @@ static void create_screen(void)
     lv_obj_add_event_cb(s_screen, on_screen_pressed, LV_EVENT_PRESSED, NULL);
     touch_diag_name(s_screen, "ecran nuit");
 
-    /* Ordre d'importance : glycemie, fleche, heure, statut, derniere mesure */
+    /* Order of importance: glycemia, fleche, hour, status, last measure */
     s_time = ui_label(s_screen, ui_font_create(true, 96), NIGHT_COL_TIME, "--:--");
     lv_obj_align(s_time, LV_ALIGN_TOP_MID, 0, 2);
 
@@ -370,7 +369,7 @@ static void create_screen(void)
     lv_obj_align(row, LV_ALIGN_CENTER, 0, -6);
     s_value = ui_label(row, ui_font_create(true, 260), UI_COL_DIM, "---");
     s_arrow = trend_arrow_create(row, 190, g_fonts.xl);
-    trend_arrow_set_glow(s_arrow, LV_OPA_40); /* halo fixe, aucune animation la nuit */
+    trend_arrow_set_glow(s_arrow, LV_OPA_40); /* halo fixed, no animation at night */
 
     lv_obj_t *status_row = plain_obj(s_screen);
     lv_obj_set_size(status_row, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
@@ -401,9 +400,9 @@ static void create_screen(void)
     s_dot_color = UI_COL_DIM;
 }
 
-/* Changement de langue : les textes de l'ecran nuit sont poses par set_text(), qui compare avec
- * une copie en cache. Vider ces caches suffit : le prochain rafraichissement les reecrit dans la
- * nouvelle langue. L'ecran nuit lui-meme n'est jamais detruit. */
+/* Language change: the texts of the night screen are posed by set_text(), which compares with
+ * A copy in cache. Clearing these caches is enough: the next refreshment rewrites them in the
+ * New language. The night screen itself is never destroyed. */
 void night_mode_relang(void)
 {
     s_time_text[0] = '\0';

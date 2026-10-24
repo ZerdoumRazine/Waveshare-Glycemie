@@ -1,22 +1,14 @@
 #!/usr/bin/env python3
 # Defines voice phrases and spoken number forms for six languages.
-# FR: Définit les phrases et nombres parlés dans six langues.
+#
 # Design note: The WAV file names must match the firmware's expected clips.
-# EN: Defines fixed spoken phrases and grammar-aware number words in six languages.
-# FR: Contient les phrases fixes et les nombres prononcés dans six langues.
-"""Textes de la banque vocale, langue par langue (francais, anglais, espagnol, allemand, italien, portugais).
+# Defines fixed spoken phrases and grammar-aware number words in six languages.
+#
+"""Define spoken announcements in French, English, Spanish, German, Italian and Portuguese.
 
-Utilise par gen_voice_google.py. Chaque langue fournit :
-  - la voix Google Cloud a employer (meme timbre partout : Chirp 3 HD "Aoede") ;
-  - les 35 phrases fixes (alertes, rappels des consommables, tendances, reponses vocales) ;
-  - les nombres en lettres de 40 a 400, pour les 361 fichiers "glucose_NNN.wav".
-
-Le portugais est genere avec la voix pt-BR : Google ne propose pas de voix Chirp 3 HD en pt-PT.
-
-Les phrases reprennent la formulation du francais d'origine. Deux habitudes sont conservees :
-  - "cathetere" en francais, parce que la voix avalait le R final de "catheter" (constat de l'utilisateur) ;
-  - les nombres sont ecrits en lettres plutot qu'en chiffres, pour que la prononciation soit stable.
-"""
+Each language produces the same expected filenames and categories, but the
+spoken phrases and written-out numbers are localized. Keep the manifest and
+filenames compatible with the playback firmware."""
 
 # --------------------------------------------------------------------------------------------------
 # Nombres en lettres, de 40 a 400
@@ -44,7 +36,7 @@ def _fr_below_100(n):
 
 # Spell a French number with the language-specific tens and hundreds rules.
 def number_fr(n):
-    """Orthographe traditionnelle : soixante-dix-huit, deux cents, cent un."""
+    """Spell an integer using the French number conventions needed by voice announcements."""
     if n < 100:
         return _fr_below_100(n)
     hundreds, rest = divmod(n, 100)
@@ -66,7 +58,7 @@ def _en_below_100(n):
 
 # Express number words in US English for the matching voice bank.
 def number_en(n):
-    """Usage courant pour une mesure : one hundred twenty, two hundred, four hundred."""
+    """Spell an integer in natural spoken English for a glucose reading."""
     if n < 100:
         return _en_below_100(n)
     hundreds, rest = divmod(n, 100)
@@ -91,7 +83,7 @@ def _es_below_100(n):
 
 # Handle Spanish hundreds and the cien/ciento distinction.
 def number_es(n):
-    """cien pour 100 tout seul, ciento veinte, doscientos, cuatrocientos."""
+    """Spell a number in Spanish, including the cien/ciento distinction."""
     if n < 100:
         return _es_below_100(n)
     hundreds, rest = divmod(n, 100)
@@ -118,7 +110,7 @@ def _de_below_100(n):
 
 # Use German unit-before-ten forms when building compound numbers.
 def number_de(n):
-    """einhundertzwanzig, zweihundert, vierhundert ; un seul mot, comme en allemand courant."""
+    """Spell a number using the combined German number-word conventions."""
     if n < 100:
         return _de_below_100(n)
     hundreds, rest = divmod(n, 100)
@@ -147,7 +139,7 @@ def _it_below_100(n):
 
 # Handle Italian elisions around compound numbers.
 def number_it(n):
-    """centoventi, duecento, quattrocento ; un seul mot."""
+    """Spell a number in Italian using the standard combined number words."""
     if n < 100:
         return _it_below_100(n)
     hundreds, rest = divmod(n, 100)
@@ -176,7 +168,7 @@ def _pt_below_100(n):
 
 # Use Brazilian Portuguese wording for the installed Portuguese voice.
 def number_pt(n):
-    """cem tout seul, cento e vinte, duzentos, quatrocentos."""
+    """Spell a number in Portuguese, including the cem/cento distinction."""
     if n < 100:
         return _pt_below_100(n)
     hundreds, rest = divmod(n, 100)
@@ -188,7 +180,7 @@ def number_pt(n):
 # --------------------------------------------------------------------------------------------------
 # Phrases fixes
 # --------------------------------------------------------------------------------------------------
-# Ordre identique dans toutes les langues ; les noms de fichiers ne changent jamais.
+# The same order in all languages; file names never change.
 
 ORDRE = [
     'alert_urgent_low', 'alert_low', 'alert_high', 'alert_urgent_high', 'alert_no_data',
@@ -427,7 +419,7 @@ FIXES = {
     },
 }
 
-# "Glycemie <valeur>." : le mot qui precede le nombre, par langue.
+# "Glycemie <valeur>." : the word which precedes the number, by language.
 GLUCOSE_PREFIX = {
     'fr': 'Glycémie %s.',
     'en': 'Glucose %s.',
@@ -439,7 +431,7 @@ GLUCOSE_PREFIX = {
 
 NOMBRE = {'fr': number_fr, 'en': number_en, 'es': number_es, 'de': number_de, 'it': number_it, 'pt': number_pt}
 
-# Meme timbre dans toutes les langues. Le portugais est en pt-BR : Google ne propose pas de Chirp 3 HD en pt-PT.
+# Same stamp in all languages. Portuguese is in pt-BR: Google does not offer Chirp 3 HD in pt-PT.
 VOIX = {
     'fr': ('fr-FR', 'fr-FR-Chirp3-HD-Aoede'),
     'en': ('en-US', 'en-US-Chirp3-HD-Aoede'),
@@ -457,7 +449,7 @@ GLUCOSE_MAX = 400
 
 # Return stable clip filenames and spoken text for a single language.
 def phrases(lang):
-    """[(nom de fichier, texte)] dans l'ordre de generation, pour la langue demandee."""
+    """Return recording filenames and localized phrases in their defined generation order."""
     if lang not in FIXES:
         raise ValueError('langue inconnue : %s (%s)' % (lang, ', '.join(LANGUES)))
     textes = FIXES[lang]

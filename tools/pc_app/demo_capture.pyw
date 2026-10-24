@@ -1,16 +1,13 @@
 # Displays safe demo values for UI screenshots.
-# FR: Affiche des valeurs fictives pour les captures.
+#
 # Design note: Demo screenshots must never reveal real user details.
 #!/usr/bin/env python3
-# EN: Launches a demonstration of the Windows configuration UI without a real device.
-# FR: Ouvre une démonstration de l'interface Windows sans écran réel.
-"""Ouvre l'application avec des DONNEES FICTIVES, le temps d'en faire une capture pour le tutoriel.
+# Launches a demonstration of the Windows configuration UI without a real device.
+#
+"""Launch the setup application with fictional demonstration data for safe screenshots.
 
-Aucun port serie n'est ouvert, aucun appareil n'est touche : la liste des ports et le journal sont
-remplis avec des exemples. Les mots de passe affiches ici sont inventes.
-
-Usage :  python tools\\pc_app\\capture_fenetre.py tools\\pc_app\\demo_capture.pyw sortie.png
-"""
+No personal Dexcom account, Wi-Fi password or patient's measurement should
+appear in documentation or promotional material."""
 import importlib.util
 import os
 import sys
@@ -53,7 +50,7 @@ def main():
     f._boutons(True)
     f.etiquette_etat.configure(text='Réseau : MaBox-Salon   |   Compte Dexcom : m***@exemple.fr '
                                     '  |   configuré')
-    racine.after(25000, f.fermer)   # se referme toute seule si la capture n'a pas eu lieu
+    racine.after(25000, f.fermer)   # closes alone if the catch has not taken place
     racine.mainloop()
     return 0
 

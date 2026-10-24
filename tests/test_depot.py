@@ -1,15 +1,10 @@
 #!/usr/bin/env python3
 # Checks repository integrity and release safety rules.
-# FR: Contrôle la structure et la confidentialité du dépôt.
+#
 # Design note: Catch unintentional binaries and secrets before a public release.
-# EN: Check tracked paths, third-party notices and public-source invariants.
-# FR: Vérifie les chemins suivis, les licences et les protections du dépôt.
-r"""Controles du depot avant publication : coherence du projet et absence de donnees privees.
-
-Ne compile rien et n'accede pas a la carte. A lancer depuis la racine du projet :
-    python tests\test_depot.py
-Code de sortie 0 seulement si tous les controles passent.
-"""
+# Check tracked paths, third-party notices and public-source invariants.
+#
+"""Check repository structure, documentation links and the absence of known private data before publication."""
 import io
 import os
 import re
@@ -18,7 +13,7 @@ import sys
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 
-# Fichiers et dossiers exclus du depot (voir .gitignore) : ils ne sont pas controles.
+# Files and folders excluded from the repository (see .gitignore): they are not controlled.
 IGNORES = {'build', 'managed_components', 'tools/espressif', 'tools/esp-idf-v5.5.5', 'tools/cache',
            'tools/logs', 'tests/build', '.git', '.venv', '__pycache__', 'private'}
 TEXTE = {'.c', '.h', '.py', '.ps1', '.md', '.txt', '.csv', '.yml', '.yaml', '.json', '.lock', '.defaults', ''}
@@ -32,7 +27,7 @@ def check(nom, ok, detail=''):
 
 # Use the tracked Git file list, not arbitrary temporary build output.
 def fichiers_versionnes():
-    """Ce que Git publierait reellement ; a defaut (pas de depot Git), tout l'arbre sauf les exclusions."""
+    """List files tracked by Git; use a conservative file-tree fallback when no Git checkout is available."""
     try:
         sortie = subprocess.run(['git', '-C', ROOT, 'ls-files', '-z'], capture_output=True, timeout=60)
         suivis = [n for n in sortie.stdout.decode('utf-8').split('\0') if n]
@@ -69,17 +64,17 @@ def main():
 
     # 1. Structure attendue
     for chemin in ('CMakeLists.txt', 'partitions.csv', 'sdkconfig.defaults', 'dependencies.lock',
-                   '.gitignore', 'LICENSE', 'README.md', 'README_FR.md',
+                   '.gitignore', 'LICENSE', 'README.md',
                    'config/esp32p4_rev1_3.defaults', 'main/CMakeLists.txt',
                    'main/device_secrets.example.h', 'private/.gitignore'):
         check(f'present : {chemin}', os.path.exists(os.path.join(ROOT, chemin)))
 
-    # 2. Aucun chemin absolu propre a une machine
-    # Seuls les chemins propres a la machine de developpement d'origine sont fautifs ;
-    # les exemples generiques des documents (C:\Espressif, C:\dev\..., C:\Program Files\...)
-    # sont legitimes et doivent rester lisibles.
+    # 2. No absolute path proper to a machine
+    # Only the paths proper to the original development machine are wrong;
+    # General examples of documents (C:\Espressive, C:\dev\..., C:\Program Files\...)
+    # are legit and must remain legible.
     motif_abs = re.compile(r'[A-Za-z]:[\\/]Users[\\/]|Waveshare_Glyc' + 'emie', re.I)
-    # Ce fichier contient le motif lui-meme : il ne peut pas etre son propre contre-exemple.
+    # This file contains the pattern itself: it cannot be its own counter example.
     fautifs = sorted(rel for rel, t in textes.items()
                      if rel != 'tests/test_depot.py' and motif_abs.search(t))
     check('aucun chemin absolu de cette machine dans les fichiers versionnes', not fautifs, ', '.join(fautifs))
@@ -119,7 +114,7 @@ def main():
         lues.append((ch[0], ch[3], ch[4]))
     check('partitions.csv : disposition d\'origine + partition model', lues == attendu, str(lues))
 
-    # 5. Profil de revision ESP32-P4 rev1.3 (obligatoire sur cette carte)
+    # 5. Review profile ESP32-P4 rev1.3 (required on this card)
     profil = textes.get('config/esp32p4_rev1_3.defaults', '')
     check('profil pre-v3 : CONFIG_ESP32P4_SELECTS_REV_LESS_V3=y', 'CONFIG_ESP32P4_SELECTS_REV_LESS_V3=y' in profil)
     check('profil pre-v3 : CONFIG_ESP32P4_REV_MIN_100=y', 'CONFIG_ESP32P4_REV_MIN_100=y' in profil)
@@ -129,17 +124,17 @@ def main():
     check('garde-fou de revision dans main/CMakeLists.txt',
           'CONFIG_ESP32P4_SELECTS_REV_LESS_V3' in textes.get('main/CMakeLists.txt', ''))
 
-    # 6. Sources : tout ce qui est compile existe, tout ce qui existe est compile
+    # 6. Sources: All that is compiled exists, all that exists is compiled
     cm = textes.get('main/CMakeLists.txt', '')
     bloc = cm.split('SRCS', 1)[1].split('INCLUDE_DIRS', 1)[0] if 'SRCS' in cm else ''
-    # Les sources citees dans SRCS, plus celles choisies par une variable (ex. GLY_VOICE_CMD_SRC,
+    # Sources cited in SRCS, plus those chosen by a variable (e.g. GLY_VOICE_CMD_SRC,
     # qui vaut voice_cmd.c ou voice_cmd_stub.c selon l'option de compilation).
     declares = set(re.findall(r'"([A-Za-z0-9_]+\.c)"', bloc))
     declares |= set(re.findall(r'set\([A-Z_]+_SRC\s+"([A-Za-z0-9_]+\.c)"\)', cm))
     check('les sources optionnelles passent bien par une variable de CMake',
           '${GLY_VOICE_CMD_SRC}' in bloc, bloc.strip()[:60])
-    # CMake garde en cache ce qu'on lui donne une fois : si build.ps1 ne passait l'option que
-    # pour -Vocal, la compilation suivante garderait les commandes vocales sans le dire.
+    # Cmake keeps in cache what we give it once: if build.ps1 only passed the option
+    # for -Vocal, the next compilation would keep voice commands without saying.
     construction = textes.get('tools/build.ps1', '')
     check("build.ps1 impose toujours l'etat des commandes vocales (cache CMake)",
           "'-DGLY_VOICE_CMD=ON'" in construction and "'-DGLY_VOICE_CMD=OFF'" in construction)
@@ -147,15 +142,15 @@ def main():
     check('tous les .c declares existent', not (declares - sur_disque), str(sorted(declares - sur_disque)))
     check('aucun .c oublie dans la compilation', not (sur_disque - declares), str(sorted(sur_disque - declares)))
     embed = re.findall(r'"((?:fonts|voice)/[^"]+)"', cm)
-    # voice/voice_fr.pcm est FACULTATIF : CMakeLists ne l'embarque que s'il existe (droits Microsoft non
-    # etablis, voir docs/LICENCES_TIERCES_FR.md). Tous les autres fichiers embarques doivent etre presents.
+    # Legacy voice/voice_fr.pcm is optional because redistribution rights were
+    # not established. Every other embedded file must be present.
     obligatoires = [f for f in embed if f != 'voice/voice_fr.pcm']
     manquants = [f for f in obligatoires if not os.path.exists(os.path.join(ROOT, 'main', f))]
     check('les fichiers embarques obligatoires (polices) sont presents', not manquants, str(manquants))
     check('l\'ancienne voix Windows reste facultative dans la compilation',
           'GLY_VOICE_OLD_PCM' in cm and 'if(EXISTS' in cm)
 
-    # 7. Interface : 5 pages, la page STATS a ete retiree volontairement
+    # 7. Interface: 5 pages, page STATS a was voluntarily withdrawn
     pages = textes.get('main/ui_pages.h', '')
     noms = re.findall(r'UI_PAGE_([A-Z]+)', pages)
     check('5 pages declarees (ACCUEIL, GRAPHIQUE, AUJOURD\'HUI, CONSOMMABLES, REGLAGES)',
@@ -163,7 +158,7 @@ def main():
     check('la page STATS n\'est pas reintroduite',
           not os.path.exists(os.path.join(ROOT, 'main', 'ui_stats.c')) and 'UI_PAGE_STATS' not in pages)
 
-    # Invariants de surete qui doivent rester vrais apres une refactorisation
+    # Surete invariants that must remain true after refactoring
     main_src = textes.get('main/app_main.c', '')
     credentials_src = textes.get('main/credentials.c', '')
     ui_src = textes.get('main/ui_setup.c', '')
@@ -178,7 +173,7 @@ def main():
     check('assistant tactile : erreurs des identifiants controlees',
           's_saisie_refusee' in ui_src and 'if (err != ESP_OK)' in ui_src)
 
-    # 8. Versions de la pile logicielle historiquement validees
+    # 8. Historically valid software stack versions
     comp = textes.get('main/idf_component.yml', '')
     for nom, motif in (('ESP-IDF >= 5.5.5', r'version:\s*">=5\.5\.5"'),
                        ('BSP Waveshare 3.0.1', r'version:\s*"==3\.0\.1"'),
@@ -190,13 +185,13 @@ def main():
     check('dependencies.lock fourni (versions resolues reproductibles)',
           len(textes.get('dependencies.lock', '')) > 1000)
 
-    # 9. Rien de compile ni de volumineux dans le depot
+    # 9. There's nothing in the depot that's compilation or bulky.
     gros = sorted((rel, os.path.getsize(p)) for rel, p in tous if os.path.getsize(p) > 2 * 1024 * 1024)
     check('aucun fichier versionne de plus de 2 Mo', not gros, str(gros))
     binaires = sorted(rel for rel, _ in tous if os.path.splitext(rel)[1].lower() in ('.bin', '.elf', '.obj', '.a'))
     check('aucun binaire de firmware dans le depot', not binaires, ', '.join(binaires))
 
-    # 10. Captures d'ecran : vraies captures de la carte (1024 x 600)
+    # 10. Screenshots: real map catches (1024 x 600)
     dossier = os.path.join(ROOT, 'screenshots')
     pngs = sorted(n for n in os.listdir(dossier) if n.endswith('.png')) if os.path.isdir(dossier) else []
     check('au moins une capture par page', len(pngs) >= 5, ', '.join(pngs))

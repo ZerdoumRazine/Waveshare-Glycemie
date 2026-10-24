@@ -1,17 +1,15 @@
 /* Verifies translation IDs and supported languages.
- * FR: Vérifie les identifiants de texte et les langues.
  * Host tests use simulated dependencies, never personal readings.
  */
 /*
- * Tests de la table de traduction (main/i18n.c compile tel quel).
+ * Translation table tests (main/i18n.c compile as is).
  *
- * Le danger reel n'est pas une faute d'orthographe : c'est un specificateur de format absent ou
- * different d'une langue a l'autre. "Jour %d / %d" traduit en "Day %d" ferait lire un argument
- * inexistant sur la carte. Ces tests comparent donc, pour chaque texte, la suite exacte des
- * specificateurs de toutes les langues avec celle du francais.
+ * Real danger is not a spelling error: it is an absent format specifier or
+ * different from one language to another. "Day %d / %d" translated to "Day %d" would read an argument
+ * non-existent on the map. These tests therefore compare, for each text, the exact sequence of
+ * specifiers of all languages with that of French.
  */
-/* EN: Check translation coverage and language-specific formatting.
- * FR: Vérifie les traductions et formats dans les six langues.
+/* Check translation coverage and language-specific formatting.
  */
 #include <stdio.h>
 #include <string.h>
@@ -19,7 +17,7 @@
 #include "i18n.h"
 #include "mini_test.h"
 
-/* Extrait la suite des specificateurs d'un format : "Jour %d / %d" -> "dd", "%%" ignore. */
+/* Extract the sequence of specifiers in a format: "Day %d / %d" -> "dd", "%%" ignores. */
 static void specs(const char *s, char *out, size_t size)
 {
     size_t n = 0;
@@ -29,7 +27,7 @@ static void specs(const char *s, char *out, size_t size)
         }
         p++;
         if (*p == '%' || *p == '\0') {
-            continue; /* "%%" : un pourcentage litteral, pas un argument */
+            continue; /* "%%" : a literary percentage, not an argument */
         }
         while (*p != '\0' && strchr("0123456789.+- #'", *p) != NULL) {
             p++;

@@ -1,12 +1,11 @@
 /*
  * audio_out.c: Audio playback and alert tones.
- * FR: Lecture audio et bips d'alerte.
  * Design note: The audible beep fallback works without prerecorded WAVs.
  */
 
 /*
  * Owns the codec and serialises tones, alerts and spoken clips through one worker task.
- * Pilote le codec et sérialise les sons dans une tâche dédiée.
+ * Pilot the codec and serialize the sounds in a dedicated task.
  */
 #include "audio_out.h"
 
@@ -30,14 +29,14 @@ static const char *TAG = "audio";
 
 #define CHUNK_FRAMES   320  /* 20 ms a 16 kHz */
 #define IDLE_CLOSE_MS  3000
-#define TONE_AMPLITUDE 0.5f /* -6 dBFS : a 100 % l'ampli sature au-dela (mesure micro : H3 -11 dB avec -1,5 dBFS) */
+#define TONE_AMPLITUDE 0.5f /* -6 dBFS: has 100 % of the amp sature adu-dela (micro measure: H3 -11 dB with -1.5 dBFS) */
 #define ES8311_REG_DAC_VOLUME 0x32 /* 0xBF = 0 dB, pas de 0,5 dB */
 
 /*
- * Volume general -> volume numerique du DAC ES8311 (dB). La courbe par defaut d'esp_codec_dev est lineaire
- * de -50 dB a 0 dB (45 % = -27,5 dB : voix trop faible). Loi proche d'une amplitude proportionnelle au carre
- * du pourcentage (40 log10) : 50 % = -12 dB, 70 % = -6 dB, 85 % = -3 dB, 100 % = 0 dB. Jamais de gain
- * numerique positif (il saturerait les extraits normalises a -1,5 dBFS).
+ * General Volume -> Digital Volume of DAC ES8311 (dB). The curve by defaultesp_codec_dev is linear
+ * Of -50 dB at 0 dB (45% = -27.5 dB: voice too low). Law close to an amplitude proportional to the square
+ * of the percentage (40 log10): 50% = -12 dB, 70% = -6 dB, 85% = -3 dB, 100% = 0 dB. Never gain
+ * positive digital (it would saturate normalized extracts a -1.5 dBFS).
  */
 static const struct {
     int pct;
@@ -48,7 +47,7 @@ static const struct {
 };
 #define VOLUME_POINTS (int)(sizeof(k_volume_curve) / sizeof(k_volume_curve[0]))
 
-/* Meme compensation que le pilote ES8311 avec les valeurs du BSP (ampli 5 V, DAC 3,3 V) : environ -3,6 dB */
+/* Same compensation as the pilot ES8311 with values of BSP 5 V, DAC 3.3 V): approximately -3.6 dB */
 static esp_codec_dev_hw_gain_t s_hw_gain = {.pa_voltage = 5.0, .codec_dac_voltage = 3.3};
 
 typedef enum {
@@ -101,7 +100,7 @@ static const struct {
 
 static esp_codec_dev_handle_t s_speaker;
 static esp_codec_dev_handle_t s_mic;
-static volatile bool s_mic_reserved; /* micros utilises en continu par les commandes vocales */
+static volatile bool s_mic_reserved; /* microphones used continuously by voice commands */
 static bool s_open;
 static int s_volume_set = -1;
 static QueueHandle_t s_queue;
@@ -279,12 +278,12 @@ esp_err_t audio_out_init(void)
         app_state_set_audio_ok(false);
         return ESP_FAIL;
     }
-    /* Courbe du volume general (API esp_codec_dev) : dB demandes = dB DAC vises + compensation du pilote */
+    /* Convert user-facing volume to the codec's dB curve, compensating for the driver. */
     const float hw_gain = esp_codec_dev_col_calc_hw_gain(&s_hw_gain);
     esp_codec_dev_vol_map_t map[VOLUME_POINTS];
     for (int i = 0; i < VOLUME_POINTS; i++) {
         map[i].vol = k_volume_curve[i].pct;
-        /* +0,25 dB : le pilote tronque au pas de 0,5 dB du registre, on arrondit au plus proche (100 % = 0xBF) */
+        /* +0.25 dB: the truncated pilot at 0.5 dB of the register, rounded to the nearest (100% = 0xBF) */
         map[i].db_value = k_volume_curve[i].dac_db + hw_gain + 0.25f;
     }
     esp_codec_dev_vol_curve_t curve = {.vol_map = map, .count = VOLUME_POINTS};
@@ -292,15 +291,15 @@ esp_err_t audio_out_init(void)
         ESP_LOGW(TAG, "Courbe de volume refusee : courbe par defaut d'esp_codec_dev");
     }
     s_queue = xQueueCreate(24, sizeof(audio_req_t));
-    /* pile de 6 Ko : les fonctions de rendu lisent la microSD (FatFs, pilote SDMMC) */
+    /* 6 KB stack: rendering functions read microSD (FatFs, driver) SDMMC) */
     if (s_queue == NULL || xTaskCreate(audio_task, "audio", 6144, NULL, 5, NULL) != pdPASS) {
         return ESP_ERR_NO_MEM;
     }
     app_state_set_audio_ok(true);
     ESP_LOGI(TAG, "Audio pret : ES8311 via le BSP, 16 kHz stereo 16 bits");
-    /* Le codec est ouvert a chaque sonnerie : traces d'information des pilotes masquees, ainsi que le faux message
-     * d'erreur "i2s_channel_disable ... has not been enabled yet" d'esp_codec_dev (sans consequence). Les vrais
-     * echecs d'ouverture et d'ecriture restent journalises par ce module. */
+    /* The codec driver emits informational logs and occasionally a harmless
+ * "i2s_channel_disable ... has not been enabled yet" diagnostic. Report real
+ * audio open/write failures separately so operators can distinguish them. */
     esp_log_level_set("I2S_IF", ESP_LOG_WARN);
     esp_log_level_set("Adev_Codec", ESP_LOG_WARN);
     esp_log_level_set("i2s_common", ESP_LOG_NONE);
@@ -410,7 +409,7 @@ void audio_out_print_info(void)
     }
 }
 
-/* Amplitude de la composante a `freq` (algorithme de Goertzel) sur le canal gauche */
+/* Amplitude of component a `freq` (Goertzel algorithm) on the left channel */
 static double goertzel(const int16_t *stereo, int frames, int freq)
 {
     const double coeff = 2.0 * cos(2.0 * M_PI * freq / AUDIO_SAMPLE_RATE);
@@ -425,7 +424,7 @@ static double goertzel(const int16_t *stereo, int frames, int freq)
     return sqrt(power > 0 ? power : 0) / frames;
 }
 
-/* Tampon des mesures au micro (console) : 100 ms stereo, en PSRAM a la premiere mesure (la RAM interne reste aux
+/* Micro (console) measuring stamp: 100 ms stereo, in PSRAM the first measure (the RAM internal
  * tampons DMA) */
 #define MIC_CHUNK 1600
 static int16_t *s_rx;
@@ -561,7 +560,7 @@ esp_err_t audio_out_measure(int volume_pct, audio_playback_fn_t play_voice, floa
     } else {
         audio_out_play_tone(1000, 1800, volume_pct);
     }
-    const int chunks = voice ? 55 : 12;       /* voix : 5,5 s ; bip : 1,2 s */
+    const int chunks = voice ? 55 : 12;       /* vote: 5.5 seconds; bip: 1.2 s */
     int skip = voice ? 1 : 3;                 /* ouverture du codec et montee du bip */
     double active_energy = 0.0;
     int active_frames = 0;
@@ -585,14 +584,14 @@ esp_err_t audio_out_measure(int volume_pct, audio_playback_fn_t play_voice, floa
                 clipped += a >= 32500;
             }
             const double rms = sqrt(energy / FRAME);
-            if (!voice || rms > noise_rms * 3.16) { /* voix : trames au moins 10 dB au-dessus du bruit */
+            if (!voice || rms > noise_rms * 3.16) { /* voice: frames at least 10 dB above the noise */
                 active_energy += energy;
                 active_frames++;
             }
         }
         if (!voice) {
             tone_sum += goertzel(rx, CHUNK, 1000);
-            h2_sum += goertzel(rx, CHUNK, 2000); /* harmoniques : indice de saturation ampli / haut-parleur */
+            h2_sum += goertzel(rx, CHUNK, 2000); /* Harmonic distortion can indicate amplifier or speaker saturation. */
             h3_sum += goertzel(rx, CHUNK, 3000);
             tone_chunks++;
         }

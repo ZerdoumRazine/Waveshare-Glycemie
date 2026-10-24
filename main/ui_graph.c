@@ -1,12 +1,11 @@
 /*
  * ui_graph.c: Layout and touch interactions of the glucose graph.
- * FR: Mise en page et interaction tactile du graphique.
  * Design note: Keep display calculations separate from data acquisition.
  */
 
 /*
  * Owns the graph page controls and coordinates range selection with the chart widget.
- * Pilote la page graphique et les durées sélectionnées.
+ * Pilot the graphic page and selected durations.
  */
 #include "i18n.h"
 #include "ui_pages.h"
@@ -50,7 +49,7 @@ static void on_range_changed(lv_event_t *e)
 
 void ui_graph_create(lv_obj_t *page)
 {
-    /* Durees : pilules dans un bandeau de verre */
+    /* Purees: pills in a glass band */
     s_ranges = lv_buttonmatrix_create(page);
     touch_diag_name(s_ranges, "durees graphique");
     lv_buttonmatrix_set_map(s_ranges, k_range_map);
@@ -68,7 +67,7 @@ void ui_graph_create(lv_obj_t *page)
     lv_obj_set_pos(s_last, UI_SCR_W - 300 - 24, 6);
 
     ui_chart_create(&s_chart, page, 84, 104, 904, 316, true);
-    ui_chart_enable_explore(&s_chart); /* appui ou glissement : mesure reelle la plus proche */
+    ui_chart_enable_explore(&s_chart); /* support or slip: closest real measure */
 
     lv_obj_t *legend = ui_label(page, g_fonts.xs, UI_G_TEXT3,
                                 tr(S_GRAPH_HINT));
@@ -102,10 +101,10 @@ void ui_graph_update(const ui_data_t *d, bool force)
 
     if (force || d->history_changed || d->minute_changed || hours != s_drawn_hours) {
         if (force || hours != s_drawn_hours) {
-            ui_chart_explore_reset(&s_chart); /* arrivee sur la page ou autre duree : curseur efface */
+            ui_chart_explore_reset(&s_chart); /* arrives on the page or other hard: cursor erases */
         }
         ui_chart_update(&s_chart, d, hours);
         s_drawn_hours = hours;
     }
-    ui_chart_explore_tick(&s_chart); /* curseur efface quelques secondes apres le relachement */
+    ui_chart_explore_tick(&s_chart); /* cursor clears a few seconds after release */
 }

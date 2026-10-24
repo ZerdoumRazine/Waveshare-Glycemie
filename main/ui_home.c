@@ -1,13 +1,9 @@
 /*
  * ui_home.c: Home page showing the latest glucose value and its age.
- * FR: Accueil affichant la glycémie et son ancienneté.
  * Design note: A large number must not hide that a reading is stale.
  */
 
-/*
- * Keeps the glucose value visually dominant and indicates trend and data freshness.
- * Met en avant la valeur, sa tendance et l'ancienneté de la donnée.
- */
+/* Keep the latest reading, trend and age visible without hiding stale-data warnings. */
 #include "i18n.h"
 #include "ui_pages.h"
 
@@ -18,18 +14,13 @@
 #include "trend_arrow.h"
 #include "ui_alert.h"
 
-/*
- * ACCUEIL (1024 x 496) : UNE seule grande carte GLYCEMIE occupant toute la zone de contenu.
- * L'heure et la date sont remontees dans le bandeau (ui_main.c) : la page entiere sert la glycemie.
- * La carte porte la pastille de fraicheur, la valeur geante (320 px) avec halo local et fin calque d'ombre,
- * l'anneau de fraicheur, l'icone de tendance dessinee, la variation et le texte de tendance.
- * Profondeur "2.5D" par superposition : fond degrade de l'ecran -> cartes en degrade a bord fin, ombre courte et
- * second contour interieur tres discret -> halo local -> chiffres et leur ombre portee. Aucune grande ombre floue,
- * aucune transparence sur toute la surface.
- * L'ambiance de la grande carte suit l'etat DEJA calcule de la glycemie (aucun nouveau seuil) : teinte tres sombre
- * derivee de la couleur d'accent, plus neutre quand la donnee est ancienne.
- * Aucune statistique, aucun consommable, aucun stock, aucun mini-graphique : ces informations ont leur propre page.
- */
+/* Home page layout: one prominent glucose card fills the content area.
+ * The shared header displays date and time. Inside the card, render the
+ * large glucose number, freshness ring, trend arrow and recent change.
+ * Layer subtle highlights and shadows without obscuring the value.
+ * Use the already computed glucose status to select colors; never invent
+ * a second set of clinical thresholds for decoration.
+ * Daily statistics, history and consumables remain on their own pages. */
 
 #define MAIN_X        16
 #define MAIN_Y        8
@@ -37,7 +28,7 @@
 #define MAIN_H        480
 #define PILL_X        28
 #define PILL_Y        16
-#define VALUE_X       16    /* colonne de la glycemie dans la carte */
+#define VALUE_X       16    /* column of the glycemia in the map */
 #define VALUE_W       680
 #define VALUE_Y       58
 #define UNIT_Y        392
@@ -46,7 +37,7 @@
 #define HALO_Y        200
 #define SHADOW_DX     4
 #define SHADOW_DY     5
-#define RIGHT_CX      832   /* centre de la colonne tendance dans la carte */
+#define RIGHT_CX      832   /* center of the trend column in the map */
 #define RIGHT_W       316
 #define RING_SIZE     200
 #define RING_W        9
@@ -70,14 +61,14 @@ static lv_obj_t *s_ring;
 static lv_obj_t *s_arrow;
 static lv_obj_t *s_delta;
 static lv_obj_t *s_trend;
-static lv_obj_t *s_note;   /* cause d'une donnee ancienne ou message d'attente (sinon vide) */
+static lv_obj_t *s_note;   /* cause of old data or waiting message (if not empty) */
 static int s_arrow_trend = -1;
 static lv_color_t s_arrow_color;
 static lv_color_t s_halo_color;
 static lv_color_t s_mood_color;
 static lv_opa_t s_halo_opa = LV_OPA_20;
 static lv_opa_t s_value_opa = LV_OPA_COVER;
-static bool s_fast_trend;  /* tendance rapide Dexcom : mise en avant visuelle (aucune alerte) */
+static bool s_fast_trend;  /* fast trend Dexcom: visual focus (no alert) */
 static lv_timer_t *s_breath;
 static int s_breath_step;
 static bool s_breath_on;
@@ -98,13 +89,13 @@ static void on_go_page(lv_event_t *e)
 
 static void set_breathing(bool on);
 
-/* Accueil reellement visible : page affichee, ni ecran nuit ni panneau d'alerte par-dessus */
+/* Home really visible: page displays, no night screen or alert sign above */
 static bool home_visible(void)
 {
     return !lv_obj_has_flag(s_page, LV_OBJ_FLAG_HIDDEN) && !night_mode_screen_visible() && !ui_alert_panel_visible();
 }
 
-/* Respiration lente du halo de l'icone ; plus marquee en tendance rapide (jamais de clignotement) */
+/* Slow breath of the icon halo; more marked in fast trend (never flashing) */
 static void breath_cb(lv_timer_t *timer)
 {
     (void)timer;
@@ -131,7 +122,7 @@ static void set_breathing(bool on)
     }
 }
 
-/* Lueur locale derriere les chiffres : uniquement l'ombre floue, sans noyau visible (jamais une forme) */
+/* Local glow behind the numbers: only the blurred shadow, without a visible kernel (never a shape) */
 static lv_obj_t *soft_glow(lv_obj_t *parent, int32_t w, int32_t h, int32_t blur)
 {
     lv_obj_t *glow = plain(parent);
@@ -144,7 +135,7 @@ static lv_obj_t *soft_glow(lv_obj_t *parent, int32_t w, int32_t h, int32_t blur)
     return glow;
 }
 
-/* Second contour interieur : un filet clair tres discret, 3 px en retrait (profondeur, cout negligeable) */
+/* Second inner contour: a very discreet light net, 3 px in retreat (depth, cost negligeable) */
 static void inner_edge(lv_obj_t *card, int32_t w, int32_t h, int32_t radius)
 {
     lv_obj_t *edge = plain(card);
@@ -167,8 +158,8 @@ static lv_obj_t *value_label(lv_obj_t *parent, lv_color_t color, int32_t dx, int
 
 void ui_home_create(lv_obj_t *page)
 {
-    /* Reconstruction (changement de langue) : le minuteur de respiration de la version precedente
-     * pointerait sur des objets detruits. Il est supprime avant de tout recreer. */
+    /* Reconstruction (language change): the breathing timer of the previous version
+     * Point to destroyed objects. It is removed before recreating everything. */
     if (s_breath != NULL) {
         lv_timer_delete(s_breath);
         s_breath = NULL;
@@ -179,7 +170,7 @@ void ui_home_create(lv_obj_t *page)
     s_page = page;
     ui_navy_background(page);
 
-    /* Grande carte GLYCEMIE, seule zone de la page (appui -> GRAPHIQUE) */
+    /* Large map GLYCEMIE, only area of page (support -> GRAPHIQUE) */
     s_main = ui_card(page, MAIN_X, MAIN_Y, MAIN_W, MAIN_H, 30);
     inner_edge(s_main, MAIN_W, MAIN_H, 27);
     lv_obj_add_flag(s_main, LV_OBJ_FLAG_CLICKABLE);
@@ -187,12 +178,12 @@ void ui_home_create(lv_obj_t *page)
     touch_diag_name(s_main, "carte glycemie");
     s_mood_color = UI_G_STALE;
 
-    /* Pastille de fraicheur, dans la grande carte (petite et secondaire) */
+    /* Cooling tablet, in the big card (small and secondary) */
     lv_obj_t *pill = plain(s_main);
     ui_glass_style(pill, 19);
     lv_obj_set_size(pill, LV_SIZE_CONTENT, 38);
     lv_obj_set_style_pad_hor(pill, 14, 0);
-    lv_obj_set_style_shadow_width(pill, 0, 0); /* deja posee sur une carte : aucune ombre supplementaire */
+    lv_obj_set_style_shadow_width(pill, 0, 0); /* already placed on a map: no additional shadows */
     lv_obj_set_flex_flow(pill, LV_FLEX_FLOW_ROW);
     lv_obj_set_flex_align(pill, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
     lv_obj_set_style_pad_column(pill, 9, 0);
@@ -205,13 +196,13 @@ void ui_home_create(lv_obj_t *page)
     s_fresh_text = ui_label(pill, g_fonts.label, UI_G_STALE, tr(S_FRESH_WAITING));
     s_last = ui_label(pill, g_fonts.xs, UI_G_TEXT2, "");
 
-    /* Cause d'une donnee ancienne ou message d'attente : a droite de la pastille, sinon vide */
+    /* Cause of an old data or waiting message: right of the tablet, otherwise empty */
     s_note = ui_label(s_main, g_fonts.xs, UI_G_TEXT2, "");
     lv_obj_set_width(s_note, 600);
     lv_label_set_long_mode(s_note, LV_LABEL_LONG_MODE_CLIP);
-    lv_obj_set_pos(s_note, PILL_X + 4, PILL_Y + 44); /* sous la pastille, a l'ecart de l'anneau */
+    lv_obj_set_pos(s_note, PILL_X + 4, PILL_Y + 44); /* under the pastille,'ecart de l'ring */
 
-    /* Glycemie : halo local, calque d'ombre tres fin, puis les chiffres */
+    /* Glycemie : local halo, very fine shade layer, then numbers */
     s_halo = soft_glow(s_main, HALO_W, HALO_H, 80);
     lv_obj_set_pos(s_halo, VALUE_X + (VALUE_W - HALO_W) / 2, HALO_Y);
     s_halo_color = UI_G_STALE;
@@ -225,7 +216,7 @@ void ui_home_create(lv_obj_t *page)
     lv_obj_set_style_text_align(s_unit, LV_TEXT_ALIGN_CENTER, 0);
     lv_obj_set_pos(s_unit, VALUE_X, UNIT_Y);
 
-    /* Tendance : anneau fin de fraicheur, icone dessinee, variation, texte */
+    /* Trend : ring of freshness, icone drawing, variation, text */
     s_ring = ui_ring(s_main, RING_SIZE, RING_W);
     lv_obj_set_pos(s_ring, RIGHT_CX - RING_SIZE / 2, RING_CY - RING_SIZE / 2);
     s_arrow = trend_arrow_create(s_main, ARROW_SIZE, g_fonts.xl);
@@ -325,7 +316,7 @@ static void set_halo(lv_color_t color, lv_opa_t opa)
     }
 }
 
-/* Ambiance de la grande carte : degrade tres sombre teinte par la couleur d'accent deja calculee */
+/* Atmosphere of the large map: very dark degrade dyed by the accent color already calculated */
 static void set_mood(lv_color_t accent)
 {
     if (lv_color_eq(accent, s_mood_color)) {
@@ -336,7 +327,7 @@ static void set_mood(lv_color_t accent)
     lv_obj_set_style_bg_grad_color(s_main, lv_color_mix(accent, UI_G_GLASS_BOT, 13), 0);
 }
 
-/* Chiffres et leur ombre portee : meme texte, jamais redessines si la valeur ne change pas */
+/* Figures and their shadow carries: same text, never redraws if the value does not change */
 static void set_value_text(const char *text)
 {
     if (strcmp(text, s_value_text) != 0) {
@@ -346,7 +337,7 @@ static void set_value_text(const char *text)
     }
 }
 
-/* Valeur moins mise en avant quand la donnee n'est plus fraiche (jamais effacee) */
+/* Value less highlighted when data is no longer fresh (never erased) */
 static void set_value_opa(lv_opa_t opa)
 {
     if (opa != s_value_opa) {
@@ -357,7 +348,7 @@ static void set_value_opa(lv_opa_t opa)
     }
 }
 
-/* Heure et age de la derniere mesure : plus lisibles des que la donnee est en retard */
+/* Time and age of last measurement: more readable than the data is late */
 static void set_last_font(const lv_font_t *font)
 {
     if (lv_obj_get_style_text_font(s_last, 0) != font) {
@@ -389,17 +380,17 @@ static void update_header(const ui_data_t *d)
     char age[40];
     ui_format_age(d->age_s, age, sizeof(age));
     if (i18n_lang() == LANG_FR && age[0] == 'I') {
-        age[0] = 'i'; /* francais seulement : "Il y a 3 min" -> "il y a 3 min" */
+        age[0] = 'i'; /* English only: "Il y a 3 min" -> "il y a 3 min" */
     }
     snprintf(buf, sizeof(buf), "%s · %s", hm, age);
     ui_set_text(s_last, buf);
     const bool stale = d->fresh == GM_FRESH_STALE || d->fresh == GM_FRESH_NONE;
     ui_set_text_color(s_last, stale ? UI_G_CRIT : (d->fresh == GM_FRESH_LATE ? UI_G_HIGH : UI_G_TEXT2));
-    /* RETARD ou DONNEES ANCIENNES : heure et age de la derniere mesure plus visibles */
+    /* Highlight the last reading's age when it is late or stale. */
     set_last_font(d->fresh == GM_FRESH_OK ? g_fonts.xs : g_fonts.s);
 }
 
-/* Anneau : progression vers la prochaine mesure (a jour), orange en RETARD, rouge plein si DONNEES ANCIENNES */
+/* Freshness ring: normal progress, orange for late data, red for stale data. */
 /* Use colors and halo intensity as presentation only, never as a treatment recommendation. */
 static void update_ring(const ui_data_t *d)
 {
@@ -451,14 +442,14 @@ static void update_hero(const ui_data_t *d)
     ui_set_text_color(s_value, value_color);
     ui_set_text_color(s_unit, stale ? UI_G_STALE : UI_G_TEXT3);
 
-    /* Interface adaptative : calme quand tout va bien, valeur moins mise en avant des que la donnee vieillit */
+    /* Adaptive interface: calm when everything goes well, less emphasis on what the data is ageing */
     const bool fast = !stale && (p->trend == TREND_DOUBLE_UP || p->trend == TREND_DOUBLE_DOWN);
     s_fast_trend = fast;
     set_halo(value_color, stale ? LV_OPA_20 : (fast ? LV_OPA_40 : LV_OPA_20));
     set_mood(value_color);
     set_value_opa(stale ? LV_OPA_60 : (d->fresh == GM_FRESH_LATE ? LV_OPA_80 : LV_OPA_COVER));
 
-    /* Tendance et variation jamais presentees comme actuelles sur une donnee ancienne */
+    /* Trend and variation never present as current on an old data */
     if (stale) {
         set_arrow(TREND_NONE, UI_G_STALE);
         set_breathing(false);
@@ -486,14 +477,14 @@ static void update_hero(const ui_data_t *d)
     }
     ui_set_text(s_trend, ui_trend_text(p->trend));
     ui_set_text_color(s_trend, fast ? value_color : UI_COL_SOFT);
-    ui_set_text(s_note, ""); /* accueil epure : rien d'autre tant que la donnee est fraiche */
+    ui_set_text(s_note, ""); /* reception : nothing else as long as the data is fresh */
 }
 
 void ui_home_update(const ui_data_t *d, bool force)
 {
     (void)force;
     if (lv_obj_has_flag(s_page, LV_OBJ_FLAG_HIDDEN)) {
-        set_breathing(false); /* page masquee : aucune animation */
+        set_breathing(false); /* mask page: no animation */
         return;
     }
     update_header(d);

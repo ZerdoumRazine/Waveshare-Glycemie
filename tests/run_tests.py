@@ -1,22 +1,13 @@
 #!/usr/bin/env python3
 # Compiles and runs hardware-independent C regression tests.
-# FR: Compile et lance les tests C sans matériel.
+#
 # Design note: Simulated components are not a substitute for hardware validation.
-# EN: Compile actual firmware C modules against host stubs before executing their tests.
-# FR: Compile les modules C réels avec des remplacements pour les tester sur PC.
-r"""Compile et execute les tests unitaires du firmware sur le PC (sans carte ESP32).
+# Compile actual firmware C modules against host stubs before executing their tests.
+#
+"""Compile and execute firmware unit tests on a desktop without an ESP32 board.
 
-Les tests compilent le VRAI code C de main/ : glucose_math.c, app_state.c, sensor_session.c,
-consumables.c et stock.c. Seules les dependances materielles (NVS, FreeRTOS, journal, microSD)
-sont remplacees par les bouchons de tests/hote/shims.
-
-Usage :
-    python tests\run_tests.py              compile puis execute toutes les suites
-    python tests\run_tests.py --liste      affiche seulement ce qui serait compile
-
-Compilateur : gcc, clang ou MSVC (Build Tools Visual Studio). Aucun ESP-IDF requis.
-Code de sortie 0 seulement si toutes les suites passent.
-"""
+Use host shims for ESP-IDF services while testing real C modules. This does
+not replace the full ESP-IDF target build or an end-to-end hardware test."""
 import argparse
 import json
 import os
@@ -63,7 +54,7 @@ FORCE_INCLUDE = os.path.join(SHIMS, 'compat_hote.h')
 
 # Detect the Visual Studio toolchain when GCC and Clang are unavailable.
 def trouver_msvc():
-    """Renvoie (environnement, chemin de cl.exe) pour MSVC, ou (None, None)."""
+    """Locate the MSVC compiler and its configured environment, if available."""
     vswhere = os.path.join(os.environ.get('ProgramFiles(x86)', r'C:\Program Files (x86)'),
                            'Microsoft Visual Studio', 'Installer', 'vswhere.exe')
     if not os.path.exists(vswhere):
@@ -77,11 +68,11 @@ def trouver_msvc():
     for entry in entries:
         vcvars = os.path.join(entry['installationPath'], 'VC', 'Auxiliary', 'Build', 'vcvars64.bat')
         if os.path.exists(vcvars):
-            # shell=True : cmd.exe conserve les guillemets du chemin (liste d'arguments : il les retire)
+            # shell=True: cmd.exe keeps quotes from the path (list of arguments: it removes them)
             dump = subprocess.run(f'"{vcvars}" >nul 2>&1 && set',
                                   capture_output=True, text=True, shell=True)
-            # Les noms de variables Windows ne sont pas sensibles a la casse : on normalise
-            # (sinon "Path" du vidage et "PATH" d'os.environ coexistent et cl.exe reste introuvable).
+            # Variable Names Windows are not case-sensitive: normalize
+            # (other "Path" and "PATH" about coexist and cl.exe remains unobtainable).
             env = {k.upper(): v for k, v in os.environ.items()}
             for line in dump.stdout.splitlines():
                 if '=' in line:

@@ -1,61 +1,48 @@
 /* voice.h: Speech clip selection and fallback interface.
- * FR: Choix des annonces et fonctionnement de secours.
  * Shared definitions for the firmware implementation.
  */
-/*
- * Annonces vocales francaises LOCALES (aucune dependance Internet, aucun appel Google depuis la carte) :
- *
- * - banque principale : fichiers WAV de la microSD. Le francais est a la racine,
- *   /glycemie/audio/voice/ ; les autres langues dans un sous-dossier par code ISO
- *   (/glycemie/audio/voice/en/, /es/, /de/, /it/, /pt/). Si la banque de la langue choisie
- *   n'est pas installee, la banque francaise prend le relais plutot que le silence.
- *   (PCM 16 bits mono 16 kHz, voix Google
- *   fr-FR-Chirp3-HD-Aoede generee une seule fois sur le PC par tools/voice/gen_voice_google.py). Une alerte joue
- *   la phrase d'alerte puis la valeur : alert_low.wav + glucose_078.wav ("Attention, glycemie basse. Glycemie
- *   soixante-dix-huit."). Fichier absent ou carte indisponible : aucune voix, le bip d'alerte deja joue sert de
- *   secours. Les fichiers sont lus dans la tache audio, jamais dans l'interface.
- * - ancienne banque integree au firmware (voix Windows fr-FR, nombres composes mot a mot) : conservee
- *   temporairement jusqu'a validation de la nouvelle voix, jouee seulement par la console (voice_old).
- */
-/* Public interface / Interface publique
- * EN: PCM announcement playback and microSD language fallback.
- * FR: Lecture PCM des annonces et repli de langue.
- */
+/* Speech announcements use optional prerecorded WAV files stored on microSD.
+ * The French bank lives directly in /glycemie/audio/voice; English, Spanish,
+ * German, Italian and Portuguese use language-code subfolders. A missing
+ * selected-language bank falls back to French, while absent WAV files leave
+ * the supplementary audible alert beeps operational. Files use 16-bit mono
+ * PCM at 16 kHz and are loaded by the dedicated audio task, never LVGL.
+ * The old embedded voice-bank experiment is restricted to diagnostics. */
+/* Speech-clip lookup, playback and language fallback APIs. */
 #pragma once
 
 
 #include <stdbool.h>
 #include "alerts.h"
 
-/* Langue changee : la banque vocale de la nouvelle langue sera cherchee a nouveau */
+/* Changing language: the voice bank of the new language will be searched again */
 void voice_lang_changed(void);
 
-/* Ancienne banque integree presente dans le firmware */
+/* Former integrated bank present in firmware */
 bool voice_available(void);
 
-/* Annonce associee a une alerte (phrase + valeur eventuelle), jouee apres le son d'alerte */
+/* Speak an alert phrase, then an optional glucose value after its tone. */
 void voice_announce_alert(alert_type_t type, int value, int volume_pct);
 
-/* TEST VOIX : "Glycemie <nombre>." (glucose_NNN.wav, 120 pour le bouton) ; bip de test si le fichier manque */
+/* Voice test reads a sample glucose phrase; missing clips fall back to a beep. */
 void voice_test(int number, int volume_pct);
 
-/* Reponses des commandes vocales (vc_*.wav) ; bip de test si le fichier manque */
+/* Responses to voice commands (vc *.wav); test beep if missing file */
 typedef enum {
-    VOICE_REPLY_SENSOR_CONFIRM = 0, /* "Nouveau capteur. Repetez pour confirmer." */
-    VOICE_REPLY_SENSOR_SAVED,       /* "Nouveau capteur enregistre." */
-    VOICE_REPLY_CATHETER_CONFIRM,   /* "Nouveau catheter. Repetez pour confirmer." */
-    VOICE_REPLY_CATHETER_SAVED,     /* "Nouveau catheter enregistre." */
-    VOICE_REPLY_CANCELLED,          /* "Commande annulee." */
-    VOICE_REPLY_TIME_UNAVAILABLE,   /* "Heure non synchronisee. Enregistrement impossible." */
-    VOICE_REPLY_SENSOR_ASK_CONFIRM, /* K19 : "Nouveau capteur. Dites confirmer capteur." */
+    VOICE_REPLY_SENSOR_CONFIRM = 0, /* "New sensor. Repeat to confirm." */
+    VOICE_REPLY_SENSOR_SAVED,       /* Confirmation response after saving a sensor replacement. */
+    VOICE_REPLY_CATHETER_CONFIRM,   /* "New catheter. Repeat to confirm." */
+    VOICE_REPLY_CATHETER_SAVED,     /* Confirmation response after saving an infusion-set replacement. */
+    VOICE_REPLY_CANCELLED,          /* Cancellation response for an abandoned voice operation. */
+    VOICE_REPLY_TIME_UNAVAILABLE,   /* An unsynchronized clock prevents a dated replacement from being saved. */
+    VOICE_REPLY_SENSOR_ASK_CONFIRM, /* First stage of the historical sensor-change confirmation sequence. */
     VOICE_REPLY_COUNT,
 } voice_reply_t;
 void voice_reply(voice_reply_t reply, int volume_pct);
 
-/* Glycemie a la demande : "Glycemie cent quinze." puis la tendance ("Stable.", "En hausse."...) ; donnee ancienne :
- * "Donnees anciennes. Derniere mesure :" puis la valeur, sans tendance ; aucune mesure : vc_no_data.wav */
+/* Speak the latest glucose value and trend; for stale data, identify
+ * its age and omit any misleading current-trend announcement. */
 void voice_say_glucose(int mgdl, uint8_t trend, bool stale, bool available, int volume_pct);
 
-/* Ancienne voix integree (console) : phrase d'alerte, ou type ALERT_TEST : "Test du volume. Glycemie <valeur>
- * milligrammes par decilitre." */
+/* Historical embedded voice test, available only through diagnostics. */
 void voice_old_announce(alert_type_t type, int value, int volume_pct);

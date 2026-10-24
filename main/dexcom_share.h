@@ -1,23 +1,21 @@
 /* dexcom_share.h: Read-only Dexcom Share client API.
- * FR: API en lecture seule du client Dexcom Share.
  * The declarations below are shared with other firmware modules.
  */
 /*
- * Client Dexcom Share natif ESP-IDF (esp_http_client + TLS verifie par le bundle de certificats).
+ * Dexcom Client Share native ESP-IDF (esp_http_client + TLS verifies by the certificate bundle).
  *
- * Protocole d'apres pydexcom (MIT, gagebenne/pydexcom, commit 3447aa08) :
+ * Protocol after pydexcom (MIT, gagebenne/pydexcom, commit 3447aa08) :
  *   1. POST General/AuthenticatePublisherAccount  {accountName, password, applicationId} -> accountId
  *   2. POST General/LoginPublisherAccountById     {accountId, password, applicationId}   -> sessionId
  *   3. POST Publisher/ReadPublisherLatestGlucoseValues?sessionId=..&minutes=..&maxCount=..  corps {}
  * Europe = region "ous" : https://shareous1.dexcom.com/ShareWebServices/Services/
  * Identifiant d'application US/OUS : d89443d2-327c-4a6f-89e5-496bbb0317db
- * (pydexcom const.py : DEXCOM_APPLICATION_ID_OUS = DEXCOM_APPLICATION_ID_US ; l'ID d8665ade... est celui du Japon).
+ * (pydexcom const.py: DEXCOM_APPLICATION_ID_OUS = DEXCOM_APPLICATION_ID_US ; the ID d8665ade... is that of Japan).
  *
- * API non officielle : ce module isole entierement le service distant.
+ * API unofficial: this module completely isolates the remote service.
  */
 /* Public interface / Interface publique
- * EN: Dexcom Share HTTPS client types, timestamps and result codes.
- * FR: Interface du client HTTPS Dexcom Share.
+ * Dexcom Share HTTPS client types, timestamps and result codes.
  */
 #pragma once
 
@@ -27,8 +25,8 @@
 typedef enum {
     DEX_OK = 0,
     DEX_ERR_CONFIG,        /* identifiants absents */
-    DEX_ERR_NETWORK,       /* DNS, TCP, TLS, delai depasse */
-    DEX_ERR_SERVER,        /* HTTP inattendu, JSON invalide, code inconnu */
+    DEX_ERR_NETWORK,       /* DNS, TCP, TLSTime to go */
+    DEX_ERR_SERVER,        /* Unexpected HTTP response, invalid JSON or unknown server code. */
     DEX_ERR_SESSION,       /* SessionIdNotFound / SessionNotValid */
     DEX_ERR_AUTH,          /* identifiant ou mot de passe refuse : ne pas reessayer */
     DEX_ERR_MAX_ATTEMPTS,  /* SSO_AuthenticateMaxAttemptsExceeded : compte bloque */
@@ -43,12 +41,12 @@ typedef enum {
     DEX_STEP_READ = 3,         /* Publisher/ReadPublisherLatestGlucoseValues */
 } dex_step_t;
 
-/* Diagnostic de la derniere requete en echec (aucune donnee sensible) */
+/* Diagnosis of last failed request (no sensitive data) */
 typedef struct {
     dex_step_t step;
-    int http_status;       /* 0 si aucune reponse HTTP */
-    bool request_sent;     /* la requete (et donc les identifiants) a pu partir */
-    char esp_error[40];    /* erreur ESP-IDF reseau/TLS */
+    int http_status;       /* 0 if no answer HTTP */
+    bool request_sent;     /* the request (and therefore the identifiers) may have left */
+    char esp_error[40];    /* Network or TLS error reported by ESP-IDF. */
     char code[64];         /* champ Code de Dexcom */
     char message[160];     /* champ Message de Dexcom, identifiants masques */
 } dex_error_info_t;
@@ -68,13 +66,13 @@ bool dexcom_client_configured(const dexcom_client_t *client);
 bool dexcom_has_session(const dexcom_client_t *client);
 void dexcom_invalidate_session(dexcom_client_t *client);
 
-/* Test DNS + TLS du serveur Dexcom SANS identifiants (aucune authentification) */
+/* Verify DNS and TLS without sending user credentials. */
 dex_result_t dexcom_probe_tls(dexcom_client_t *client, int *http_status);
 
-/* Connexion en 2 etapes (l'etape 1 est sautee si l'identifiant de compte est deja connu) */
+/* 2 step connection (Step 1 is skipped if the account ID is already known) */
 dex_result_t dexcom_login(dexcom_client_t *client);
 
-/* Lecture des mesures (plus recente en premier) */
+/* Reading measurements (more recent first) */
 dex_result_t dexcom_read_glucose(dexcom_client_t *client, int minutes, int max_count,
                                  glucose_point_t *out, int max_out, int *out_count);
 

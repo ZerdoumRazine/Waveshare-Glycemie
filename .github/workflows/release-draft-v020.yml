@@ -1,13 +1,8 @@
-# EN: Assemble verified release assets only after required jobs succeed.
-# FR: Prépare les fichiers téléchargeables après réussite des tests.
-name: Préparer la préversion privée v0.2.0
+# Assemble verified release assets only after required jobs succeed.
+name: Prepare private v0.2.0 pre-release
 
+# Manual maintenance only: this historical v0.2.0 release already exists.
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - .github/workflows/release-draft-v020.yml
   workflow_dispatch:
 
 permissions:
@@ -15,7 +10,7 @@ permissions:
 
 jobs:
   tests:
-    name: Régressions hors matériel
+    name: Host regression tests
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -23,30 +18,30 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Tests C GCC
+      - name: Run C tests with GCC
         run: python tests/run_tests.py
-      - name: Vérifications de confidentialité et de structure
+      - name: Check privacy and repository structure
         run: python tests/test_depot.py
-      - name: Tests de langue
+      - name: Run language tests
         run: python tests/test_langues_voix.py
-      - name: Assistant USB
+      - name: Test USB assistant
         run: python tests/test_assistant_config.py
-      - name: Carte mémoire
+      - name: Test microSD backup
         run: python tests/test_recuperation_microsd.py
-      - name: Voix sur microSD
+      - name: Test microSD speech transfer
         run: python tests/test_sd_voice_upload.py
-      - name: Vérifier la fabrication des ZIP
+      - name: Check ZIP packaging
         run: python tests/test_pack_release.py
 
   firmware:
-    name: Compiler et vérifier ESP32-P4
+    name: Build and verify ESP32-P4
     runs-on: ubuntu-latest
     timeout-minutes: 45
     container:
       image: espressif/idf:v5.5.5
     steps:
       - uses: actions/checkout@v4
-      - name: Compiler sans données privées
+      - name: Build firmware without private credentials
         shell: bash
         run: |
           test ! -e private/device_secrets.h
@@ -66,7 +61,7 @@ jobs:
           retention-days: 30
 
   windows:
-    name: Construire la configuration Windows
+    name: Build Windows configuration app
     runs-on: windows-latest
     timeout-minutes: 20
     steps:
@@ -74,9 +69,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Tester l'application
+      - name: Test Windows application
         run: python tests/test_pc_app.py
-      - name: Vérifier syntaxe installateur PowerShell
+      - name: Check PowerShell installer syntax
         shell: pwsh
         run: |
           $tokens = $null
@@ -84,9 +79,9 @@ jobs:
           [void][System.Management.Automation.Language.Parser]::ParseFile(
             (Resolve-Path 'tools/installer.ps1').Path, [ref]$tokens, [ref]$errors)
           if ($errors.Count -gt 0) { $errors | Out-String | Write-Host; exit 1 }
-      - name: Installer PyInstaller
+      - name: Install PyInstaller
         run: py -3 -m pip install pyinstaller
-      - name: Construire l'exécutable
+      - name: Build executable
         shell: pwsh
         run: powershell -ExecutionPolicy Bypass -File tools/pc_app/construire_exe.ps1
       - uses: actions/upload-artifact@v4
@@ -97,7 +92,7 @@ jobs:
           retention-days: 30
 
   draft-release:
-    name: Livrer uniquement un brouillon privé
+    name: Prepare private draft only
     needs: [tests, firmware, windows]
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -116,19 +111,19 @@ jobs:
         with:
           name: application-windows
           path: _windows
-      - name: Vérifier et préparer le ZIP d'installation
+      - name: Verify and package installation ZIP
         run: |
           python tools/pack_release.py --build _firmware --exe _windows/GlycemieConnexion.exe --out _release
           (cd _release && sha256sum -c SHA256SUMS.txt)
-      - name: Créer la version v0.2.0 en brouillon (jamais publique)
+      - name: Create v0.2.0 private draft
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
         run: |
           set -euo pipefail
           if gh release view v0.2.0 >/dev/null 2>&1; then
-            echo "La version v0.2.0 existe deja. Rien n'est remplace."
+            echo "v0.2.0 already exists. Do not replace its artifacts."
             exit 1
           fi
-          gh release create v0.2.0             --target "$GITHUB_SHA"             --title "v0.2.0 — corrections et installation (préversion)"             --notes-file docs/RELEASE_NOTES_0_2_0.md             --draft --prerelease             _release/glycemie-installation-ecran-v0.2.0.zip             _release/GlycemieConnexion.exe             _release/SHA256SUMS.txt             _release/SOURCE_COMMIT.txt
-          echo "Brouillon cree ; la visibilite du depot ne change pas."
+          gh release create v0.2.0             --target "$GITHUB_SHA"             --title "v0.2.0 — verified firmware pre-release"             --notes-file docs/RELEASE_NOTES_0_2_0.md             --draft --prerelease             _release/glycemie-installation-ecran-v0.2.0.zip             _release/GlycemieConnexion.exe             _release/SHA256SUMS.txt             _release/SOURCE_COMMIT.txt
+          echo "Draft created; repository visibility remains private."

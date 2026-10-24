@@ -1,16 +1,13 @@
 #!/usr/bin/env python3
 # Captures serial diagnostics while redacting known secrets.
-# FR: Récupère les diagnostics série en masquant les secrets connus.
+#
 # Design note: Logs may contain health data; keep them out of the public repository.
-# EN: Captures serial diagnostics while redacting known credentials and personal details.
-# FR: Capture les diagnostics série en masquant les données privées.
-"""Capture du journal serie de l'ESP32-P4 avec masquage des secrets.
+# Captures serial diagnostics while redacting known credentials and personal details.
+#
+"""Capture diagnostic output from the ESP32-P4 serial connection.
 
-Aucune ecriture en flash : ouverture du port, reset optionnel par RTS (comme esptool hard_reset),
-lecture, commandes console optionnelles ("info", "snap").
-Les valeurs de private/device_secrets.h et tout UUID (session, compte) sont masques
-avant affichage et avant ecriture du journal.
-"""
+Mask known secret values before storing any log. Logs may still contain
+sensitive information and require review before sharing."""
 import argparse
 import base64
 import datetime

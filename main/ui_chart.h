@@ -1,19 +1,17 @@
 /* ui_chart.h: Chart drawing and selected time-window contracts.
- * FR: Tracé des courbes et fenêtres temporelles.
  * Shared definitions for the firmware implementation.
  */
 /*
  * Graphique de glycemie reutilisable (accueil et page GRAPHIQUE) :
- * zone cible, seuils, courbe par creneaux de 5 min, axe horaire, derniere valeur.
+ * target area, thresholds, 5 min crennel curve, hourly axis, last value.
  *
- * Exploration tactile (option) : un appui ou un glissement sur la zone de trace selectionne la mesure REELLE la plus
- * proche horizontalement (jamais de valeur interpolee) et affiche un curseur, le point et une bulle
- * (heure, glycemie, tendance et variation seulement si l'historique les contient). Le curseur disparait quelques
- * secondes apres le relachement. Aucune lecture microSD ni allocation pendant le glissement.
+ * Tactile Exploration (Option): A support or slip on the trace area selects the measurement REELLE Most
+ * close horizontally (never of interpole value) and displays a cursor, point and bubble
+ * (hour, glycemia, trend and variation only if history contains them). The cursor disappears a few
+ * seconds after release. No microSD reading or allocation during slippage.
  */
 /* Public interface / Interface publique
- * EN: Graph widget and point exploration from cached glucose history.
- * FR: Courbe et exploration des mesures historiques.
+ * Graph widget and point exploration from cached glucose history.
  */
 #pragma once
 
@@ -28,12 +26,12 @@ typedef struct {
     int32_t w;
     int32_t h;
     bool time_labels;
-    lv_obj_t *card;          /* verre englobant la courbe et ses axes */
+    lv_obj_t *card;          /* glass covering the curve and its axes */
     lv_obj_t *box;
     lv_obj_t *band;
     lv_obj_t *line_low;
     lv_obj_t *line_high;
-    lv_obj_t *glow;          /* meme courbe, trait large et translucide, sous la courbe fine */
+    lv_obj_t *glow;          /* same curve, broad and translucent line, under the fine curve */
     lv_chart_series_t *glow_series;
     lv_obj_t *chart;
     lv_chart_series_t *series;
@@ -47,16 +45,16 @@ typedef struct {
     lv_point_precise_t high_pts[2];
     int y_max;
 
-    /* Exploration tactile : positions des points reellement traces (pixels dans la zone) et index d'historique */
+    /* Touch exploration: positions of real trace points (pixels in the area) and historical index */
     bool explore;
     int16_t *pt_x;
     int16_t *pt_y;
     int16_t *pt_index;
     int pt_count;
-    int selected;            /* index dans pt_* ; -1 = aucun */
-    int64_t sel_wt_ms;       /* horodatage du point selectionne (retrouve apres un redessin) */
+    int selected;            /* index in pt * ; -1 = none */
+    int64_t sel_wt_ms;       /* time stamping of the selected point (refined after a redrawing) */
     bool cursor_visible;
-    uint32_t last_move_ms;   /* limitation du rythme pendant le glissement */
+    uint32_t last_move_ms;   /* limiting the speed during the slide */
     uint32_t release_ms;     /* 0 = doigt pose ou curseur deja masque */
     lv_obj_t *cursor;        /* trait vertical */
     lv_obj_t *dot;           /* point selectionne */
@@ -69,11 +67,11 @@ typedef struct {
 void ui_chart_create(ui_chart_t *c, lv_obj_t *parent, int32_t x, int32_t y, int32_t w, int32_t h, bool time_labels);
 void ui_chart_update(ui_chart_t *c, const ui_data_t *d, int hours);
 
-/* Exploration tactile : a appeler une fois apres ui_chart_create (aucun effet si la memoire manque) */
+/* Touch exploration: to call once after ui_chart_create (no effect if memory is missing) */
 void ui_chart_enable_explore(ui_chart_t *c);
-/* A appeler a chaque seconde : masque le curseur quelques secondes apres le relachement */
+/* To call every second: hide the cursor a few seconds after release */
 void ui_chart_explore_tick(ui_chart_t *c);
-/* Masque immediatement le curseur (changement de duree ou de page) */
+/* Immediately mask the cursor (duration or page change) */
 void ui_chart_explore_reset(ui_chart_t *c);
-/* Console : etat de l'exploration (aucun appel LVGL) */
+/* Console: state of exploration (no call LVGL) */
 void ui_chart_explore_print(const ui_chart_t *c);

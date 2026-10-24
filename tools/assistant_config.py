@@ -1,27 +1,16 @@
 #!/usr/bin/env python3
 # Configures the screen over USB without requiring a firmware rebuild.
-# FR: Configure l'écran par USB sans recompiler.
+#
 # Design note: Passwords are sent to the device, not stored in a PC configuration file.
-# EN: Configures the device by USB when touchscreen entry is inconvenient.
-# FR: Configure le Waveshare par USB lorsque la saisie tactile est difficile.
-r"""Assistant de configuration par le cable USB (solution de secours a l'assistant de l'ecran tactile).
+# Configures the device by USB when touchscreen entry is inconvenient.
+#
+"""Configure a Waveshare display through its UART/CH343 USB connection.
 
-A utiliser si la saisie au doigt pose probleme (mot de passe long, clavier a l'ecran peu pratique) ou si
-le tactile ne repond pas. L'appareil doit etre allume et relie au PC par son cable USB-C.
-
-Ce script ne lit jamais la memoire du PC ni celle de l'appareil, n'ecrit aucun mot de passe dans un fichier
-et n'affiche pas ce que vous tapez pour un mot de passe. Les identifiants partent par le cable et sont
-enregistres par l'appareil lui-meme (espace NVS "ident"). Rien n'est envoye sur Internet.
-
-Aucune installation n'est necessaire sous Windows : le port serie est ouvert directement (ctypes). Si la
-bibliotheque pyserial est presente, elle est utilisee a la place (utile sous Linux et macOS).
-
-Usage :
-    python tools\assistant_config.py                 (port detecte, sinon --port COM7)
-    python tools\assistant_config.py --lister         liste les ports serie vus par le PC
-    python tools\assistant_config.py --etat           affiche seulement ce qui est deja enregistre
-    python tools\assistant_config.py --effacer        efface les identifiants de l'appareil
-"""
+This command-line fallback to the touchscreen setup wizard scans serial
+ports, trials Wi-Fi and Dexcom Share credentials, waits for the device's
+validation response, and saves only after confirmation. Device passwords
+must never be printed or stored on the PC. A failed or cancelled trial
+must leave the device's previous saved credentials intact."""
 import argparse
 import getpass
 import re
@@ -32,7 +21,7 @@ import time
 REGIONS = {'1': ('ous', 'Europe / hors Amerique du Nord'), '2': ('us', 'Amerique du Nord'),
            '3': ('jp', 'Japon')}
 
-# etats renvoyes par "ident_etat" (gly_test_t dans main/glucose_service.h)
+# etats renvoyes par "ident_etat" (gly_test_t in main/glucose_service.h)
 ETAT_INACTIF, ETAT_EN_COURS, ETAT_REUSSI, ETAT_ECHEC = 0, 1, 2, 3
 ETAPES = {
     'demarrage': 'demarrage',
@@ -55,7 +44,7 @@ BAUD = 115200  # console ESP-IDF
 
 
 # --------------------------------------------------------------------------------------------------
-# Acces au port serie : pyserial si disponible, sinon l'API Windows directement (aucune installation)
+# Access to the port serie : pyserial if available, otherwise theAPI Windows directly (no installation)
 # --------------------------------------------------------------------------------------------------
 try:
     import serial                      # noqa: F401
@@ -71,7 +60,7 @@ class PortPySerial(object):
         self.s.port = nom
         self.s.baudrate = BAUD
         self.s.timeout = 0.2
-        self.s.dtr = False   # ne pas redemarrer l'appareil en ouvrant le port
+        self.s.dtr = False   # do not restart the device by opening the port
         self.s.rts = False
         self.s.open()
 
@@ -86,7 +75,7 @@ class PortPySerial(object):
 
 
 class PortWin32(object):
-    """Port serie par l'API Windows (kernel32), sans dependance a installer."""
+    """Open a serial port using the Windows kernel32 API without third-party drivers."""
 
     def __init__(self, nom):
         import ctypes
@@ -125,15 +114,15 @@ class PortWin32(object):
             raise IOError('GetCommState a echoue sur %s' % nom)
         dcb.BaudRate = BAUD
         dcb.ByteSize = 8
-        dcb.Parity = 0      # aucune
+        dcb.Parity = 0      # none
         dcb.StopBits = 0    # 1 bit
-        dcb.bits = 0x0001   # binaire ; DTR et RTS desactives, aucun controle de flux
+        dcb.bits = 0x0001   # binary; DTR et RTS desactive, no flow control
         if not k.SetCommState(self.h, ctypes.byref(dcb)):
             k.CloseHandle(self.h)
             raise IOError('SetCommState a echoue sur %s' % nom)
         to = TIMEOUTS(50, 0, 200, 0, 2000)
         k.SetCommTimeouts(self.h, ctypes.byref(to))
-        k.PurgeComm(self.h, 0x000F)  # vide les tampons d'entree et de sortie
+        k.PurgeComm(self.h, 0x000F)  # emptys entry and exit buffers
 
     def write(self, data):
         ecrit = self.wt.DWORD(0)
@@ -152,11 +141,7 @@ class PortWin32(object):
 
 
 def noms_lisibles():
-    """{COM7: 'USB-Enhanced-SERIAL CH343'} : noms affiches par Windows, sans rien ouvrir.
-
-    Passe par PowerShell (aucune bibliotheque a installer). Si cela echoue, on se contente des
-    noms techniques du registre : la detection continue de fonctionner.
-    """
+    """Return readable Windows COM-port names without opening the devices."""
     if sys.platform != 'win32':
         return {}
     requete = ("Get-CimInstance Win32_PnPEntity | Where-Object { $_.Name -like '*(COM*' } | "
@@ -176,7 +161,7 @@ def noms_lisibles():
 
 
 def lister_ports():
-    """[(nom, description)] des ports serie, sans rien ouvrir."""
+    """Return pairs of available serial-port names and descriptions without opening them."""
     if PYSERIAL:
         return [(p.device, ('%s %s' % (p.description or '', p.manufacturer or '')).strip())
                 for p in list_ports.comports()]
@@ -206,13 +191,13 @@ def lister_ports():
     return ports
 
 
-# Noms donnes par Windows aux puces de liaison USB utilisees par ces cartes.
+# Names given by Windows to link chips USB used by these cards.
 PUCES_USB = ('CH343', 'CH34', 'USB-SERIAL', 'USB-ENHANCED-SERIAL', 'CP210', 'FTDI', 'FT232',
              'USB SERIAL DEVICE', 'USBSER', 'JTAG')
 
 
 def trouver_port():
-    """Port le plus probable, ou None s'il y a un doute : le choix revient alors a l'utilisateur."""
+    """Choose the likely USB serial port, or return None when the user must decide."""
     ports = lister_ports()
     probables = [nom for nom, description in ports
                  if any(p in (description or '').upper() for p in PUCES_USB)]
@@ -220,7 +205,7 @@ def trouver_port():
         return probables[0]
     if not probables and len(ports) == 1:
         return ports[0][0]
-    return None   # zero ou plusieurs candidats : ne jamais choisir a la place de l'utilisateur
+    return None   # zero or more candidates: never choose the user's place
 
 
 # Open the serial port without toggling DTR/RTS and unintentionally rebooting the board.
@@ -233,18 +218,18 @@ def ouvrir_port(nom):
 
 
 # --------------------------------------------------------------------------------------------------
-# Dialogue avec l'appareil
+# Dialogue with the device
 # --------------------------------------------------------------------------------------------------
 class Appareil(object):
     def __init__(self, port):
-        self.port = port          # objet write/read/close (injectable pour les tests)
+        self.port = port          # objet write/read/close (injectable for testing)
         self.reste = b''
 
     def envoyer(self, commande):
         self.port.write((commande + '\n').encode('utf-8'))
 
     def lire(self, duree, motif=None):
-        """Lignes recues pendant 'duree' secondes ; s'arrete des qu'une ligne contient 'motif'."""
+        """Read serial responses until the timeout or requested matching text is observed."""
         fin = time.time() + duree
         lignes = []
         while True:
@@ -285,11 +270,7 @@ def lire_mot_de_passe(texte):
 
 # Try new credentials in RAM before asking the user to save them.
 def configurer(app, demande=demander, mot_de_passe=lire_mot_de_passe):
-    """Pose les questions, essaie les identifiants, les enregistre apres reussite et confirmation.
-
-    Les acces deja presents dans l'appareil sont conserves jusqu'a cette confirmation : un echec,
-    un abandon ou un debranchement les laisse en place.
-    """
+    """Collect settings, perform a reversible connection trial and offer to save only on success."""
     print('\n--- Reseau Wi-Fi (2,4 GHz uniquement) ---')
     ssid = demande('Nom du reseau')
     if not ssid or '|' in ssid:
@@ -336,14 +317,14 @@ def configurer(app, demande=demander, mot_de_passe=lire_mot_de_passe):
 
 
 def annuler(app):
-    """Abandon : l'appareil revient a ses acces precedents (rien n'a ete enregistre)."""
+    """Cancel the trial so the device retains its previous saved credentials."""
     app.envoyer('ident_annuler')
     app.lire(2, 'IDENT annule')
     print('Les accès precedents de l\'appareil sont conservés : rien n\'a été modifié.')
 
 
 def enregistrer(app, demande=demander):
-    """Confirmation puis enregistrement : c'est la seule etape qui ecrit dans l'appareil."""
+    """Commit the successfully tested settings only after explicit confirmation."""
     if demande('Enregistrer ces acces dans l\'appareil ? (oui/non)', 'oui').strip().lower() != 'oui':
         annuler(app)
         return 1
@@ -360,7 +341,7 @@ def enregistrer(app, demande=demander):
 
 # Treat deletion as successful only when the device confirms it in NVS.
 def effacer(app, demande=demander):
-    """Efface les identifiants, apres confirmation explicite. Renvoie 0 si l'effacement a eu lieu."""
+    """Request credential deletion after explicit confirmation; return success only on device acknowledgment."""
     if demande('Effacer le reseau Wi-Fi et le compte Dexcom ? (oui/non)', 'non').strip().lower() != 'oui':
         print('Rien efface.')
         return 1

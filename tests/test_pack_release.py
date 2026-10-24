@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # Tests versioned installation ZIP creation and checksums.
-# FR: Teste les ZIP d'installation et leurs empreintes.
+#
 # Design note: Check archive contents without flashing a physical device.
-# EN: Build a synthetic release ZIP and verify checksums without connecting a board.
-# FR: Construit un ZIP de test pour vérifier les empreintes sans écran.
+# Build a synthetic release ZIP and verify checksums without connecting a board.
+#
 """Regression test for self-contained, offline v0.2.0 installation archives."""
 from __future__ import annotations
 

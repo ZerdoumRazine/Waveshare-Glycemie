@@ -1,20 +1,11 @@
 /*
  * voice.c: Playback of prerecorded WAV announcements by language.
- * FR: Lecture des annonces WAV selon la langue.
  * Design note: Without the voice bank, the alert beeps remain available.
  */
 
 /*
- * voice.c: Plays prerecorded announcements from the microSD.
- * FR: Lit les annonces préenregistrées sur microSD.
- * Design decision: Alert beeps must remain available without language files.
- *
- * Experimental supplementary display; official monitoring remains authoritative.
- */
-
-/*
  * Combines stored PCM WAV clips for six languages with a French and then beep fallback.
- * Assemble les annonces WAV des six langues avec un repli audio.
+ * Assemble announcements WAV of the six languages with an audio fold.
  */
 #include "voice.h"
 
@@ -34,7 +25,7 @@
 static const char *TAG = "voix";
 
 #ifndef GLY_VOICE_OLD_PCM
-#define GLY_VOICE_OLD_PCM 0 /* ancienne voix Windows absente par defaut (droits a clarifier) */
+#define GLY_VOICE_OLD_PCM 0 /* old Windows voice absent by default (rights to clarify) */
 #endif
 
 #if GLY_VOICE_OLD_PCM
@@ -45,11 +36,11 @@ extern const uint8_t voice_pcm_end[] asm("_binary_voice_fr_pcm_end");
 #define MAX_WORDS 8
 
 /* ------------------------------------------------------------------------- */
-/* Banque microSD (voix Google Chirp 3 HD) */
+/* MicroSD bank (voice Google Chirp 3 HD) */
 
-#define VOICE_FILE_MAX (256 * 1024) /* 8 s a 16 kHz : les phrases durent moins de 4 s */
-#define VOICE_LEAD_MS  150          /* pause entre le bip d'alerte et la voix */
-#define VOICE_GAP_MS   300          /* pause entre la phrase d'alerte et la valeur */
+#define VOICE_FILE_MAX (256 * 1024) /* 8 s at 16 kHz: sentences last less than 4 s */
+#define VOICE_LEAD_MS  150          /* pause between alert beep and voice */
+#define VOICE_GAP_MS   300          /* pause between alert sentence and value */
 
 typedef struct {
     const int16_t *samples;
@@ -68,7 +59,7 @@ static uint32_t rd32(const uint8_t *p)
     return rd16(p) | (rd16(p + 2) << 16);
 }
 
-/* WAV PCM 16 bits mono 16 kHz : echantillons du bloc "data" (alignes : les blocs RIFF ont une taille paire) */
+/* WAV PCM 16 bits mono 16 kHz: samples of the data block (allines: blocks RIFF have a pair size) */
 static bool parse_wav(const uint8_t *buf, size_t len, voice_pcm_t *out)
 {
     if (len < 12 || memcmp(buf, "RIFF", 4) != 0 || memcmp(buf + 8, "WAVE", 4) != 0) {
@@ -98,8 +89,8 @@ static bool parse_wav(const uint8_t *buf, size_t len, voice_pcm_t *out)
     return false;
 }
 
-/* Tache audio : charge un fichier de la banque dans le tampon slot (0 ou 1) */
-/* Un seul avertissement par changement de langue si la banque correspondante manque */
+/* Audio cache: load a file from the bank into the slot buffer (0 or 1) */
+/* Only one warning by language change if the corresponding bank is missing */
 static bool s_lang_missing_logged;
 
 void voice_lang_changed(void)
@@ -122,10 +113,10 @@ static bool load_voice_file(const char *name, int slot, voice_pcm_t *out)
     size_t len = 0;
     esp_err_t err = ESP_ERR_NOT_FOUND;
 
-    /* Banque de la langue choisie : /glycemie/audio/voice/<code>/<fichier> (en, es, de, it, pt).
-     * Le francais reste a la racine, ou il a toujours ete : aucune recopie de la banque d'origine.
-     * Si la banque d'une langue n'est pas installee sur la carte, on retombe sur le francais plutot
-     * que de rester muet ; si le francais manque aussi, le bip d'alerte sert de secours. */
+    /* Bank of the chosen language: /glycemie/audio/voice/<code>/<file> (in, es, de, it, pt).
+     * The francais remains at the root, or it has always been: no copy of the original bank.
+     * If the bank of a language is not installed on the map, we fall back on the French rather
+     * to remain silent; If the Frenchman is missing too, the warning beep serves as a rescue. */
     const lang_t lang = i18n_lang();
     if (lang != LANG_FR) {
         snprintf(path, sizeof(path), SD_VOICE_DIR "/%s/%s", lang_code(lang), name);
@@ -163,10 +154,10 @@ static void glucose_file_name(int value, char *name, size_t size)
     }
 }
 
-/* Tache audio : phrase d'alerte puis valeur */
+/* Audio cache: alert sentence and then value */
 static void render_alert(int type, int value)
 {
-    /* "Rappel. Le capteur doit etre change demain." / "... dans deux heures." / "Rappel. Le catheter doit ..." */
+    /* Select the localized sensor or infusion-set reminder speech phrase. */
     static const char *const k_sensor[SENSOR_REMIND_COUNT] = {
         [SENSOR_REMIND_24H] = "sensor_rappel_24h.wav",
         [SENSOR_REMIND_2H] = "sensor_rappel_2h.wav",
@@ -206,7 +197,7 @@ static void render_alert(int type, int value)
     }
     voice_pcm_t first;
     if (phrase == NULL || !load_voice_file(phrase, 0, &first)) {
-        return; /* aucune voix : le bip d'alerte deja joue sert de secours */
+        return; /* no voice: the alert beep already plays serves as a rescue */
     }
     char name[24] = "";
     voice_pcm_t second = {0};
@@ -224,7 +215,7 @@ static void render_alert(int type, int value)
     }
 }
 
-/* Tache audio : TEST VOIX */
+/* Cached audio output used by the voice test control. */
 static void render_test(int number, int unused)
 {
     (void)unused;
@@ -239,7 +230,7 @@ static void render_test(int number, int unused)
     }
 }
 
-/* Tache audio : reponse d'une commande vocale (bip de test si le fichier manque) */
+/* Audio cache: response of a voice command (test beep if the file is missing) */
 static void render_reply(int reply, int unused)
 {
     static const char *const k_files[VOICE_REPLY_COUNT] = {
@@ -260,7 +251,7 @@ static void render_reply(int reply, int unused)
     }
 }
 
-/* Tache audio : glycemie a la demande. b = tendance | (ancienne << 8) | (disponible << 9) */
+/* Audio cover: Glycemy on request. b = trend */
 static void render_glucose(int value, int b)
 {
     static const char *const k_trend[TREND_COUNT] = {
@@ -288,7 +279,7 @@ static void render_glucose(int value, int b)
     char name[24];
     glucose_file_name(value, name, sizeof(name));
     if (stale) {
-        /* jamais presentee comme actuelle : "Donnees anciennes. Derniere mesure :" puis la valeur */
+        /* Never presented as current: "Old data. Last measure:" then the value */
         if (!load_voice_file("vc_data_old.wav", 0, &first) || !load_voice_file(name, 1, &second)) {
             audio_out_render_pattern(AUDIO_PATTERN_TEST);
             return;
@@ -339,7 +330,7 @@ void voice_test(int number, int volume_pct)
 }
 
 /* ------------------------------------------------------------------------- */
-/* Ancienne banque integree (voix Windows), facultative : absente, tout le reste fonctionne */
+/* Former integrated bank (Windows voice), optional: absent, everything else works */
 
 #if !GLY_VOICE_OLD_PCM
 

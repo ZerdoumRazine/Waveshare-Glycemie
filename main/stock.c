@@ -1,12 +1,11 @@
 /*
  * stock.c: Consumable stock counting and one-time decrements.
- * FR: Comptage des consommables et décréments uniques.
  * Design note: Repeated UI events must not consume the same item twice.
  */
 
 /*
  * Tracks local stock levels and signals low quantities without creating negative values.
- * Suit les consommables en stock et prévient quand ils deviennent rares.
+ * Follows consumables in stock and warns when they become rare.
  */
 #include "stock.h"
 
@@ -24,7 +23,7 @@
 static const char *TAG = "stock";
 
 #define NVS_NS        "stock"
-#define EVENT_MAX     4 /* file d'evenements STOCK_LOW (les plus anciens sont perdus) */
+#define EVENT_MAX     4 /* file d'evenements STOCK_LOW (oldest are lost) */
 
 static const char *const k_key_qty[STOCK_COUNT] = {"q_g7", "q_cath"};
 static const char *const k_key_low[STOCK_COUNT] = {"s_g7", "s_cath"};
@@ -34,7 +33,7 @@ static const int k_low_default[STOCK_COUNT] = {2, 3};
 static SemaphoreHandle_t s_mutex;
 static int s_qty[STOCK_COUNT] = {STOCK_UNKNOWN, STOCK_UNKNOWN};
 static int s_low[STOCK_COUNT];
-static int64_t s_change[STOCK_COUNT]; /* dernier changement deja decompte */
+static int64_t s_change[STOCK_COUNT]; /* This replacement has already been deducted from inventory. */
 static volatile uint32_t s_revision;
 static stock_event_t s_events[EVENT_MAX];
 static int s_event_count;
@@ -74,7 +73,7 @@ static esp_err_t persist(stock_item_t item)
     return err;
 }
 
-/* Verrou pris : evenement local si le stock renseigne vient de passer au niveau faible */
+/* Lock taken: local event if the stock information has just passed to low level */
 /* Raise a stock reminder separately from medical glucose alerts. */
 static void push_low_event(stock_item_t item)
 {
@@ -108,7 +107,7 @@ esp_err_t stock_init(void)
         int64_t change = 0;
         if (open) {
             if (nvs_get_i16(h, k_key_qty[i], &qty) != ESP_OK) {
-                qty = STOCK_UNKNOWN; /* premier demarrage de cette version : non renseigne */
+                qty = STOCK_UNKNOWN; /* first start of this version: not provided */
             }
             if (nvs_get_i16(h, k_key_low[i], &low) != ESP_OK || low < 0 || low > STOCK_MAX) {
                 low = (int16_t)k_low_default[i];
@@ -179,11 +178,11 @@ esp_err_t stock_add(stock_item_t item, int delta)
     const int current = s_qty[item];
     xSemaphoreGive(s_mutex);
     if (current == STOCK_UNKNOWN) {
-        return ESP_ERR_INVALID_STATE; /* rien a incrementer tant que le stock n'est pas renseigne */
+        return ESP_ERR_INVALID_STATE; /* Nothing to increment until the stock is clear */
     }
     int value = current + delta;
     if (value < 0) {
-        value = 0; /* jamais negatif */
+        value = 0; /* Never negative */
     }
     return stock_set(item, value);
 }
@@ -198,7 +197,7 @@ bool stock_consume(stock_item_t item, int64_t change_s)
     const bool already = change_s > 0 && s_change[item] == change_s;
     bool consumed = false;
     if (!already) {
-        s_change[item] = change_s; /* marqueur : ce changement est decompte (ou constate comme non decomptable) */
+        s_change[item] = change_s; /* marker: this change is decounting (or not accounting) */
         if (before > 0) {
             s_qty[item] = before - 1;
             consumed = true;

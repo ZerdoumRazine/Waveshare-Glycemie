@@ -1,12 +1,11 @@
 /*
  * net_services.c: Network time and supporting background services.
- * FR: Heure réseau et services d'arrière-plan.
  * Design note: Loss of network time must not erase local settings.
  */
 
 /*
  * Checks DNS/HTTPS reachability and synchronizes local time independently of Dexcom login.
- * Vérifie Internet et synchronise l'horloge sans dépendre de l'authentification Dexcom.
+ * Checks the Internet and synchronizes the clock without depending on Dexcom authentication.
  */
 #include "net_services.h"
 
@@ -113,7 +112,7 @@ static void net_task(void *arg)
         }
         if (!was_connected) {
             was_connected = true;
-            next_check_us = 0; /* nouveau test apres chaque (re)connexion */
+            next_check_us = 0; /* new test after each (re)connection */
             failures = 0;
         }
 

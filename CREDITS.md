@@ -1,21 +1,21 @@
-# Crédits — WaveShare Glycémie
+# Credits — WaveShare Glycémie
 
-**Français** | [English](CREDITS_EN.md)
+**English**
 
-## Origine du projet
+## About the project
 
-Je suis **Mohamed-Razine Zerdoum**, initiateur et responsable de **WaveShare Glycémie**.
+I’m **Mohamed-Razine Zerdoum**, the initiator and project lead of **WaveShare Glycémie**.
 
-J’ai lancé ce projet pour répondre à un besoin familial : mon père souhaitait pouvoir consulter rapidement les données de glucose Dexcom sur un écran dédié, sans devoir sortir systématiquement son téléphone.
+I started this project to meet a family need: my father wanted a dedicated display for quickly checking Dexcom glucose readings without having to reach for his phone every time.
 
-J’ai participé au choix du matériel et à la conception de l’appareil, notamment aux décisions concernant la lisibilité, la navigation tactile, les graphiques, les alertes, le suivi des consommables et les langues proposées.
+I took part in selecting the hardware and shaping the device, including decisions about readability, touchscreen navigation, charts, alerts, consumable tracking, and language support.
 
-Ce dépôt rassemble le code, les ressources et les instructions permettant de reproduire le projet sur le modèle Waveshare indiqué dans le [README français](README_FR.md).
+This repository contains the code, resources, and instructions needed to reproduce the project using the compatible Waveshare hardware described in the [English README](README.md).
 
-## Licences et composants tiers
+## Licences and third-party components
 
-Les contributions originales de ce projet sont proposées sous la [licence MIT](LICENSE). Les bibliothèques, exemples de code et autres composants tiers conservent les droits, mentions de copyright et licences de leurs auteurs, détaillés dans [Licences tierces](docs/LICENCES_TIERCES_FR.md).
+The project's original contributions are made available under the [MIT licence](LICENSE). Third-party libraries, example code, and other components retain their respective authors' copyrights and licence terms. See [Third-party licences (French)](docs/THIRD_PARTY_LICENSES_EN.md) for details.
 
-## Avertissement
+## Safety notice
 
-WaveShare Glycémie est un **affichage complémentaire expérimental**, non certifié pour un usage médical. Les données et alertes peuvent être retardées, incomplètes ou erronées. Il ne remplace pas les dispositifs et applications officiels de surveillance du glucose et ne doit pas servir à prendre des décisions de traitement.
+WaveShare Glycémie is an **experimental supplementary display**, not certified for medical use. Readings and alerts can be delayed, incomplete, or incorrect. It does not replace official glucose-monitoring devices or applications and must not be used to make treatment decisions.

@@ -1,15 +1,11 @@
 /* ui_common.h: Shared LVGL widgets, fonts and colors.
- * FR: Éléments LVGL, polices et couleurs communs.
  * Shared definitions for the firmware implementation.
  */
 /*
- * Elements communs de l'interface : dimensions, couleurs, polices, donnees calculees
- * une fois par seconde et partagees entre les pages.
+ * Common interface elements: dimensions, colors, fonts, calculated data
+ * once a second and shared between pages.
  */
-/* Public interface / Interface publique
- * EN: Shared LVGL colours, fonts and formatting helpers for all pages.
- * FR: Couleurs, polices et formats partagés entre pages.
- */
+/* Shared LVGL palette, fonts and formatting helpers. */
 #pragma once
 
 #include <stdbool.h>
@@ -44,53 +40,53 @@
 #define UI_COL_CARD_BOT  lv_color_hex(0x0B1426)
 #define UI_COL_CARD_LINE lv_color_hex(0x22324F)
 #define UI_COL_CARD_DOWN lv_color_hex(0x1A2A48) /* carte appuyee */
-#define UI_COL_SUBTLE    lv_color_hex(0x8792A8) /* texte secondaire */
-#define UI_COL_FAINT     lv_color_hex(0x5F6B82) /* texte tertiaire */
-#define UI_COL_SOFT      lv_color_hex(0xDDE3EE) /* texte clair attenue */
+#define UI_COL_SUBTLE    lv_color_hex(0x8792A8) /* secondary text */
+#define UI_COL_FAINT     lv_color_hex(0x5F6B82) /* tertiary text */
+#define UI_COL_SOFT      lv_color_hex(0xDDE3EE) /* clear text attached */
 #define UI_COL_DATE      lv_color_hex(0xAFBACD)
-#define UI_COL_TRACK     lv_color_hex(0x1C2940) /* fond des barres de progression */
+#define UI_COL_TRACK     lv_color_hex(0x1C2940) /* bottom of the progression bars */
 
-/* Style 2.5D "dark glass" (refonte visuelle) : fond bleu nuit vers noir, cartes translucides a bord fin et ombre douce.
- * Couleurs d'accent de la glycemie plus douces ; le panneau d'alerte garde ses couleurs (UI_COL_RED, _ORANGE...). */
+/* Semi-transparent dark cards with subtle borders and shadows. Glucose
+ * accents are muted; alert-panel colors retain their urgency semantics. */
 #define UI_G_BG_TOP      lv_color_hex(0x0C1834)
 #define UI_G_BG_BOT      lv_color_hex(0x000000)
-#define UI_G_GLASS_TOP   lv_color_hex(0x192844) /* verre 84 % deja melange au fond */
-#define UI_G_GLASS_BOT   lv_color_hex(0x0B1424) /* verre 73 % deja melange au fond */
+#define UI_G_GLASS_TOP   lv_color_hex(0x192844) /* Glass fill at approximately 84% opacity. */
+#define UI_G_GLASS_BOT   lv_color_hex(0x0B1424) /* Glass fill at approximately 73% opacity. */
 #define UI_G_GLASS_DOWN  lv_color_hex(0x2A3F66) /* carte appuyee */
-#define UI_G_EDGE        lv_color_hex(0x46609A) /* bord fin (opacite partielle) */
-#define UI_G_LINE        lv_color_hex(0x1C2A44) /* filets du bandeau et de la navigation */
+#define UI_G_EDGE        lv_color_hex(0x46609A) /* Thin border with partial opacity. */
+#define UI_G_LINE        lv_color_hex(0x1C2A44) /* web and navigation nets */
 #define UI_G_TEXT        lv_color_hex(0xF4F7FC)
 #define UI_G_TEXT2       lv_color_hex(0x9AA8C2)
 #define UI_G_TEXT3       lv_color_hex(0x63718C)
-#define UI_G_ACCENT      lv_color_hex(0x4C8DFF) /* bleu d'interface (boutons, anneau) */
+#define UI_G_ACCENT      lv_color_hex(0x4C8DFF) /* Interface blue for navigation buttons and progress rings. */
 #define UI_G_ACCENT_DEEP lv_color_hex(0x2F5FD6)
-#define UI_G_OK          lv_color_hex(0x42E2B8) /* glycemie normale : vert-bleu doux */
-#define UI_G_LOW         lv_color_hex(0xFFC04D) /* basse : ambre */
-#define UI_G_HIGH        lv_color_hex(0xFF9A3D) /* elevee : orange */
-#define UI_G_CRIT        lv_color_hex(0xFF5C6C) /* tres basse / tres elevee : rouge doux */
+#define UI_G_OK          lv_color_hex(0x42E2B8) /* Normal-range glucose: muted teal accent. */
+#define UI_G_LOW         lv_color_hex(0xFFC04D) /* Low-glucose accent: amber. */
+#define UI_G_HIGH        lv_color_hex(0xFF9A3D) /* High-glucose accent: orange. */
+#define UI_G_CRIT        lv_color_hex(0xFF5C6C) /* Urgent-low/high accent: muted red. */
 #define UI_G_STALE       lv_color_hex(0x6B7A94)
 
 typedef struct {
-    lv_font_t *value;  /* valeur geante */
+    lv_font_t *value;  /* Giant value */
     lv_font_t *delta;  /* delta */
-    lv_font_t *xl;     /* grands nombres (statistiques, capteur) */
+    lv_font_t *xl;     /* large numbers (statistics, sensor) */
     lv_font_t *title;  /* titres */
     lv_font_t *l;
     lv_font_t *m;
     lv_font_t *s;
     lv_font_t *nav;
-    lv_font_t *clock;  /* heure du bandeau */
-    lv_font_t *card;   /* valeurs des cartes */
+    lv_font_t *clock;  /* Time shown in the shared header. */
+    lv_font_t *card;   /* card values */
     lv_font_t *xs;     /* petites mentions */
-    lv_font_t *label;  /* titres des cartes (gras) */
+    lv_font_t *label;  /* card titles (gras) */
     lv_font_t *navbar; /* barre de navigation (6 pages) */
 } ui_fonts_t;
 
 typedef enum {
     UI_ICON_TARGET = 0, /* cible (TIR) */
     UI_ICON_BARS,       /* mini histogramme (moyenne) */
-    UI_ICON_SENSOR,     /* disque du capteur */
-    UI_ICON_DROP,       /* goutte (catheter) */
+    UI_ICON_SENSOR,     /* sensor disc */
+    UI_ICON_DROP,       /* drop (catheter) */
     UI_ICON_DOWN,       /* bas */
     UI_ICON_UP,         /* haut */
 } ui_icon_t;
@@ -105,12 +101,12 @@ typedef struct {
     bool time_ok;
     int64_t now_ms;
     struct tm now_tm;
-    int64_t age_s;        /* -1 si inconnu */
+    int64_t age_s;        /* -1 means an unknown value. */
     gm_freshness_t fresh;
     bool delta_ok;
     int delta;
     int32_t cadence_s;
-    int64_t next_ms;      /* prochaine mesure estimee (0 si inconnue) */
+    int64_t next_ms;      /* next estimated measure (0 if unknown) */
 } ui_data_t;
 
 extern ui_fonts_t g_fonts;
@@ -133,23 +129,23 @@ void ui_format_age(int64_t age_s, char *buf, size_t size);
 void ui_navy_background(lv_obj_t *obj);
 lv_obj_t *ui_card(lv_obj_t *parent, int32_t x, int32_t y, int32_t w, int32_t h, int32_t radius);
 
-/* Style 2.5D : fond degrade de l'ecran, verre (translucide, bord fin, ombre douce), halo, boutons en pilules,
- * anneau fin, petites icones en formes LVGL natives (aucune image) */
+/* 2.5D style: degrade background of the screen, glass (translucent, thin edge, soft shadow), halo, pill buttons,
+ * fine ring, small icons in shapes LVGL native (no image) */
 void ui_screen_background(lv_obj_t *obj);
 void ui_glass_style(lv_obj_t *obj, int32_t radius);
 lv_obj_t *ui_glow(lv_obj_t *parent, int32_t w, int32_t h, lv_color_t color, lv_opa_t opa, int32_t blur);
-void ui_glow_set(lv_obj_t *glow, lv_color_t color, lv_opa_t opa); /* ne redessine que si la valeur change */
+void ui_glow_set(lv_obj_t *glow, lv_color_t color, lv_opa_t opa); /* only redraws if the value changes */
 void ui_pill_buttons_style(lv_obj_t *btnm, const lv_font_t *font, bool glass_container);
 lv_obj_t *ui_ring(lv_obj_t *parent, int32_t size, int32_t width);
 void ui_ring_set(lv_obj_t *ring, int value, lv_color_t color);
 lv_obj_t *ui_icon(lv_obj_t *parent, ui_icon_t icon, lv_color_t color);
 lv_obj_t *ui_progress(lv_obj_t *parent, int32_t x, int32_t y, int32_t w, int32_t h); /* barre 0..100 */
 
-/* Mise a jour seulement si la valeur change (evite de redessiner chaque seconde) */
+/* Update only if value changes (do not redraw every second) */
 void ui_set_text(lv_obj_t *label, const char *text);
 void ui_set_text_color(lv_obj_t *obj, lv_color_t color);
 
-/* "Mardi 15 septembre", "15/09 à 16:42", duree "2 j 8 h" / "17 h 05" (compact : "17 h") */
+/* "Tuesday 15 September", "15/09 at 16:42", duration "2 days 8 hours" / "17:05" (compact: "17 hours") */
 void ui_format_date_long(const struct tm *tm_local, char *buf, size_t size);
 void ui_format_day_hm(int64_t epoch_s, char *buf, size_t size);
 void ui_format_duration(int64_t seconds, bool compact, char *buf, size_t size);

@@ -1,12 +1,11 @@
 /*
  * app_state.c: Shared application snapshot and live connection state.
- * FR: État partagé et informations de connexion.
  * Design note: Consumers should see coherent data snapshots.
  */
 
 /*
  * Protects shared connection status and the glucose history with a mutex.
- * Protège les états de connexion et l'historique partagé.
+ * Protects connection states and shared history.
  */
 #include "app_state.h"
 
@@ -18,7 +17,7 @@
 static app_state_t s_state;
 static SemaphoreHandle_t s_mutex;
 
-static glucose_point_t *s_history; /* PSRAM : la RAM interne est reservee aux tampons DMA */
+static glucose_point_t *s_history; /* PSRAM : the RAM internal is reserved for buffers DMA */
 static int s_history_count;
 static uint32_t s_history_seq;
 

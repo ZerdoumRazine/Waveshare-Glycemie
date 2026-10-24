@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
 # Simulates serial configuration and credential failures.
-# FR: Simule la configuration série et ses échecs.
+#
 # These tests use simulations; they do not connect to a patient's device.
-# EN: Simulate USB setup to prove passwords never appear in logs and failed trials are reversible.
-# FR: Simule l'assistant USB pour vérifier les secrets et l'annulation des essais.
+# Simulate USB setup to prove passwords never appear in logs and failed trials are reversible.
+#
 """Controles de l'assistant de configuration par USB (tools/assistant_config.py).
 
-Deux proprietes comptent plus que les autres :
-  1. aucun mot de passe n'est affiche, ni ecrit dans un fichier ;
-  2. des acces qui fonctionnent ne sont JAMAIS remplaces par des acces invalides : les nouveaux
-     sont essayes, puis enregistres seulement apres reussite ET confirmation.
+Two owners count more than the others:
+  1. no password is displayed or written in a file;
+  2. accesses that work are not JAMAIS replacements with invalid accesses: new
+     are tried, then recorded only after success AND confirmation.
 
-Les essais utilisent un appareil simule (aucune liaison serie, aucun materiel) : ils ne prouvent rien
-sur le cable ni sur le firmware reel, seulement sur la logique de l'assistant.
+The tests use a simulated device (no serial link, no material): they prove nothing
+on the cable or on the firmware real, only on the logic of the assistant.
 
 Usage : python tests\\test_assistant_config.py
 """
@@ -24,7 +24,7 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 SOURCE = os.path.join(ROOT, 'tools', 'assistant_config.py')
 sys.path.insert(0, os.path.join(ROOT, 'tools'))
 
-import assistant_config as ac  # noqa: E402  (le chemin doit etre ajoute avant l'import)
+import assistant_config as ac  # noqa: E402  (the path must be added before the import)
 
 SSID = 'BoxSalon'
 MDP_WIFI = 'mot-de-passe-du-wifi-2024'
@@ -44,9 +44,9 @@ def check(nom, ok, detail=''):
 
 
 class AppareilSimule(object):
-    """Console du firmware simulee, avec la distinction essai / enregistre.
+    """Console of the firmware simulates, with the distinction trial / save.
 
-    enregistre_* : ce que l'appareil garderait apres une coupure de courant.
+    record *: what the device would keep after a power outage.
     essai_*      : valeurs en cours d'essai, perdues si elles ne sont pas confirmees.
     """
 
@@ -82,7 +82,7 @@ class AppareilSimule(object):
     def close(self):
         self.ferme = True
 
-    # --- vues pratiques pour les controles ---
+    # --- practical views for controls ---
     @property
     def essai_actif(self):
         return self.essai_wifi is not None or self.essai_dexcom is not None
@@ -165,7 +165,7 @@ class AppareilSimule(object):
 
 
 class Journal(object):
-    """Capture tout ce que l'assistant affiche, pour verifier qu'aucun secret n'y figure."""
+    """Capture all that l'assistant affiche, pour verifier qu'There is no secret."""
 
     def __enter__(self):
         self.texte = io.StringIO()
@@ -181,7 +181,7 @@ class Journal(object):
 
 
 def reponses(*valeurs):
-    """Remplace les questions posees a l'utilisateur par des reponses preparees."""
+    """Replaces the questions asked to the user with prepared answers."""
     suite = list(valeurs)
 
     def demande(texte, defaut=''):
@@ -190,7 +190,7 @@ def reponses(*valeurs):
 
 
 def mdp_fixes(*valeurs):
-    """Remplace getpass : meme refus du caractere | que la vraie saisie."""
+    """Replaces getpass: same refusal of character as the real seizure."""
     suite = list(valeurs)
 
     def saisie(texte):
@@ -208,7 +208,7 @@ ANCIENS = (((ANCIEN_SSID, ANCIEN_MDP)), (ANCIEN_USER, ANCIEN_MDP_DEX, 'ous'))
 # Feed deterministic network states to the serial assistant without hardware.
 def scenario(essais, mdp_wifi=MDP_WIFI, mdp_dex=MDP_DEX, ssid=SSID, user=USER, region='1',
              muet=False, confirmation='oui', deja=ANCIENS):
-    """Configuration complete sur un appareil simule -> (code, appareil, texte affiche)."""
+    """Full configuration on a device simulates -> (code, device, text displays)."""
     simule = AppareilSimule(essais, muet=muet, deja=deja)
     app = ac.Appareil(simule)
     with Journal() as j:
@@ -242,7 +242,7 @@ def main():
     for etape in ('connexion au Wi-Fi', 'acces a Internet', 'compte Dexcom'):
         check('etape affichee pendant la verification : %s' % etape, etape in texte)
 
-    # --- 2. Aucun mot de passe affiche ---------------------------------------------------------
+    # --- 2. No password displays ---------------------------------------------------------
     check("le mot de passe du Wi-Fi n'est jamais affiche", MDP_WIFI not in texte)
     check("le mot de passe Dexcom n'est jamais affiche", MDP_DEX not in texte)
     envoye = '\n'.join(simule.recu)
@@ -251,7 +251,7 @@ def main():
     check('le mot de passe Dexcom part une seule fois, dans ident_dexcom',
           envoye.count(MDP_DEX) == 1 and ('ident_dexcom %s|%s|ous' % (USER, MDP_DEX)) in envoye)
 
-    # --- 3. Des acces qui fonctionnent ne sont jamais perdus -----------------------------------
+    # --- 3. Accesses that work are never lost -----------------------------------
     code, simule, texte = scenario([(ac.ETAT_ECHEC, 'dexcom_refuse')])
     check('essai refuse : les anciens acces restent enregistres', anciens_intacts(simule))
     check('essai refuse : annulation envoyee a l\'appareil', 'ident_annuler' in simule.recu)
@@ -281,7 +281,7 @@ def main():
     code, simule, texte = scenario(etapes, muet=True)
     check('cable debranche en cours de route : anciens acces conserves', anciens_intacts(simule))
 
-    # --- 4. Choix de la region -----------------------------------------------------------------
+    # --- 4. Choice of region -----------------------------------------------------------------
     for choix, attendu in (('1', 'ous'), ('2', 'us'), ('3', 'jp'), ('', 'ous'), ('9', 'ous')):
         _, simule, _ = scenario([(ac.ETAT_REUSSI, 'ok')], region=choix)
         check('region "%s" -> %s' % (choix or 'reponse vide', attendu),
@@ -289,7 +289,7 @@ def main():
     check('les trois regions du firmware sont proposees',
           sorted(code for code, _ in ac.REGIONS.values()) == ['jp', 'ous', 'us'])
 
-    # --- 5. Echecs : chaque cause est expliquee en clair ---------------------------------------
+    # --- 5. Failures: Each cause is explained in plain language ----------------------------------------
     for cle, attendu in (('wifi', '2,4 GHz'), ('internet', 'Internet'), ('dexcom_refuse', 'refuse'),
                          ('dexcom_bloque', 'bloque'), ('dexcom_reseau', 'injoignable'),
                          ('dexcom_vide', 'incomplet'), ('memoire', 'Memoire'),
@@ -305,7 +305,7 @@ def main():
     check("aucun resultat d'essai : code 1, renvoi vers l'ecran, anciens acces conserves",
           code == 1 and "l'ecran" in texte and anciens_intacts(simule))
 
-    # --- 6. Saisies refusees avant tout envoi --------------------------------------------------
+    # --- 6. Seizures refused before sending --------------------------------------------------
     mdp_barre = 'mot|de|passe'
     code, simule, texte = scenario([(ac.ETAT_REUSSI, 'ok')], mdp_wifi=mdp_barre)
     check('mot de passe contenant | : refuse sans rien envoyer',
@@ -316,7 +316,7 @@ def main():
         check('%s "%s" : refuse, anciens acces conserves' % (champ, valeur or 'vide'),
               code == 1 and anciens_intacts(simule))
 
-    # --- 7. Lecture de l'etat : rien n'est modifie ---------------------------------------------
+    # --- 7. Reading the state: nothing changes ----------------------------------------------
     simule = AppareilSimule(deja=((SSID, MDP_WIFI), (USER, MDP_DEX, 'ous')))
     app = ac.Appareil(simule)
     etat = app.etat()
@@ -329,7 +329,7 @@ def main():
     check('appareil eteint : etat inconnu, pas de plantage',
           ac.Appareil(AppareilSimule(muet=True)).etat() is None)
 
-    # --- 8. Effacement : confirmation obligatoire ----------------------------------------------
+# --- 8. Credential deletion requires explicit confirmation
     simule = AppareilSimule(deja=((SSID, MDP_WIFI), (USER, MDP_DEX, 'ous')))
     app = ac.Appareil(simule)
     with Journal() as j:

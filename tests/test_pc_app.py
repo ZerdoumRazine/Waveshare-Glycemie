@@ -1,17 +1,10 @@
 #!/usr/bin/env python3
 # Checks the Windows configuration interface without hardware.
-# FR: Vérifie l'application Windows sans matériel.
+#
 # These tests use simulations; they do not connect to a patient's device.
-# EN: Exercise the Windows Tkinter setup interface with simulated serial devices.
-# FR: Teste l'interface Windows avec des ports série simulés.
-"""Controles de l'application Windows (tools/pc_app/glycemie_connexion.pyw), sans appareil branche.
-
-La fenetre est reellement construite (Tk), puis fermee : ces essais verifient la logique de
-l'interface, pas son apparence. Aucun port serie n'est ouvert : la liste des ports et l'ouverture
-sont remplacees par des simulations.
-
-Usage : python tests\\test_pc_app.py
-"""
+# Exercise the Windows Tkinter setup interface with simulated serial devices.
+#
+"""Test the Windows USB setup application's logic with simulated device responses and without physical hardware."""
 import importlib.util
 import io
 import os
@@ -69,7 +62,7 @@ def main():
     if tkinter is None:
         return rapport()
 
-    # --- 2. Construction reelle de la fenetre --------------------------------------------------
+    # --- 2. Real window construction --------------------------------------------------
     ports_simules = []
     module.ac.lister_ports = lambda: list(ports_simules)
     module.ac.trouver_port = lambda: (ports_simules[0][0] if len(ports_simules) == 1 else None)
@@ -78,12 +71,12 @@ def main():
         del ports_simules[:]
         ports_simules.extend(ports)
         racine = tkinter.Tk()
-        racine.withdraw()                       # jamais affichee pendant les essais
+        racine.withdraw()                       # never displayed during testing
         f = module.Fenetre(racine)
         racine.update()
         return racine, f
 
-    # un seul appareil : il est propose tout seul
+    # only one device: it is offered on its own
     racine, f = fenetre_avec([('COM7', 'USB-Enhanced-SERIAL CH343')])
     check('un seul appareil : il est preselectionne', f.port.get().startswith('COM7'), f.port.get())
     check('le port retenu est bien le nom du port', f.port_choisi() == 'COM7', str(f.port_choisi()))
@@ -91,7 +84,7 @@ def main():
           'USB' in f.journal.get('1.0', 'end') or 'appareil' in f.journal.get('1.0', 'end').lower())
     f.fermer()
 
-    # plusieurs appareils : aucun n'est choisi a la place de l'utilisateur
+    # several devices: none is chosen in place of the user
     racine, f = fenetre_avec([('COM3', 'Peripherique Bluetooth'), ('COM7', 'Port serie')])
     check('plusieurs appareils : aucun choix arbitraire', f.port.get() == '', f.port.get())
     check('plusieurs appareils : la fenetre explique comment reconnaitre le bon',
@@ -100,7 +93,7 @@ def main():
           len(f.liste_ports.cget('values')) == 2)
     f.fermer()
 
-    # aucun appareil : message clair, pas de plantage
+    # no device: clear message, no crash
     racine, f = fenetre_avec([])
     check('aucun appareil : message clair', 'Aucun port' in f.journal.get('1.0', 'end'))
     check('aucun appareil : rien de selectionne', f.port.get() == '')
@@ -137,7 +130,7 @@ def main():
     f.journal.configure(state='normal')
     f.journal.delete('1.0', 'end')
     f.journal.configure(state='disabled')
-    f.lire_etat()                      # ouvre un port simule : aucun materiel
+    f.lire_etat()                      # opens a simulated port: no material
     racine.update()
     journal = f.journal.get('1.0', 'end')
     check("aucun mot de passe dans la fenetre d'etat",

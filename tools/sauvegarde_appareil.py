@@ -1,29 +1,14 @@
 #!/usr/bin/env python3
 # Backs up the firmware flash for recovery purposes.
-# FR: Sauvegarde la mémoire flash en vue d'une restauration.
+#
 # Design note: The backup is private because it may contain Wi-Fi, Dexcom and health data.
-# EN: Reads a complete flash backup before maintenance without changing the device.
-# FR: Sauvegarde la flash avant une intervention sans écrire sur la carte.
-r"""Identifier et SAUVEGARDER l'ecran avant toute mise a jour. Ce programme n'ecrit JAMAIS dans l'appareil.
+# Reads a complete flash backup before maintenance without changing the device.
+#
+"""Identify and back up a Waveshare device before firmware installation.
 
-Il fait trois choses, dans cet ordre :
-  1. identification : type de puce, revision, taille de memoire, table des partitions, programme en place ;
-  2. sauvegarde : copie de la memoire flash (complete, ou seulement les parties utiles) dans un dossier
-     prive, hors du depot public ;
-  3. verification : la copie est relue et comparee a l'appareil (esptool verify_flash), et son empreinte
-     SHA-256 est enregistree.
-
-Ce qu'il ne fait pas, jamais : effacer (erase_flash), ecrire (write_flash), toucher aux eFuses, au Secure
-Boot, au chiffrement de flash, ni au second processeur ESP32-C6 qui assure le Wi-Fi.
-
-La carte reste branchee en USB. Aucune donnee ne part sur Internet.
-
-Usage :
-    python tools\sauvegarde_appareil.py --identifier            (lecture seule, tres rapide)
-    python tools\sauvegarde_appareil.py                         (identification + sauvegarde utile)
-    python tools\sauvegarde_appareil.py --complet               (sauvegarde TOUTE la memoire : plus long)
-    python tools\sauvegarde_appareil.py --port COM7 --vitesse 921600
-"""
+Use read-only esptool commands to save the permitted flash regions and inspect
+partition layout. Never write, erase, format or modify the device as part of a
+backup. Handle saved dumps as sensitive because they may contain credentials."""
 import argparse
 import datetime
 import hashlib
@@ -38,7 +23,7 @@ import sys
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 SAUVEGARDES = os.path.join(ROOT, 'private', 'sauvegardes')
 
-# Zones sauvegardees par defaut (adresses de partitions.csv, relues sur l'appareil si possible).
+# Areas saved by default (partition addresses.csv, reread on device if possible).
 ZONES_PAR_DEFAUT = [
     ('bootloader', 0x0, 0x8000),
     ('table_partitions', 0x8000, 0x1000),
@@ -46,12 +31,7 @@ ZONES_PAR_DEFAUT = [
 
 
 def esptool_cmd(impose=None):
-    """Commande esptool a utiliser : celle d'ESP-IDF si elle est installee, sinon le module Python.
-
-    Aucun chemin personnel n'est inscrit ici : l'environnement ESP-IDF est trouve par les variables
-    IDF_TOOLS_PATH / IDF_PATH (que definit la fenetre « ESP-IDF 5.5 PowerShell »), par une
-    installation dans le projet, ou par l'option --esptool.
-    """
+    """Select the ESP-IDF esptool when installed, otherwise use the Python module."""
     candidats = []
     if impose:
         candidats.append([impose] if impose.lower().endswith('.exe') else [sys.executable, impose])
@@ -64,8 +44,8 @@ def esptool_cmd(impose=None):
         env = os.path.join(base, 'python_env')
         if os.path.isdir(env):
             for sous in sorted(os.listdir(env)):
-                # le python de l'environnement ESP-IDF, avec le module esptool : plus fiable que
-                # esptool.exe, qui a besoin de cet environnement pour demarrer
+                # environmental python ESP-IDF, with the esptool module: more reliable than
+                # esptool.exe, which needs this environment to start
                 py = os.path.join(env, sous, 'Scripts', 'python.exe')
                 if os.path.exists(py):
                     candidats.append([py, '-m', 'esptool'])
@@ -84,7 +64,7 @@ def esptool_cmd(impose=None):
 
 
 def lancer(cmd, args, timeout=900):
-    """Execute esptool et renvoie (code, sortie). Aucune commande d'ecriture n'est acceptee ici."""
+    """Run an allowed read-only esptool command and return its status and output."""
     interdits = {'erase_flash', 'erase_region', 'write_flash', 'burn_efuse', 'write_mem',
                  'erase-flash', 'erase-region', 'write-flash', 'burn-efuse'}
     if interdits & set(args):
@@ -96,7 +76,7 @@ def lancer(cmd, args, timeout=900):
 
 # Inspect partition metadata to confirm the hardware layout.
 def lire_partitions(chemin_bin):
-    """Analyse une table de partitions brute (0x8000) : [(nom, type, sous-type, adresse, taille)]."""
+    """Parse the flash partition table into name, type, subtype, address and size records."""
     entrees = []
     with open(chemin_bin, 'rb') as f:
         data = f.read()
@@ -155,7 +135,7 @@ def main():
     base = ['--port', port, '--baud', args.vitesse]
     print('Appareil sur %s' % port)
 
-    # --- 1. Identification (lecture seule) -------------------------------------------------
+# --- 1. Read-only identification
     print('\n--- Identification ---')
     code, sortie = lancer(cmd, base + ['flash_id'], timeout=180)
     if code != 0:
@@ -180,7 +160,7 @@ def main():
     dossier = args.dossier or os.path.join(SAUVEGARDES, horodatage)
     os.makedirs(dossier, exist_ok=True)
 
-    # Table des partitions : toujours lue, elle sert a tout le reste
+    # Table of scores: Always read, it serves everything else
     table = os.path.join(dossier, 'table_partitions.bin')
     code, sortie = lancer(cmd, base + ['read_flash', '0x8000', '0x1000', table], timeout=300)
     partitions = lire_partitions(table) if code == 0 else []
@@ -203,7 +183,7 @@ def main():
                 pass
         return 0
 
-    # --- 2. Sauvegarde -----------------------------------------------------------------------
+    # --- 2. Backup -------------------------------------------------------------------------
     print('\n--- Sauvegarde dans %s ---' % dossier)
     print("Rien n'est ecrit dans l'appareil : il n'est que relu.")
     fichiers = []
@@ -218,7 +198,7 @@ def main():
     else:
         zones = list(ZONES_PAR_DEFAUT)
         for nom, type_, sous, adresse, taille in partitions:
-            # applications et donnees utiles ; on saute les partitions vides de grande taille
+            # useful applications and data; one skips large empty partitions
             if nom in ('nvs', 'otadata', 'phy_init') or type_ == 0:
                 zones.append((nom, adresse, taille))
         for nom, adresse, taille in zones:
@@ -259,7 +239,7 @@ def main():
         return 1
     print('Sauvegarde complete et verifiee : %s' % dossier)
     print("Elle reste privee (dossier private\\, jamais publie). Gardez-en une copie ailleurs.")
-    print('Pour revenir en arriere, voir docs\\RETOUR_ARRIERE_FR.md.')
+    print('Pour revenir en arriere, voir docs\\ROLLBACK_EN.md.')
     return 0
 
 

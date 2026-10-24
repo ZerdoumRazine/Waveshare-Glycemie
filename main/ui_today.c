@@ -1,13 +1,9 @@
 /*
  * ui_today.c: Daily statistics starting at local midnight.
- * FR: Statistiques quotidiennes depuis minuit.
  * Design note: Show incomplete coverage honestly in daily summaries.
  */
 
-/*
- * Calculates and renders today's statistics using local midnight and available readings.
- * Calcule les statistiques du jour à partir de minuit local.
- */
+/* Compute today's aggregates from the available readings since local midnight. */
 #include "i18n.h"
 #include "ui_pages.h"
 
@@ -15,13 +11,12 @@
 #include <string.h>
 #include <time.h>
 
-/*
- * AUJOURD'HUI (depuis minuit, heure locale) : TIR 70-180, moyenne, minimum, maximum, couverture, temps bas (< 70) et
- * haut (> 180), episodes bas / hauts (au moins 3 mesures consecutives, soit 15 min). Calcule sur l'historique 24 h
- * deja en memoire (aucune lecture supplementaire), seulement quand l'historique ou la minute change.
- * Frise de la journee : 96 creneaux de 15 min dessines en plages de meme etat (evenement de dessin, aucun objet par
- * creneau, aucune image).
- */
+/* Daily summary: time in range (70–180 mg/dL), mean, minimum, maximum,
+ * coverage, time below/above range, and sustained out-of-range episodes.
+ * An episode needs at least three consecutive five-minute readings.
+ * Reuse the in-memory 24-hour history and refresh only when readings or
+ * the current minute change. The compact timeline groups the 96
+ * fifteen-minute slots by state rather than creating one widget per slot. */
 
 #define PAD        20
 #define LINE_Y     58
@@ -32,8 +27,8 @@
 #define TILE_GAP   12
 #define SLOTS      96
 #define SLOT_MS    (15 * 60 * 1000LL)
-#define GAP_MS     (10 * 60 * 1000LL)  /* au-dela : mesures non consecutives */
-#define EVENT_MIN  3                   /* 3 mesures = 15 min */
+#define GAP_MS     (10 * 60 * 1000LL)  /* Readings farther apart are not treated as consecutive. */
+#define EVENT_MIN  3                   /* Three five-minute readings define a sustained episode. */
 
 typedef enum {
     SLOT_FUTURE = 0,
@@ -81,7 +76,7 @@ static tile_t s_tiles[T_COUNT];
 static lv_obj_t *s_subtitle;
 static lv_obj_t *s_timeline;
 static uint8_t s_slots[SLOTS];
-static int32_t s_now_pos = -1; /* 0..1000 : position de l'heure actuelle dans la journee */
+static int32_t s_now_pos = -1; /* 0..1000: current position in the day */
 
 static void tile_create(tile_t *t, lv_obj_t *page, int32_t x, int32_t y, int32_t w, const char *title, bool icon_low,
                         bool icon_high, const char *sub)
@@ -123,7 +118,7 @@ static lv_color_t slot_color(uint8_t state)
     }
 }
 
-/* Frise : piste, plages de meme etat, repere de l'heure actuelle */
+/* Friesland: track, same state beaches, current spot */
 static void on_timeline_draw(lv_event_t *e)
 {
     lv_obj_t *obj = lv_event_get_current_target_obj(e);
@@ -174,7 +169,7 @@ static void on_timeline_draw(lv_event_t *e)
 
 static void on_timeline_ext_size(lv_event_t *e)
 {
-    lv_event_set_ext_draw_size(e, 7); /* repere de l'heure au-dessus et au-dessous de la frise */
+    lv_event_set_ext_draw_size(e, 7); /* Repare of the hour above and below the frieze */
 }
 
 static lv_obj_t *legend_item(lv_obj_t *parent, lv_color_t color, lv_opa_t opa, const char *text)
@@ -208,7 +203,7 @@ void ui_today_create(lv_obj_t *page)
     lv_obj_set_style_text_align(s_subtitle, LV_TEXT_ALIGN_RIGHT, 0);
     lv_obj_set_pos(s_subtitle, UI_SCR_W - 24 - 620, 20);
 
-    /* Frise de la journee */
+    /* Friesland */
     lv_obj_t *line = ui_card(page, PAD, LINE_Y, UI_SCR_W - 2 * PAD, LINE_H, 20);
     lv_obj_t *head = ui_label(line, g_fonts.label, UI_G_TEXT2, tr(S_DAY_BAND));
     lv_obj_set_pos(head, 18, 10);
@@ -276,7 +271,7 @@ static int64_t local_midnight_ms(const struct tm *now_tm)
     return (int64_t)mktime(&m) * 1000;
 }
 
-/* Statistiques depuis minuit et etat de chaque creneau de 15 min */
+/* Statistics since midnight and summer of each 15 min crain */
 /* Use only available samples; incomplete coverage must remain visible. */
 static void compute_today(const ui_data_t *d, int64_t midnight_ms, today_t *t, uint8_t *slots)
 {
@@ -294,7 +289,7 @@ static void compute_today(const ui_data_t *d, int64_t midnight_ms, today_t *t, u
     int low_run = 0;
     int high_run = 0;
     int64_t prev_ms = 0;
-    for (int i = d->count - 1; i >= 0; i--) { /* du plus ancien au plus recent */
+    for (int i = d->count - 1; i >= 0; i--) { /* from oldest to most recent */
         const glucose_point_t *p = &d->hist[i];
         if (p->wt_ms < midnight_ms || p->wt_ms > d->now_ms + 5 * 60 * 1000LL) {
             continue;
@@ -334,7 +329,7 @@ static void compute_today(const ui_data_t *d, int64_t midnight_ms, today_t *t, u
         const int slot = (int)((p->wt_ms - midnight_ms) / SLOT_MS);
         if (slot >= 0 && slot < SLOTS) {
             const uint8_t cur = slots[slot];
-            /* priorite : bas > haut > cible > sans donnee */
+            /* priority: bottom > top > target > without data */
             if (state == SLOT_LOW || (state == SLOT_HIGH && cur != SLOT_LOW) || (state == SLOT_OK && cur < SLOT_OK)) {
                 slots[slot] = state;
             }
@@ -382,7 +377,7 @@ void ui_today_update(const ui_data_t *d, bool force)
         lv_obj_invalidate(s_timeline);
     }
 
-    ui_set_text(s_subtitle, tr(S_SINCE_MIDNIGHT)); /* la date complete est dans le bandeau : aucun doublon */
+    ui_set_text(s_subtitle, tr(S_SINCE_MIDNIGHT)); /* the full date is in the banner: no duplicate */
 
     if (t.n == 0) {
         for (int i = 0; i < T_COUNT; i++) {

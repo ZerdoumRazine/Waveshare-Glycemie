@@ -1,16 +1,10 @@
 /* glucose_math.h: Pure helpers for numerical glucose calculations.
- * FR: Fonctions pures des calculs glycémiques.
  * The declarations below are shared with other firmware modules.
  */
-/*
- * Calculs sur l'historique de glycemie (fonctions pures, sans etat) :
- * age et fraicheur, delta entre mesures consecutives, cadence reelle, prochaine mesure, statistiques.
- * Les tableaux sont tries de la mesure la plus recente a la plus ancienne.
- */
-/* Public interface / Interface publique
- * EN: Pure calculations of freshness and deltas; safe for host tests.
- * FR: Calculs purs de fraîcheur et de variation.
- */
+/* Pure calculations on newest-first glucose readings: age, freshness,
+ * recent delta, observed cadence, estimated next reading and statistics.
+ * Functions can be tested on a desktop without device state or hardware. */
+/* Side-effect-free freshness, deltas and history calculations. */
 #pragma once
 
 #include <stdbool.h>
@@ -18,28 +12,28 @@
 #include "app_state.h"
 
 typedef enum {
-    GM_FRESH_NONE = 0, /* aucune mesure ou heure inconnue */
-    GM_FRESH_OK,       /* A JOUR */
-    GM_FRESH_LATE,     /* RETARD : la mesure attendue tarde */
-    GM_FRESH_STALE,    /* DONNEES ANCIENNES */
+    GM_FRESH_NONE = 0, /* no measurement or time unknown */
+    GM_FRESH_OK,       /* Fresh value. */
+    GM_FRESH_LATE,     /* Late: an expected reading has not arrived yet. */
+    GM_FRESH_STALE,    /* Stale value; never present it as current. */
 } gm_freshness_t;
 
 
-/* Age de la derniere mesure en secondes, -1 si inconnu */
+/* Age of last measurement in seconds, -1 if unknown */
 int64_t gm_age_s(const glucose_point_t *pts, int count, int64_t now_ms, bool time_ok);
 
 gm_freshness_t gm_freshness(int64_t age_s);
 
-/* Cadence reelle (mediane des intervalles consecutifs recents), GLY_CADENCE_DEFAULT_S a defaut */
+/* Real Cadence (median of recent consecutive intervals), GLY_CADENCE_DEFAULT_S a defaut */
 int32_t gm_cadence_s(const glucose_point_t *pts, int count);
 
-/* Delta entre deux mesures valides et consecutives (2,5 a 7,5 min d'ecart) */
+/* Delta between two valid and consecutive measurements (2.5 to 7.5 min. */
 bool gm_delta_between(const glucose_point_t *newer, const glucose_point_t *older, int *delta);
 
-/* Delta affichable : mesures consecutives ET derniere mesure non ancienne */
+/* Delta displayable: consecutive measurements AND last non-old measure */
 bool gm_delta_current(const glucose_point_t *pts, int count, int64_t age_s, int *delta);
 
-/* Heure estimee de la prochaine mesure (derniere mesure + cadence reelle), 0 si inconnue */
+/* Estimated time of next measurement (last measure + real rate), 0 if unknown */
 int64_t gm_next_expected_ms(const glucose_point_t *pts, int count);
 
-/* Statistiques sur les `hours` dernieres heures */
+/* Last Hours Statistics */

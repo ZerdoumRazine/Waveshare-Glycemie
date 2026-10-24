@@ -1,27 +1,17 @@
 #!/usr/bin/env python3
 # Windows configuration interface for the connected display.
-# FR: Interface Windows de configuration de l'écran.
+#
 # Design note: Do not display, log or persist account passwords on the PC.
-# EN: Provides the Windows USB setup interface; credential changes remain a confirmable trial.
-# FR: Interface Windows de configuration USB avec essai réversible des accès.
-"""Configuration de l'ecran WaveShare Glycemie depuis le PC (fenetre graphique Windows).
+# Provides the Windows USB setup interface; credential changes remain a confirmable trial.
+#
+"""Windows graphical utility for configuring a Waveshare glucose display over USB.
 
-Ce programme sert a renseigner, essayer, enregistrer ou effacer les acces de l'ecran (reseau Wi-Fi et
-compte Dexcom Share) par le cable USB, sans rien installer et sans recompiler le firmware.
-
-Regle de securite appliquee ici comme sur l'ecran :
-    garder les acces precedents -> essayer les nouveaux -> enregistrer seulement apres reussite
-    ET confirmation. Un echec, un abandon ou un debranchement laisse l'appareil avec ses acces
-    precedents.
-
-Ce programme ne va jamais sur Internet, n'ecrit aucun mot de passe dans un fichier et n'affiche jamais
-un mot de passe en clair (sauf si vous cochez "Afficher"). Il n'y a ni compte, ni abonnement, ni service
-en ligne : les acces saisis servent uniquement aux connexions normales de l'appareil (sa box Wi-Fi et
-les serveurs Dexcom Share).
-
-Le dialogue avec l'appareil est entierement assure par tools/assistant_config.py (meme code que
-l'assistant en ligne de commande).
-"""
+The device's Wi-Fi and Dexcom Share details are sent over the local serial
+connection. The utility tests replacements before allowing a confirmed save
+and preserves the prior device configuration if a trial fails or is cancelled.
+No passwords are stored on the PC or sent directly to online services by this
+program; fields are masked by default. The serial protocol is implemented by
+tools/assistant_config.py."""
 import os
 import queue
 import sys
@@ -29,8 +19,8 @@ import threading
 import tkinter as tk
 from tkinter import messagebox, ttk
 
-# --- import de l'assistant (tools/assistant_config.py), que le programme soit lance depuis les
-#     sources ou depuis l'executable fabrique par PyInstaller -----------------------------------
+# --- import de l'assistant (tools/assistant_config.py), the programme has been launched since
+#     sources or from the executable manufacture by PyInstaller -----------------------------------
 ICI = os.path.dirname(os.path.abspath(__file__))
 for candidat in (os.path.join(ICI, '..'), ICI, getattr(sys, '_MEIPASS', ICI)):
     if os.path.isfile(os.path.join(candidat, 'assistant_config.py')) and candidat not in sys.path:
@@ -39,7 +29,7 @@ for candidat in (os.path.join(ICI, '..'), ICI, getattr(sys, '_MEIPASS', ICI)):
 import assistant_config as ac  # noqa: E402
 
 TITRE = 'WaveShare Glycémie — connexion'
-# Libelles accentues pour la fenetre ; les codes ("ous", "us", "jp") restent ceux du firmware.
+# Increased libels for the window; the codes ("us", "jp") remain those of the firmware.
 REGIONS_FR = {'ous': 'Europe / hors Amérique du Nord', 'us': 'Amérique du Nord', 'jp': 'Japon'}
 LARGEUR_CHAMP = 34
 
@@ -51,7 +41,7 @@ class Fenetre(object):
     # Build controls with passwords hidden by default.
     def __init__(self, racine):
         self.racine = racine
-        self.file = queue.Queue()        # messages venant du fil de discussion avec l'appareil
+        self.file = queue.Queue()        # messages from the thread with the device
         self.occupe = False
         self.essai_reussi = False
         racine.title(TITRE)
@@ -193,7 +183,7 @@ class Fenetre(object):
         elif len(self.ports) == 1:
             self.liste_ports.current(0)
         else:
-            # Plusieurs appareils : c'est a l'utilisateur de choisir, jamais au programme.
+            # Several devices: it is up to the user to choose, never to the program.
             self.port.set('')
             self.dire('%d ports série trouvés : choisissez celui de l\'écran dans la liste. '
                       'En cas de doute, débranchez le câble, appuyez sur « Rechercher », '
@@ -223,7 +213,7 @@ class Fenetre(object):
 
     # Keep serial I/O off the Tkinter thread so the interface remains responsive.
     def lancer(self, travail, titre):
-        """Execute 'travail(app, dire)' dans un fil separe : la fenetre ne se figer jamais."""
+        """Run device operations on a worker thread so the Tkinter UI remains responsive."""
         if self.occupe:
             return
         port = self.port_choisi()
@@ -277,7 +267,7 @@ class Fenetre(object):
         self._tache = self.racine.after(120, self._vider_file)
 
     def fermer(self):
-        """Fermeture propre : plus aucune tache en attente, puis la fenetre disparait."""
+        """Shut down worker activity before closing the window."""
         if self._tache is not None:
             self.racine.after_cancel(self._tache)
             self._tache = None
@@ -431,7 +421,7 @@ class Fenetre(object):
 
 
 def ecran_haute_definition():
-    """Ecrans 4K / affichage agrandi : sans cela, Windows etire la fenetre et tout est flou."""
+    """Enable Windows DPI awareness to avoid blurry scaling on high-resolution displays."""
     if sys.platform != 'win32':
         return
     try:

@@ -1,12 +1,11 @@
 /*
  * glucose_math.c: Pure glucose statistics and conversion helpers.
- * FR: Calculs et statistiques glycémiques sans matériel.
  * Design note: Side-effect-free calculations make boundary cases easier to test.
  */
 
 /*
  * Provides pure, host-testable calculations for reading age, freshness, cadence and delta.
- * Rassemble les calculs testables de fraîcheur, cadence et variation.
+ * Collects testable calculations of freshness, rate and variation.
  */
 #include "glucose_math.h"
 
@@ -52,7 +51,7 @@ int32_t gm_cadence_s(const glucose_point_t *pts, int count)
     int n = 0;
     for (int i = 0; i + 1 < count && i < 16; i++) {
         int64_t dt = (pts[i].wt_ms - pts[i + 1].wt_ms) / 1000;
-        /* seuls les intervalles d'une mesure a la suivante (4 a 6 min) sont representatifs */
+        /* only the intervals of one measurement to the next (4 to 6 min) are representative */
         if (dt >= 240 && dt <= 360) {
             intervals[n++] = (int32_t)dt;
         }

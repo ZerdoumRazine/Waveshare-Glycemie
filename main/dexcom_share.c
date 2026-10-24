@@ -1,20 +1,11 @@
 /*
  * dexcom_share.c: Read-only client for the Dexcom Share protocol.
- * FR: Client en lecture seule du protocole Dexcom Share.
  * Design note: Failed network calls are not glucose measurements.
  */
 
 /*
- * dexcom_share.c: Reads Dexcom Share data and interprets its network responses.
- * FR: Lit les données Dexcom Share et interprète les réponses réseau.
- * Design decision: A failed request is not a glucose measurement.
- *
- * Experimental supplementary display; official monitoring remains authoritative.
- */
-
-/*
  * Handles the Share HTTPS protocol, response parsing and refusal/network classification.
- * Gère le protocole HTTPS Share et distingue erreurs réseau et refus du compte.
+ * Manage protocol HTTPS Share and distinguish network errors and account refusal.
  * This is a supplementary display: official Dexcom alarms remain authoritative.
  */
 #include "dexcom_share.h"
@@ -35,7 +26,7 @@ static const char *TAG = "dexcom";
 
 /* Constantes du protocole Dexcom Share, reprises de pydexcom/const.py
  * (https://github.com/gagebenne/pydexcom, Copyright (c) Gage Benne, licence MIT).
- * Ce sont des valeurs imposees par le service : tout client doit employer les memes. */
+ * These are values imposed by the service: every customer must use the same. */
 #define DEX_BASE_URL_US        "https://share2.dexcom.com/ShareWebServices/Services/"
 #define DEX_BASE_URL_OUS       "https://shareous1.dexcom.com/ShareWebServices/Services/"
 #define DEX_BASE_URL_JP        "https://share.dexcom.jp/ShareWebServices/Services/"
@@ -64,8 +55,8 @@ typedef struct {
     bool headers_sent;
 } resp_buf_t;
 
-/* Vocabulaire de tendance defini par l'API Dexcom Share : ce sont les chaines que le service
- * renvoie. Tout client emploie donc la meme liste, a l'identique. */
+/* Vocabulaire de tendance defini par l'API Dexcom Share: it is the channels that the service
+ * Send back. So every customer uses the same list, identically. */
 static const char *const k_trend_names[TREND_COUNT] = {
     "None", "DoubleUp", "SingleUp", "FortyFiveUp", "Flat",
     "FortyFiveDown", "SingleDown", "DoubleDown", "NotComputable", "RateOutOfRange",
@@ -110,7 +101,7 @@ static void append(char *out, size_t size, size_t *pos, const char *text, size_t
     out[*pos] = '\0';
 }
 
-/* Message Dexcom sans identifiant, mot de passe, adresse e-mail ni UUID */
+/* Dexcom message without ID, password, e-mail address or UUID */
 /* Remove sensitive account fragments before an error is shown in logs. */
 static void sanitize_message(const dexcom_client_t *c, const char *in, char *out, size_t size)
 {
@@ -212,7 +203,7 @@ static esp_err_t http_event(esp_http_client_event_t *evt)
     return ESP_OK;
 }
 
-/* POST JSON en HTTPS. Ni l'URL (sessionId) ni le corps (mot de passe) ne sont journalises. */
+/* POST JSON en HTTPS. Neither theURL (sessionId) and the body (password) are not logged. */
 static dex_result_t http_post_json(dexcom_client_t *c, const char *url, const char *body, resp_buf_t *rb)
 {
     rb->len = 0;
@@ -259,7 +250,7 @@ static dex_result_t http_post_json(dexcom_client_t *c, const char *url, const ch
     return DEX_OK;
 }
 
-/* Correspondance des erreurs Dexcom, d'apres pydexcom/dexcom.py _handle_error_code */
+/* Correspondence of Dexcom errors, after pydexcom/dexcom.py _handle_error_code */
 static dex_result_t classify_http_error(dexcom_client_t *c, const resp_buf_t *rb, request_ctx_t ctx)
 {
     const int status = c->last_error.http_status;
@@ -285,11 +276,11 @@ static dex_result_t classify_http_error(dexcom_client_t *c, const resp_buf_t *rb
                     strstr(msg_s, "Cannot Authenticate by AccountId") != NULL)) {
             result = DEX_ERR_AUTH;
         } else if (strcmp(code_s, "InvalidArgument") == 0) {
-            /* Lecture : sessionId invalide -> nouvelle session. Connexion : identifiant/mot de passe invalide. */
+            /* Reading: sessionId invalid -> new session. Connection: identifiant/mot de passe invalide. */
             result = (ctx == CTX_READ) ? DEX_ERR_SESSION : DEX_ERR_AUTH;
         } else if (ctx == CTX_AUTH && (strstr(code_s, "Account") != NULL || strstr(code_s, "Password") != NULL ||
                                        strstr(code_s, "Authenticate") != NULL)) {
-            /* Code inconnu mais clairement lie au compte : traite comme un refus (aucun nouvel essai) */
+            /* Unknown code but clearly linked to account: treats as refusal (no new trial) */
             result = DEX_ERR_AUTH;
         }
         ESP_LOGW(TAG, "Etape %s : HTTP %d, code Dexcom %s, message \"%s\" -> %s", dex_step_name(c->last_error.step),
@@ -317,7 +308,7 @@ static char *build_credentials_body(const char *id_key, const char *id_value, co
     return body;
 }
 
-/* Reponse attendue : un UUID JSON entre guillemets, different de l'UUID nul */
+/* Expected response: one UUID JSON between quotation marks, different from theUUID zero */
 static bool parse_uuid_response(const resp_buf_t *rb, char out[37], bool *is_default)
 {
     bool ok = false;
@@ -414,7 +405,7 @@ static uint8_t parse_trend(const cJSON *item)
         return TREND_NOT_COMPUTABLE;
     }
     if (cJSON_IsNumber(item) && item->valueint >= 0 && item->valueint < TREND_COUNT) {
-        return (uint8_t)item->valueint; /* ancien format numerique */
+        return (uint8_t)item->valueint; /* old digital format */
     }
     return TREND_NONE;
 }
@@ -446,7 +437,7 @@ void dexcom_client_init(dexcom_client_t *c, const char *region, const char *user
     }
     c->username = username ? username : "";
     c->password = password ? password : "";
-    /* Comme pydexcom : un identifiant de compte (UUID) peut remplacer le nom d'utilisateur */
+    /* Like pydexcom: an account identifier (UUID) can replace the username */
     if (is_uuid(c->username)) {
         memcpy(c->account_id, c->username, 36);
         c->account_id[36] = '\0';
@@ -573,7 +564,7 @@ dex_result_t dexcom_read_glucose(dexcom_client_t *c, int minutes, int max_count,
     static bool fields_logged;
     const cJSON *first = cJSON_GetArrayItem(root, 0);
     if (!fields_logged && cJSON_IsObject(first)) {
-        /* Recherche de metadonnees (duree du capteur...) : noms des champs seulement, jamais les valeurs */
+        /* Search for metadata (sensor hardness...): field names only, never values */
         char names[160] = "";
         const cJSON *field = NULL;
         cJSON_ArrayForEach(field, first) {

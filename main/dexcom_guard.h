@@ -1,32 +1,24 @@
 /* dexcom_guard.h: Persistent Dexcom authentication state API.
- * FR: API du verrou d'authentification Dexcom.
  * The declarations below are shared with other firmware modules.
  */
-/*
- * Verrou d'authentification Dexcom, persistant en NVS.
- *
- * Objectif : ne jamais risquer de bloquer le compte Dexcom.
- * - Aucune authentification tant que les identifiants n'ont pas ete valides,
- *   sauf tentative unique armee explicitement (console "dexcom_auth").
- * - L'etat est enregistre AVANT l'envoi des identifiants puis mis a jour avec le resultat :
- *   un redemarrage pendant ou apres un echec ne relance jamais de tentative.
- * - Seul l'etat VALIDE autorise les connexions automatiques (redemarrage, session expiree).
- * Le verrou est lie a une empreinte des identifiants : de nouveaux identifiants repartent de INCONNU.
- */
-/* Public interface / Interface publique
- * EN: Saved authentication decisions prevent repeated attempts against a blocked account.
- * FR: Contrôle des tentatives d'authentification Dexcom.
- */
+/* Persist the Dexcom Share authentication guard in NVS.
+ * Unknown or rejected credentials must not be retried automatically:
+ * otherwise repeated failures could lock the user's Dexcom account.
+ * Record an attempt before sending credentials so a restart cannot reset
+ * this protection. Only verified credentials permit automatic sessions.
+ * A single explicitly armed attempt may be requested through dexcom_auth.
+ * The guard is tied to a fingerprint of the submitted credentials. */
+/* Read and persist login state to protect against repeated rejected attempts. */
 #pragma once
 
 #include "esp_err.h"
 
 typedef enum {
-    DEX_GUARD_UNKNOWN = 0,      /* aucune tentative avec ces identifiants */
-    DEX_GUARD_IN_PROGRESS = 1,  /* tentative commencee, resultat jamais enregistre (redemarrage) */
-    DEX_GUARD_VALIDATED = 2,    /* authentification reussie : fonctionnement normal */
-    DEX_GUARD_REFUSED = 3,      /* identifiants refuses ou compte bloque : plus aucune tentative */
-    DEX_GUARD_INCONCLUSIVE = 4, /* identifiants envoyes sans verdict (reseau/serveur) : pas de nouvel essai */
+    DEX_GUARD_UNKNOWN = 0,      /* no attempt with these identifiers */
+    DEX_GUARD_IN_PROGRESS = 1,  /* attempt starts, result never saves (starts up) */
+    DEX_GUARD_VALIDATED = 2,    /* Authentication succeeded; normal connection retries are permitted. */
+    DEX_GUARD_REFUSED = 3,      /* Credentials rejected or account blocked; do not retry automatically. */
+    DEX_GUARD_INCONCLUSIVE = 4, /* Request reached the server without a definitive verdict; require manual retry. */
 } dex_guard_state_t;
 
 esp_err_t dex_guard_init(const char *region, const char *username, const char *password);

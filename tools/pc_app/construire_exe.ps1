@@ -1,29 +1,27 @@
 # Builds the distributable Windows setup application.
-# FR: Construit l'application Windows à distribuer.
+#
 # Design note: Always test the compiled executable before sharing it.
-# EN: Package the tested Windows USB assistant into a standalone executable.
-# FR: Construit l'application Windows autonome de configuration USB.
+# Package the tested Windows USB assistant into a standalone executable.
+#
 <#
 .SYNOPSIS
-    Fabrique l'application Windows « WaveShare Glycemie — connexion » (un seul fichier .exe).
+    Build GlycemieConnexion.exe, the Windows USB setup application.
 
 .DESCRIPTION
-    Le resultat, dist\GlycemieConnexion.exe, s'ouvre par double-clic : l'utilisateur final n'a
-    besoin NI de Python NI d'aucune bibliotheque. L'executable embarque l'interprete, tkinter et
-    tools\assistant_config.py (le meme dialogue serie que l'assistant en ligne de commande).
+    PyInstaller bundles Python, Tkinter and tools/assistant_config.py into a
+    standalone EXE. End users do not need to install Python or other libraries.
+    Run this builder after changing the Windows interface or serial assistant.
 
-    A executer une fois apres chaque modification de l'application ou de l'assistant :
-        powershell -ExecutionPolicy Bypass -File tools\pc_app\construire_exe.ps1
-
-    Prerequis sur le PC de developpement seulement : Python 3 et PyInstaller
+    Development prerequisite:
         py -3 -m pip install pyinstaller
 
 .NOTES
-    L'executable n'est PAS signe : Windows peut afficher « Editeur inconnu » au premier lancement
-    (SmartScreen). C'est explique dans le tutoriel. Rien n'est envoye sur Internet par l'application.
+    The executable is not code-signed. Windows SmartScreen may display
+    an unknown publisher warning. See the English installation guide.
+    The utility exchanges device configuration only over a local USB cable.
 #>
 param(
-    [switch]$Propre   # repart de zero (supprime build\ et dist\)
+    [switch]$Propre   # Clean previous build and dist directories.
 )
 $ErrorActionPreference = 'Stop'
 
@@ -38,7 +36,7 @@ foreach ($f in @($script, $assistant)) {
     if (-not (Test-Path $f)) { throw "Fichier introuvable : $f" }
 }
 
-# Python : py -3 si disponible, sinon python du PATH
+# Prefer the Windows py launcher; fall back to python on PATH.
 $python = 'python'
 if (Get-Command py -ErrorAction SilentlyContinue) { $python = 'py' }
 $argsPy = @()
@@ -54,10 +52,9 @@ if ($Propre) {
 }
 
 Write-Host "Construction de l'application Windows..." -ForegroundColor Cyan
-# --noconsole : aucune fenetre noire ; --onefile : un seul .exe a donner a l'utilisateur
-# --paths + --hidden-import : assistant_config.py est embarque comme MODULE, pour que PyInstaller
-# analyse aussi ses propres imports (getpass, re, argparse, winreg...). Embarque en simple donnee,
-# il manquerait ces modules et l'application ne s'ouvrirait pas.
+# --noconsole: no black windows; --onefile: one .exe to give to the user
+# assistant_config is imported dynamically; force PyInstaller to include its
+# Python dependencies instead of treating it as a plain data file.
 & $python @argsPy -m PyInstaller `
     --noconfirm --clean --onefile --noconsole `
     --name GlycemieConnexion `

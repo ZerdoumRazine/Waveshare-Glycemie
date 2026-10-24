@@ -1,10 +1,10 @@
 # Runs local speech generation on Windows.
-# FR: Lance la synthèse vocale locale sous Windows.
+#
 # Design note: Generated audio may have separate redistribution conditions.
-# EN: Generate legacy Windows speech samples for private development, not public distribution.
-# FR: Génère des échantillons vocaux Windows réservés à un usage privé.
-# Genere les extraits vocaux francais (WAV 16 kHz, 16 bits, mono) avec la voix Windows fr-FR installee.
-# Aucune dependance Internet, aucune installation. Sortie : tools\voice\wav\<id>.wav
+# Generate legacy Windows speech samples for private development, not public distribution.
+#
+# Generate optional French 16-kHz, 16-bit mono WAV speech using an installed fr-FR voice.
+# No Internet dependence, no installation. Output: tools\voice\wav\<id>.wav
 # Usage : powershell -ExecutionPolicy Bypass -File tools\voice\gen_voice.ps1
 
 $ErrorActionPreference = 'Stop'
@@ -13,7 +13,7 @@ Add-Type -AssemblyName System.Speech
 $outDir = Join-Path $PSScriptRoot 'wav'
 New-Item -ItemType Directory -Force $outDir | Out-Null
 
-# identifiant -> texte prononce
+# Audio file identifier -> recorded phrase.
 $clips = [ordered]@{
     'p_tres_basse'    = 'Attention, glycémie très basse.'
     'p_basse'         = 'Attention, glycémie basse.'

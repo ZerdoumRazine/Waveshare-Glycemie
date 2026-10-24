@@ -1,32 +1,24 @@
 # Stages public firmware and tools apart from personal builds.
-# FR: Prépare le firmware public hors des versions personnelles.
+#
 # Design note: Never ship a build containing Wi-Fi or Dexcom secrets.
-# EN: Legacy local firmware packaging route; never ship an image containing personal secrets.
-# FR: Ancienne procédure locale : aucun binaire contenant des identifiants personnels ne doit partir.
+# Legacy local firmware packaging route; never ship an image containing personal secrets.
+#
 <#
 .SYNOPSIS
-    Prepare les fichiers a telecharger : programme PUBLIC de l'ecran + application Windows + empreintes.
+    Stage public firmware and the Windows utility from sanitized sources.
 
 .DESCRIPTION
-    Le programme est compile depuis la COPIE PUBLIQUE (dossier Razine), qui ne contient aucun
-    identifiant : ni reseau Wi-Fi, ni compte Dexcom. L'utilisateur saisira les siens apres
-    l'installation, sur l'ecran tactile ou avec l'application Windows.
-
-    Jamais le programme compile depuis le dossier de travail personnel : celui-la contient vos
-    identifiants (private\device_secrets.h y est recopie pour votre propre appareil).
-
-    Resultat dans livraison\ (hors depot) :
-        glycemie_display.bin, bootloader.bin, partition-table.bin   le programme
-        GlycemieConnexion.exe                                        l'application Windows
-        installer.ps1                                                installation en une commande
-        SHA256SUMS.txt                                               empreintes de tout
+    Compile only from a clean public source copy without personal Wi-Fi
+    or Dexcom credentials. Build the Windows USB application and package
+    firmware, installer and SHA-256 checksums in the delivery directory.
+    Never use a personal firmware image for a public release.
 
 .EXAMPLE
     powershell -ExecutionPolicy Bypass -File tools\publier_firmware.ps1
 #>
 param(
-    [switch]$SansExe,     # ne pas refabriquer l'application Windows
-    [switch]$Propre       # recompiler le firmware de zero
+    [switch]$SansExe,     # Reuse an already built Windows application.
+    [switch]$Propre       # Rebuild firmware from scratch.
 )
 $ErrorActionPreference = 'Stop'
 
@@ -42,7 +34,7 @@ if (Test-Path $secretsPublics) {
     throw "ARRET : $secretsPublics existe. La copie publique ne doit contenir aucun identifiant."
 }
 
-# --- 1. Programme de l'ecran, compile depuis la copie publique ------------------------------------
+# --- 1. Screen program, compiles from public copy ------------------------------------
 Write-Host 'Compilation du programme public (sans identifiants, sans commandes vocales)...' -ForegroundColor Cyan
 $build = Join-Path $publique 'tools\build.ps1'
 $arguments = @('-ExecutionPolicy', 'Bypass', '-File', $build)
@@ -50,9 +42,9 @@ if ($Propre) { $arguments += '-Clean' }
 & powershell @arguments
 if ($LASTEXITCODE -ne 0) { throw "La compilation a echoue (code $LASTEXITCODE)." }
 
-# build.ps1 compile dans une copie de travail ASCII quand le chemin contient un accent
-# Le @(...) exterieur impose un tableau : sans lui, un resultat unique serait une chaine,
-# et $sorties[0] renverrait sa premiere LETTRE.
+# build. ps1 compiles in a working copy ASCII when the path contains an accent
+# Wrap results in an array even for one build directory: otherwise indexing
+# the result would return a character from a string.
 $sorties = @(@(
     (Join-Path $publique 'build'),
     (Join-Path $env:TEMP 'wsg-build-razine\build')
@@ -82,16 +74,16 @@ if (-not $SansExe) {
 }
 if (Test-Path $exe) { Copy-Item $exe $livraison -Force } else { Write-Warning "Application absente : $exe" }
 
-# --- 3. Installation en une commande, pour la personne qui telecharge -----------------------------
+# --- 3. USB installation script for the end user ------------------------------
 @'
 <#
-    Installe le programme WaveShare Glycemie sur l'ecran, par le cable USB.
+    Install WaveShare Glycemie program on screen, via cable USB.
 
-    Avant : branchez l'ecran au PC avec un cable USB-C de DONNEES, et fermez tout moniteur serie.
-    Ensuite : clic droit sur ce fichier -> Executer avec PowerShell. Comptez deux minutes.
+    Before: Connect the screen to the PC with a cable USB-C of DONNEES, and shut down every monitor serie.
+    Then: right click on this file -> Run with PowerShell. Count two minutes.
 
-    Ce script n'efface pas la carte (pas d'erase_flash) : il remplace le programme, la table des
-    partitions et l'amorce. Les reglages, les dates de consommables et la microSD sont conserves.
+    This script does not run erase_flash. It writes only the program, bootloader
+    and partition table. Stored preferences and microSD are preserved.
 #>
 param([string]$Port = '')
 $ErrorActionPreference = 'Stop'
@@ -134,17 +126,17 @@ Write-Host "C'est installe. L'ecran redemarre et affiche l'assistant de configur
 Write-Host "Choisissez la langue, le reseau Wi-Fi, puis saisissez votre compte Dexcom."
 '@ | Set-Content -Path (Join-Path $livraison 'installer.ps1') -Encoding UTF8
 
-# --- 3 bis. Empreinte des SOURCES qui ont produit ce programme ------------------------------------
-# Elle permet de verifier plus tard que le programme livre vient bien de ces sources-la, quelles que
-# soient les dates des fichiers (regenerer la copie publique les rend toutes "recentes").
-# Le chemin du projet contient un accent : on le passe en ARGUMENT (une seule chaine, encodee
-# correctement) plutot que dans le code d'un python -c, ou il serait abime.
+# --- 3b. Fingerprint the firmware source inputs ------------------------------------
+# It later verifies that the book program comes from these sources, whatever
+# be the dates of the files (renewing the public copy makes them all "recent").
+# The path of the project contains an accent: we pass it in ARGUMENT (one string, encoded)
+# correctly) rather than in the code of a python -c, or it would be damaged.
 $empreinte = & python (Join-Path $racine 'tools\preparer_paquet.py') --empreinte
 if ($LASTEXITCODE -ne 0 -or -not $empreinte) { throw "Empreinte des sources impossible a calculer." }
 "$empreinte  sources du firmware (main, components, config, CMakeLists, sdkconfig.defaults, partitions.csv)" |
     Set-Content -Path (Join-Path $livraison 'sources.sha256') -Encoding ascii
 
-# --- 4. Empreintes --------------------------------------------------------------------------------
+# --- 4. Integrity checksums --------------------------------------------------------------------------------
 $lignes = Get-ChildItem $livraison -File | Where-Object { $_.Name -ne 'SHA256SUMS.txt' } |
     Sort-Object Name | ForEach-Object {
         '{0}  {1}' -f (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLower(), $_.Name

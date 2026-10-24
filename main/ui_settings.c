@@ -1,21 +1,10 @@
 /*
  * ui_settings.c: Settings controls and connection confirmation.
- * FR: Réglages et confirmations de connexion.
  * Design note: Never announce successful credential removal after an NVS failure.
  */
 
-/*
- * ui_settings.c: Builds settings controls and connection confirmation dialogs.
- * FR: Construit les réglages et les confirmations de connexion.
- * Design decision: A failed deletion must not be reported as successful.
- *
- * Experimental supplementary display; official monitoring remains authoritative.
- */
-
-/*
- * Presents user options and the touchscreen connection wizard without printing passwords.
- * Affiche les réglages et l'assistant de connexion sans révéler les mots de passe.
- */
+/* Touchscreen settings, language selection and credential management.
+ * Never print passwords or report a failed erase as successful. */
 #include "i18n.h"
 #include "ui_main.h"
 #include "ui_pages.h"
@@ -52,8 +41,7 @@ typedef enum {
     THR_COUNT,
 } thr_id_t;
 
-/* Intitules des niveaux de volume : remplis selon la langue ; LVGL conserve le pointeur,
- * le tableau doit donc rester statique. */
+/* Keep translated volume labels in static storage; LVGL retains pointers. */
 static const char *k_volume_map[6];
 static const str_id_t k_volume_ids[5] = {S_MUTE, S_LOW, S_MEDIUM, S_HIGH, S_MAX};
 
@@ -98,14 +86,13 @@ static bool s_updating;
 
 static const char *const k_interval_map[] = {"48 H", "72 H", ""};
 
-/* Les noms de langue ne sont jamais traduits : chacun s'ecrit dans sa propre langue.
- * L'ordre suit lang_t ; "\n" separe les deux rangees et ne compte pas comme un bouton. */
+/* Entries follow lang_t; the newline separates two button rows. */
 static const char *const k_lang_map[] = {"Français", "English", "Español", "\n",
                                          "Deutsch", "Italiano", "Português", ""};
 
-/* Choix de la langue : on ne touche a rien ici. La tache LVGL reconstruit les pages hors de ce
- * callback, car l'objet qui le porte fait partie de ce qui sera detruit. */
-/* Assistant de configuration : meme ecran qu'a la premiere mise en route */
+/* Queue language changes for the LVGL task to avoid destroying a widget
+ * from within its own event callback. */
+/* Reuse the first-run configuration wizard from Settings. */
 static void on_connexion_modifier(lv_event_t *e)
 {
     (void)e;
@@ -136,7 +123,6 @@ static void on_effacer_annuler(lv_event_t *e)
 
 /* Confirm that NVS accepted an empty account before restarting the device. */
 /* Only restart the device when credential removal has actually succeeded.
- * FR: Ne redémarrer qu'après confirmation effective de l'effacement des accès.
  */
 static void on_effacer_confirmer(lv_event_t *e)
 {
@@ -144,16 +130,15 @@ static void on_effacer_confirmer(lv_event_t *e)
     const esp_err_t err = credentials_clear();
     fermer_modal();
     if (err != ESP_OK) {
-        /* Ne pas redemarrer ni annoncer un effacement qui n'a pas ete
-         * confirme en memoire permanente. Les acces existants restent actifs. */
+        /* A failed NVS write must not cause a restart or a success message. */
         ESP_LOGE(TAG, "Effacement des acces impossible : %s", esp_err_to_name(err));
         lv_label_set_text(s_conn_aide, tr(S_SETUP_FAIL_OTHER));
         return;
     }
-    esp_restart(); /* la configuration vide est enregistree : ouvrir l'assistant */
+    esp_restart(); /* the empty configuration is saved: open the wizard */
 }
 
-/* Confirmation avant d'effacer : rien n'est efface sans ce deuxieme appui */
+/* Require a second explicit confirmation before erasing credentials. */
 static void on_effacer(lv_event_t *e)
 {
     (void)e;
@@ -243,7 +228,7 @@ static void on_volume_level(lv_event_t *e)
     apply(&s);
 }
 
-/* Pendant le glissement : valeur affichee en direct ; au relachement : volume applique et enregistre */
+/* Preview the volume while dragging; apply and persist on release. */
 static void on_volume_slider(lv_event_t *e)
 {
     const int pct = lv_slider_get_value(lv_event_get_target_obj(e));
@@ -273,7 +258,7 @@ static void on_test_voice(lv_event_t *e)
     settings_t s;
     settings_get(&s);
     ESP_LOGI(TAG, "Bouton TEST VOIX touche (volume %u %%)", s.volume_pct);
-    voice_test(120, s.volume_pct); /* "Glycemie cent vingt." (microSD), bip de test si la banque est absente */
+    voice_test(120, s.volume_pct); /* "Glycemie cent vingt." (microSD), test beep if bank is absent */
 }
 
 static void on_switch(lv_event_t *e)
@@ -302,8 +287,8 @@ static void show_thresholds(const settings_t *s)
     }
 }
 
-/* Boutons + / - des seuils : valeur mise a jour a l'ecran immediatement ; l'ecriture NVS est faite plus tard
- * par la tache "reglages" (jamais dans ce callback). */
+/* Update the displayed threshold immediately and defer NVS writes to
+ * the settings worker rather than blocking the LVGL callback. */
 static void on_threshold(lv_event_t *e)
 {
     const intptr_t code = (intptr_t)lv_event_get_user_data(e);
@@ -313,13 +298,13 @@ static void on_threshold(lv_event_t *e)
     settings_get(&s);
     uint16_t *const values[THR_COUNT] = {&s.thr_very_low, &s.thr_low, &s.thr_high, &s.thr_very_high};
     *values[id] = (uint16_t)(*values[id] + (plus ? 5 : -5));
-    apply(&s); /* memoire + notification de la tache de sauvegarde, sans attente */
-    settings_get(&s); /* valeurs apres controle de coherence */
+    apply(&s); /* memory + notification of the backup spot, without waiting */
+    settings_get(&s); /* Reload bounds-checked values from shared settings. */
     show_thresholds(&s);
 }
 
-/* Luminosite jour : valeur affichee en direct ; au relachement, enregistree et appliquee par le mode nuit
- * (en periode nuit l'ecran reste a la luminosite nuit) */
+/* Preview daytime brightness while dragging and persist it on release;
+ * night mode continues to apply its own configured brightness. */
 static void on_brightness(lv_event_t *e)
 {
     const int pct = lv_slider_get_value(lv_event_get_target_obj(e));
@@ -355,7 +340,7 @@ static void on_night_switch(lv_event_t *e)
     apply_night(&n);
 }
 
-/* TEST MODE NUIT : apercu immediat de l'ecran nuit, horaires inchanges (un toucher ou 60 s y mettent fin) */
+/* Preview night mode briefly without changing the saved schedule. */
 static void on_night_test(lv_event_t *e)
 {
     (void)e;
@@ -363,7 +348,7 @@ static void on_night_test(lv_event_t *e)
     night_mode_preview();
 }
 
-/* Debut / fin de la nuit par pas de 15 min (user_data : 0 debut -, 1 debut +, 2 fin -, 3 fin +) */
+/* Adjust scheduled start and end times in 15-minute increments. */
 static void on_night_time(lv_event_t *e)
 {
     const intptr_t code = (intptr_t)lv_event_get_user_data(e);
@@ -388,7 +373,7 @@ static void on_night_brightness(lv_event_t *e)
     apply_night(&n);
 }
 
-/* Intervalle de rappel du catheter (rappel configure par l'utilisateur, pas une recommandation) */
+/* Configurable infusion-set reminders are not clinical recommendations. */
 static void on_interval(lv_event_t *e)
 {
     if (s_updating) {
@@ -482,9 +467,8 @@ static void threshold_row(lv_obj_t *page, int col, int row, thr_id_t id, const c
 
 void ui_settings_create(lv_obj_t *page)
 {
-    /* Page defilable verticalement. CLICKABLE : un appui sur du texte ou un espace vide cible la page (et non
-     * l'ecran, qui ne defile pas), donc un glissement fait defiler depuis n'importe quel point. Les boutons,
-     * curseurs et interrupteurs restent prioritaires sous le doigt. La barre de navigation est hors de la page. */
+    /* Make the entire settings page scrollable while keeping sliders,
+ * buttons and switches directly interactive. The navigation bar is separate. */
     lv_obj_add_flag(page, LV_OBJ_FLAG_SCROLLABLE | LV_OBJ_FLAG_CLICKABLE);
     lv_obj_set_scroll_dir(page, LV_DIR_VER);
     lv_obj_set_scrollbar_mode(page, LV_SCROLLBAR_MODE_AUTO);
@@ -494,7 +478,7 @@ void ui_settings_create(lv_obj_t *page)
     s_volume_value = ui_label(page, g_fonts.title, UI_COL_TEXT, "");
     lv_obj_set_pos(s_volume_value, 440, 12);
 
-    /* Curseur 0..100 % : zone tactile elargie autour de la barre et du bouton */
+    /* Enlarge the slider touch target without changing its range. */
     s_volume_slider = lv_slider_create(page);
     lv_slider_set_range(s_volume_slider, 0, 100);
     lv_obj_set_pos(s_volume_slider, 48, 80);
@@ -582,7 +566,7 @@ void ui_settings_create(lv_obj_t *page)
     lv_obj_set_width(interval_hint, 976);
     lv_obj_set_pos(interval_hint, 24, 1432);
 
-    /* --- CONNEXION : reseau Wi-Fi et compte Dexcom, modifiables sans recompiler --------- */
+    /* Connection settings: available even before Wi-Fi/Dexcom is configured. */
     section_title(page, 1510, tr(S_CONN_TITLE));
     s_conn_wifi = ui_label(page, g_fonts.m, UI_COL_TEXT, "");
     lv_obj_set_width(s_conn_wifi, 620);
@@ -606,7 +590,7 @@ void ui_settings_create(lv_obj_t *page)
     lv_label_set_long_mode(s_conn_aide, LV_LABEL_LONG_WRAP);
     lv_obj_set_pos(s_conn_aide, 24, 1724);
 
-    /* --- LANGUE : six langues europeennes, deux rangees de trois ------------------------ */
+    /* Six user-interface languages in two rows of three. */
     section_title(page, 1810, tr(S_LANG_TITLE));
     s_lang_btns = lv_buttonmatrix_create(page);
     lv_buttonmatrix_set_map(s_lang_btns, k_lang_map);
@@ -623,7 +607,8 @@ void ui_settings_create(lv_obj_t *page)
     lv_obj_set_pos(lang_hint, 24, 2034);
 
 #if GLY_VOICE_CMD
-    /* --- COMMANDES VOCALES (absentes de la version publique, voir docs/LIMITATIONS_FR.md) --- */
+    /* Optional voice commands are not included in the public firmware.
+ * See docs/LIMITATIONS_EN.md for this build's capabilities. */
     section_title(page, 2400, tr(S_VOICECMD_TITLE));
     s_vcmd_sw = switch_row(page, 2456, tr(S_VOICECMD_ENABLE), on_vcmd_switch);
     s_wake_sw = switch_row(page, 2518, tr(S_WAKEWORD), on_vcmd_switch);
@@ -688,8 +673,8 @@ void ui_settings_update(const ui_data_t *d, bool force)
                                         LV_BUTTONMATRIX_CTRL_CHECKED);
         s_updating = false;
     }
-    /* CONNEXION : noms visibles seulement, jamais un mot de passe. Cette section ne depend ni du
-     * reseau ni de Dexcom : elle reste consultable sans Wi-Fi, sans Internet ou compte refuse. */
+    /* Account names are masked, never passwords. Keep this section accessible
+ * even when the network or Dexcom authentication fails. */
     static bool essai_affiche;
     const bool essai = credentials_trial_active();
     if (force || settings_changed || essai != essai_affiche) {

@@ -1,13 +1,10 @@
 /*
  * ui_setup.c: Touchscreen wizard for initial Wi-Fi and Dexcom setup.
- * FR: Assistant tactile de première configuration.
  * Design note: Trial values are not persisted until validated and confirmed.
  */
 
-/*
- * Guides first-time Wi-Fi and Dexcom configuration with a reversible connection trial.
- * Guide la configuration initiale en protégeant les accès existants.
- */
+/* First-run wizard for choosing language, Wi-Fi and Dexcom Share details.
+ * A reversible credential trial protects the last working configuration. */
 #include "ui_pages.h"
 
 #include <stdio.h>
@@ -22,45 +19,35 @@
 #include "touch_diag.h"
 #include "wifi_manager.h"
 
-/*
- * Assistant de premiere mise en route (ecran tactile) : langue, reseau Wi-Fi, compte Dexcom, verification.
- * Personne n'a besoin de recompiler le firmware ni de brancher un PC pour mettre ses propres identifiants.
- *
- * - L'assistant occupe tout l'ecran (couche superieure de LVGL) et s'ouvre tout seul tant que rien n'est
- *   renseigne ; il se rouvre depuis RÉGLAGES > CONNEXION > Modifier.
- * - Les deux operations longues (recherche des reseaux, essai de connexion) tournent dans leurs propres
- *   taches : la tache LVGL n'est jamais bloquee. L'avancement est relu chaque seconde par ui_setup_tick().
- * - Les mots de passe sont masques a l'ecran, jamais journalises, et effaces de la memoire de l'interface
- *   a la fermeture de l'assistant comme apres l'enregistrement (credentials.c, espace NVS separe).
- * - LES ACCES PRECEDENTS NE SONT JAMAIS PERDUS : la saisie est un essai (credentials_trial_*). Le test de
- *   connexion porte sur les nouvelles valeurs, mais rien n'est enregistre avant l'appui sur "Enregistrer".
- *   Un echec, un abandon, une coupure de courant : l'appareil garde ses acces precedents.
- * - Apres l'enregistrement, l'appareil redemarre : les services (Wi-Fi, Dexcom) repartent proprement avec
- *   les nouveaux identifiants, sans code de reprise a chaud difficile a verifier.
- */
+/* The touchscreen wizard appears above all normal pages until configured.
+ * Wi-Fi scans and login tests run asynchronously to avoid blocking LVGL.
+ * Passwords stay masked and are cleared from the wizard's temporary fields.
+ * Connection trials never replace stored credentials without successful
+ * validation and the user's explicit Save confirmation. Aborted or failed
+ * attempts keep the previously stored credentials intact. */
 
 #define RESEAUX_MAX 14
 
 typedef enum {
     ETAPE_LANGUE = 0,
     ETAPE_WIFI,
-    ETAPE_NOM_RESEAU,   /* reseau masque : saisie du nom */
+    ETAPE_NOM_RESEAU,   /* Hidden network: manually enter the SSID. */
     ETAPE_MDP_WIFI,
     ETAPE_DEXCOM,
     ETAPE_VERIF,
 } etape_t;
 
-static lv_obj_t *s_root;        /* fond plein ecran */
+static lv_obj_t *s_root;        /* bottom full screen */
 static lv_obj_t *s_titre;
 static lv_obj_t *s_etape_txt;
-static lv_obj_t *s_contenu;     /* zone reconstruite a chaque etape */
+static lv_obj_t *s_contenu;     /* area rebuilt at each stage */
 static lv_obj_t *s_btn_retour;
 static lv_obj_t *s_btn_suivant;
-static lv_obj_t *s_kb;          /* clavier partage */
-static lv_obj_t *s_ta;          /* champ en cours de saisie */
+static lv_obj_t *s_kb;          /* sharing keyboard */
+static lv_obj_t *s_ta;          /* Text field currently receiving keyboard input. */
 
 static etape_t s_etape;
-static bool s_premier;          /* premiere mise en route (pas d'acces aux pages) */
+static bool s_premier;          /* first start (no access to pages) */
 static char s_ssid[CRED_SSID_MAX];
 static char s_mdp_wifi[CRED_PASS_MAX];
 static char s_user[CRED_USER_MAX];
@@ -70,9 +57,9 @@ static lv_obj_t *s_ta_user;
 static lv_obj_t *s_ta_mdp;
 static lv_obj_t *s_verif_txt;
 static lv_obj_t *s_verif_detail;
-static bool s_confirmation;     /* essai reussi : l'enregistrement attend l'appui de l'utilisateur */
+static bool s_confirmation;     /* successfully tested: the recording awaits the support of the user */
 
-/* Recherche des reseaux : tache dediee, resultats relus par la tache LVGL */
+/* Run Wi-Fi scanning outside LVGL; the UI polls the results. */
 static wifi_reseau_t s_reseaux[RESEAUX_MAX];
 static volatile int s_nb_reseaux;
 static volatile bool s_scan_en_cours;
@@ -109,7 +96,7 @@ static void lancer_scan(void)
 }
 
 /* ------------------------------------------------------------------------- */
-/* Fabrique d'elements */
+/* UI element constructors. */
 
 static void vider_contenu(void)
 {
@@ -150,7 +137,7 @@ static void on_champ(lv_event_t *e)
     lv_obj_move_foreground(s_kb);
 }
 
-/* Champ de saisie : etiquette + zone de texte (le clavier s'ouvre au toucher) */
+/* Input field: label + text box (keyboard opens to touch) */
 static lv_obj_t *champ(lv_obj_t *parent, const char *etiquette, const char *valeur, bool mdp,
                        int32_t x, int32_t y, int32_t w)
 {
@@ -180,12 +167,11 @@ static void on_afficher_mdp(lv_event_t *e)
 /* ------------------------------------------------------------------------- */
 /* Actions */
 
-/* Les acces saisis sont ESSAYES : les precedents restent enregistres jusqu'a la confirmation. */
-static bool s_saisie_refusee; /* ne jamais afficher un ancien test comme reussi */
+/* Newly entered credentials are tested before they can be saved. */
+static bool s_saisie_refusee; /* never display an old test as successful */
 
 /* Reject invalid fields and test the temporary account before offering to save it. */
 /* Validate both fields before testing connectivity; invalid input must never be saved.
- * FR: Valider les deux accès avant le test réseau ; ne jamais sauvegarder une saisie refusée.
  */
 static void essayer(void)
 {
@@ -196,8 +182,8 @@ static void essayer(void)
         err = credentials_trial_set_dexcom(s_user, s_mdp_dex, credentials_region_code(s_region));
     }
     if (err != ESP_OK) {
-        /* Les valeurs saisies ne doivent pas etre acceptees implicitement si un
-         * setter les a refusees. Annuler l'essai conserve les acces precedents. */
+        /* The values entered must not be implicitly accepted if a
+         * Setter refused them. Cancel test retains previous access. */
         credentials_trial_cancel();
         s_saisie_refusee = true;
         ui_set_text(s_verif_txt, tr(S_SETUP_FAIL_OTHER));
@@ -213,7 +199,7 @@ static void essayer(void)
 static void on_langue(lv_event_t *e)
 {
     const lang_t lang = (lang_t)(intptr_t)lv_event_get_user_data(e);
-    settings_lang_set(lang); /* applique et enregistre ; l'assistant se redessine dans la nouvelle langue */
+    settings_lang_set(lang); /* applies and records; the assistant is redesigned in the new language */
     afficher_etape(ETAPE_LANGUE);
 }
 
@@ -271,7 +257,7 @@ static void on_retour(lv_event_t *e)
         break;
     case ETAPE_VERIF:
         if (s_confirmation) {
-            /* "Garder les anciens accès" : l'essai est abandonne, rien n'a ete enregistre. */
+            /* "Keep old access": the trial is abandoned, nothing has been recorded. */
             ui_setup_close();
         } else {
             afficher_etape(ETAPE_DEXCOM);
@@ -319,7 +305,7 @@ static void on_suivant(lv_event_t *e)
         break;
     case ETAPE_VERIF:
         if (s_confirmation) {
-            /* Confirmation : c'est seulement maintenant que les acces sont enregistres. */
+            /* Confirmation: it is only now that accesses are recorded. */
             if (credentials_trial_commit() == ESP_OK) {
                 ui_set_text(s_verif_detail, tr(S_SETUP_RESTART));
                 memset(s_mdp_wifi, 0, sizeof(s_mdp_wifi));
@@ -331,7 +317,7 @@ static void on_suivant(lv_event_t *e)
                 ui_set_text_color(s_verif_txt, UI_G_CRIT);
             }
         } else {
-            essayer(); /* bouton "Réessayer" */
+            essayer(); /* "Try again" button */
             afficher_etape(ETAPE_VERIF);
         }
         break;
@@ -341,7 +327,7 @@ static void on_suivant(lv_event_t *e)
 }
 
 /* ------------------------------------------------------------------------- */
-/* Etapes */
+/* Wizard step rendering. */
 
 static void bouton_bas(lv_obj_t *btn, const char *texte_btn, bool visible)
 {
@@ -406,7 +392,7 @@ static void etape_nom_reseau(void)
 
 static void etape_mdp_wifi(void)
 {
-    char ligne[192]; /* un texte traduit peut etre long : jamais de troncature */
+    char ligne[192]; /* a translated text can be long: never truncated */
     snprintf(ligne, sizeof(ligne), "%s : %s", tr(S_SETUP_WIFI_TITLE), s_ssid);
     texte(s_contenu, g_fonts.s, UI_G_TEXT2, ligne, 0, 0, 940);
     s_ta_mdp = champ(s_contenu, tr(S_SETUP_WIFI_PASS), s_mdp_wifi, true, 0, 44, 600);
@@ -524,7 +510,7 @@ void ui_setup_create(void)
     s_kb = lv_keyboard_create(s_root);
     lv_obj_set_size(s_kb, UI_SCR_W, 280);
     lv_obj_align(s_kb, LV_ALIGN_BOTTOM_MID, 0, 0);
-    lv_obj_set_style_text_font(s_kb, &lv_font_montserrat_20, 0); /* police integree : symboles du clavier */
+    lv_obj_set_style_text_font(s_kb, &lv_font_montserrat_20, 0); /* Embedded font includes on-screen keyboard glyphs. */
     lv_obj_add_event_cb(s_kb, on_clavier, LV_EVENT_ALL, NULL);
     lv_obj_add_flag(s_kb, LV_OBJ_FLAG_HIDDEN);
 }
@@ -535,12 +521,12 @@ void ui_setup_open(bool premier_demarrage)
     s_premier = premier_demarrage;
     s_confirmation = false;
     s_saisie_refusee = false;
-    credentials_trial_begin(); /* les acces actuels sont mis de cote : ils ne seront pas perdus */
+    credentials_trial_begin(); /* current accesses are listed: they will not be lost */
     s_region = credentials_region_index("ous");
     s_ssid[0] = s_mdp_wifi[0] = s_user[0] = s_mdp_dex[0] = '\0';
     credentials_t cred;
     credentials_get(&cred);
-    strlcpy(s_ssid, cred.wifi_ssid, sizeof(s_ssid)); /* le nom du reseau n'est pas un secret */
+    strlcpy(s_ssid, cred.wifi_ssid, sizeof(s_ssid)); /* the name of the network is not a secret */
     strlcpy(s_user, cred.dexcom_user, sizeof(s_user));
     const int r = credentials_region_index(cred.dexcom_region);
     s_region = r >= 0 ? r : 0;
@@ -557,12 +543,12 @@ void ui_setup_close(void)
 {
     memset(s_mdp_wifi, 0, sizeof(s_mdp_wifi));
     memset(s_mdp_dex, 0, sizeof(s_mdp_dex));
-    /* Sortie sans confirmation : retour aux acces precedents (rien n'a ete enregistre) et
-     * reconnexion avec eux si besoin. */
+    /* Output without confirmation: back to previous accesses (nothing was recorded) and
+     * Reconnection with them if necessary. */
     if (credentials_trial_active()) {
         credentials_trial_cancel();
         if (credentials_has_wifi()) {
-            wifi_manager_apply_credentials(0); /* sans attendre : la tache LVGL ne doit pas bloquer */
+            wifi_manager_apply_credentials(0); /* Trigger reconnection asynchronously to keep LVGL responsive. */
         }
     }
     s_confirmation = false;
@@ -575,7 +561,7 @@ bool ui_setup_visible(void)
     return s_root != NULL && !lv_obj_has_flag(s_root, LV_OBJ_FLAG_HIDDEN);
 }
 
-/* Appelee chaque seconde par la tache LVGL : avancement de la recherche et de l'essai de connexion */
+/* Called each second from LVGL to advance background connection tests. */
 void ui_setup_tick(void)
 {
     if (!ui_setup_visible()) {
@@ -617,7 +603,7 @@ void ui_setup_tick(void)
         ui_set_text(s_verif_detail, "");
         bouton_bas(s_btn_suivant, tr(S_SETUP_RETRY), false);
     } else if (etat == GLY_TEST_REUSSI) {
-        /* L'essai a reussi : rien n'est enregistre avant que l'utilisateur appuie sur "Enregistrer". */
+        /* The test was successful: nothing is saved until the user presses "Save". */
         ui_set_text(s_verif_txt, tr(S_SETUP_OK));
         ui_set_text_color(s_verif_txt, UI_G_OK);
         ui_set_text(s_verif_detail, tr(S_SETUP_CONFIRM));
@@ -633,7 +619,7 @@ void ui_setup_tick(void)
                 break;
             }
         }
-        /* Echec : les acces precedents sont toujours ceux qui sont enregistres. */
+        /* Failed: Previous accesses are always those recorded. */
         ui_set_text(s_verif_detail, s_premier ? "" : tr(S_SETUP_KEPT_OLD));
         s_confirmation = false;
         bouton_bas(s_btn_suivant, tr(S_SETUP_RETRY), true);

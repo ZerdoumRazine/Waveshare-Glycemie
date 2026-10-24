@@ -1,36 +1,28 @@
 /* voice_rx.h: USB serial voice-file transfer protocol.
- * FR: Protocole série de transfert des voix.
  * Shared declarations for the implementation.
  */
-/*
- * Reception de la banque vocale par le cable USB-serie de la console (outil temporaire, PC :
- * tools/voice/sd_voice_upload.py) : copie dans /glycemie/audio/voice/ sans retirer la microSD ni utiliser le
- * reseau. Integrite : CRC32 de chaque fichier recu en memoire, puis relu sur la carte apres ecriture.
+/* UART/CH343 protocol for installing or checking optional WAV speech banks
+ * while the microSD remains in the display. The PC uses
+ * tools/voice/sd_voice_upload.py. Each received file is verified by CRC32
+ * and read back after writing; the tool never formats the card.
  *
- *   vrx_begin [debit]              session, debit temporaire 115200 a 921600 (VRX BEGIN OK ...)
- *   vrx_ping                       -> VRX PONG
- *   vrx_put <nom> <taille> <crc32> -> VRX SKIP (fichier identique deja present) | VRX READY, puis blocs binaires
- *                                     de 896 octets au plus, chacun acquitte (VRX ACK <octets recus>)
- *                                     -> VRX OK <nom> <taille> <crc32> | VRX ERR <raison>
- *   vrx_dir <code> [lecture]       dossier de langue des commandes suivantes (/glycemie/audio/voice/<code>) :
- *                                     cree au besoin, sauf en mode "lecture" ou il doit exister (aucune ecriture) ;
- *                                     "vrx_dir -" revient a la racine (banque francaise) -> VRX DIR ...
- *   vrx_list [crc]                 -> VRX FILE <nom> <taille> [crc32] ... puis
- *                                     VRX LIST dossier= fichiers= octets= libre_mo= ; le dossier est celui choisi
- *                                     par vrx_dir : verification en LECTURE SEULE de n'importe quelle langue
- *   vrx_inject <taille> <crc32>    (test K19) PCM 16 bits mono 16 kHz recu comme vrx_put puis ajoute au signal des
- *                                     micros de l'ecoute vocale, sans rien ecrire sur la carte -> VRX OK inject ...
- *   vrx_end                        -> VRX END, retour a 115200 (automatique apres 30 s sans commande)
- */
-/* EN: USB serial commands for adding and verifying microSD voice clips.
- * FR: Commandes série USB pour copier et vérifier les sons.
- */
+ * Commands:
+ *   vrx_begin [baud]             Start a temporary transfer session.
+ *   vrx_ping                     Check connectivity (VRX PONG).
+ *   vrx_put <name> <size> <crc>  Send a file in acknowledged binary chunks.
+ *   vrx_dir <lang> [read]        Select a language folder; read forbids creation.
+ *   vrx_list [crc]               Enumerate clips and optional CRCs, without writing.
+ *   vrx_inject <size> <crc>      Inject PCM test audio, without microSD writes.
+ *   vrx_end                      End the session and restore the serial baud rate.
+ * French recordings use the default voice directory; other languages use
+ * their language-code subfolders. */
+/* Serial entry points for installing and verifying recorded speech clips. */
 #pragma once
 
 #include <stdbool.h>
 
-/* Console : true si la ligne est une commande vrx (traitee) */
+/* Return true when a command belongs to the VRX transfer protocol. */
 bool voice_rx_command(const char *line);
 
-/* Console, appel periodique : fin d'une session inactive et retour au debit normal */
+/* End an idle transfer session and restore normal serial settings. */
 void voice_rx_idle(void);

@@ -1,20 +1,11 @@
 /*
  * dexcom_guard.c: Persistent guard against repeated Dexcom authentication failures.
- * FR: Protection contre les échecs d'authentification répétés.
  * Design note: Record an attempt before sending requests to prevent restart loops.
  */
 
 /*
- * dexcom_guard.c: Keeps a persistent guard against repeated Dexcom authentication failures.
- * FR: Évite les tentatives d'authentification Dexcom répétées.
- * Design decision: Write the attempt state before making network calls to prevent restart loops.
- *
- * Experimental supplementary display; official monitoring remains authoritative.
- */
-
-/*
  * Persists one authentication outcome per account to prevent repeated rejected logins.
- * Mémorise le résultat de connexion pour éviter de bloquer le compte Dexcom.
+ * Memorizes the connection result to avoid blocking the Dexcom account.
  */
 #include "dexcom_guard.h"
 
@@ -55,7 +46,6 @@ static void compute_tag(const char *region, const char *username, const char *pa
 
 /* Recover the prior state only when the selected account has the same fingerprint. */
 /* Bind the authentication history to the current account without storing its password in the guard.
- * FR: Associer le verrou au compte courant sans y enregistrer le mot de passe.
  */
 esp_err_t dex_guard_init(const char *region, const char *username, const char *password)
 {
@@ -66,7 +56,7 @@ esp_err_t dex_guard_init(const char *region, const char *username, const char *p
     nvs_handle_t h;
     esp_err_t err = nvs_open(GUARD_NAMESPACE, NVS_READONLY, &h);
     if (err == ESP_ERR_NVS_NOT_FOUND) {
-        return ESP_OK; /* jamais ecrit : aucune tentative passee */
+        return ESP_OK; /* never written: no attempt passed */
     }
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "Lecture NVS impossible (%s)", esp_err_to_name(err));
@@ -101,7 +91,6 @@ const char *dex_guard_info(void)
 
 /* Commit the guard state before subsequent network attempts are allowed. */
 /* Commit a new attempt state to NVS before reporting it as active.
- * FR: Confirmer le nouvel état dans NVS avant de l'annoncer actif.
  */
 esp_err_t dex_guard_set(dex_guard_state_t state, const char *info)
 {

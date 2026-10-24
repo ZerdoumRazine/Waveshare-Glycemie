@@ -1,25 +1,13 @@
 #!/usr/bin/env python3
 # Exports a shareable source copy without rewriting Git history.
-# FR: Exporte une copie des sources sans réécrire l'historique Git.
+#
 # Design note: Refuse to overwrite an existing repository or folder.
-# EN: Exports a safe tracked-file snapshot without overwriting an existing repository.
-# FR: Exporte une copie sûre sans écraser un dépôt déjà existant.
-r"""Prepare la copie publiable du projet (dossier Razine) a partir de ce que Git suit reellement.
+# Exports a safe tracked-file snapshot without overwriting an existing repository.
+#
+"""Prepare a sanitized source export from files actually tracked by Git.
 
-Pourquoi cette methode : copier un dossier a la main laisse passer des journaux, des sauvegardes ou
-un firmware personnel. Ici, le contenu vient de `git archive HEAD` : seuls les fichiers enregistres
-dans le depot en font partie, et le dossier private\ n'en fait jamais partie.
-
-La copie est ensuite verifiee : fichiers interdits, secrets connus, adresses de courriel,
-chemins personnels (tools/controle_donnees_perso.py). Ce controle reste heuristique.
-La destination doit etre un dossier INEXISTANT : le script refuse de remplacer une
-copie ou un depot Git deja presents. Aucun historique Git n'est modifie.
-
-Usage :
-    python tools\preparer_razine.py
-    python tools\preparer_razine.py --dossier D:\partage\waveshare-glycemie
-    python tools\preparer_razine.py --accepter-modifications   (a eviter : etat non commite)
-"""
+Use a separate destination directory, preserve source history in the actual
+repository, and exclude private data or generated local build artifacts."""
 import argparse
 import os
 import shutil
@@ -30,7 +18,7 @@ import zipfile
 
 RACINE = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import archive_publique as ap          # noqa: E402  (motifs interdits et fichiers attendus)
+import archive_publique as ap          # noqa: E402  (prohibited reasons and expected files)
 import controle_donnees_perso as cdp   # noqa: E402
 
 
@@ -41,7 +29,7 @@ def git(*args):
 
 
 def enlever_lecture_seule(fonction, chemin, _erreur):
-    """Les objets Git sont en lecture seule : on enleve l'attribut avant d'effacer."""
+    """Clear the read-only attribute on Git files before removing a temporary copy."""
     try:
         os.chmod(chemin, 0o700)
         fonction(chemin)
@@ -85,7 +73,7 @@ def main():
               'Choisissez un NOUVEAU dossier pour ne rien ecraser : %s' % cible)
         return 1
 
-    # --- 1. Contenu : exactement ce que Git suit, a l'etat enregistre --------------------------
+    # --- 1. Content: exactly what Git follows, has the state records ---------------------------
     temporaire = tempfile.mkdtemp(prefix='razine-')
     zip_temp = os.path.join(temporaire, 'depot.zip')
     fait = git('archive', '--format=zip', '-o', zip_temp, 'HEAD')
@@ -97,7 +85,7 @@ def main():
     with zipfile.ZipFile(zip_temp) as zf:
         zf.extractall(extrait)
 
-    # --- 2. Verification AVANT de remplacer la copie existante --------------------------------
+# --- 2. Verify before replacing an existing export
     secrets = cdp.secrets_reels()
     problemes = []
     noms = []
@@ -129,7 +117,7 @@ def main():
         shutil.rmtree(temporaire, ignore_errors=True)
         return 1
 
-    # --- 3. Copie SANS remplacement de dossier existant ni modification d'historique --------
+# --- 3. Copy without replacing the destination or rewriting history
     shutil.copytree(extrait, cible)
     shutil.rmtree(temporaire, ignore_errors=True)
 
@@ -142,7 +130,7 @@ def main():
     print('   1. regarder les images de screenshots\\ une par une (le controle lit les fichiers,')
     print('      pas les images) ;')
     print('   2. preparer les fichiers a telecharger : tools\\publier_firmware.ps1 ;')
-    print('   3. consulter docs\\PUBLICATION_GITHUB_FR.md pour entretenir le depot prive.')
+    print('   3. consulter docs\\PUBLICATION_GITHUB_EN.md pour entretenir le depot prive.')
     return 0
 
 

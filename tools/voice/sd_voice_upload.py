@@ -1,25 +1,15 @@
 #!/usr/bin/env python3
 # Copies speech files to the microSD over USB serial.
-# FR: Copie les voix par USB-série sur la microSD.
+#
 # Design note: Verification-only mode must not create or overwrite files.
-# EN: Copies existing WAV banks over USB with CRC32 checks and a read-only verification mode.
-# FR: Copie les voix par USB avec CRC32 et vérification sans écriture.
-"""Copie la banque vocale (tools/voice/bank) sur la microSD du Waveshare par le cable USB-serie, sans retirer la
-carte et sans reseau. Outil temporaire : commandes console vrx_* du firmware (main/voice_rx.c).
+# Copies existing WAV banks over USB with CRC32 checks and a read-only verification mode.
+#
+"""Upload or verify optional speech WAV banks on the Waveshare microSD over USB serial.
 
-- debit temporaire 921600 bauds (retour automatique de la carte a 115200 ; repli a 115200 si le changement echoue) ;
-- chaque fichier : blocs de 896 octets acquittes un par un (aucun debordement du tampon de la carte), CRC32 verifie
-  par la carte en memoire puis apres relecture sur la microSD ; fichier deja present et identique : saute ;
-- verification finale : liste complete relue sur la carte avec CRC32, comparee au manifeste (nombre exact, tailles,
-  fichiers manquants ou en trop, integrite) et espace libre. La verification n'envoie QUE des commandes de lecture
-  (vrx_dir ... lecture, vrx_list crc) : aucun octet de fichier n'est transmis, meme si la carte est non conforme.
-Le port est ouvert sans agir sur DTR/RTS : la carte ne redemarre pas.
-
-Usage (environnement du projet, pyserial) :
-  .venv\\Scripts\\python.exe -B tools\\voice\\sd_voice_upload.py --port COM7 --log tools\\logs\\NNN_copie.log
-  ... --verify-only    verification seule : aucune ecriture, aucun dossier cree (necessite un firmware qui
-                       repond "VRX LIST dossier=..." pour les langues autres que le francais)
-"""
+The card can remain installed in the device. Each language uses an expected
+folder layout and a manifest of recordings. Verify transferred files with
+read-back checksums, preserve unrelated card contents and never format the
+card. --verify-only must not create or modify files."""
 import argparse
 import csv
 import os
@@ -41,17 +31,13 @@ MANIFEST = os.path.join(HERE, 'bank', 'manifest.csv')
 
 # Select either a developer bank or the public ZIP extracted to a folder.
 def configure(lang, sd_root=None):
-    """Banque depuis les fichiers de travail ou depuis le ZIP microSD extrait.
-
-    --sd-root pointe vers un dossier contenant glycemie/audio/voice, pour
-    copier directement les sons telecharges sans relancer une generation Google.
-    """
+    """Resolve a language bank from local generated files or an extracted microSD ZIP."""
     global BANK, MANIFEST
     if sd_root is not None:
         root = os.path.abspath(sd_root)
         base = os.path.join(root, 'glycemie', 'audio', 'voice')
         BANK = base if lang == 'fr' else os.path.join(base, lang)
-        MANIFEST = None  # CRC32, nom et taille calcules sur les WAV reels
+        MANIFEST = None  # CRC32, name and size calculated on the WAV reels
     else:
         base = os.path.join(HERE, 'bank') if lang == 'fr' else os.path.join(HERE, 'bank', lang)
         BANK = os.path.join(base, 'voice')
@@ -88,7 +74,7 @@ class Link:
         self.ser.write((command + '\n').encode('ascii'))
 
     def line(self, timeout):
-        """Ligne suivante de la carte (masquee), None apres timeout secondes."""
+        """Read the next masked device response line, returning None at timeout."""
         end = time.time() + timeout
         while True:
             if b'\n' in self.buffer:
@@ -99,14 +85,14 @@ class Link:
                 return text
             if time.time() >= end:
                 return None
-            # au moins 1 octet (rend la main des son arrivee), puis tout ce qui est deja recu : latence minimale
+            # at least 1 byte (makes the hand of the sound arrive), then everything that is already received: minimum latency
             waiting = self.ser.in_waiting
             chunk = self.ser.read(waiting if waiting else 1)
             if chunk:
                 self.buffer += chunk
 
     def expect(self, pattern, timeout):
-        """Premiere ligne VRX correspondant a pattern (regex) ; les autres lignes (journal) sont ignorees."""
+        """Read until a response line matches the requested VRX pattern; ignore unrelated logs."""
         regex = re.compile(pattern)
         end = time.time() + timeout
         while True:
@@ -138,9 +124,9 @@ class Link:
 def load_manifest():
     entries = []
     if MANIFEST is None:
-        # ZIP public : pas besoin d'un compte Google ou d'un manifest prive.
-        # Les cinq sous-dossiers de langue dans la banque francaise ne sont
-        # pas des fichiers et ne doivent jamais etre copies comme tels.
+        # ZIP public: no need d'un compte Google ou d'A private protest.
+        # The five language sub-folders in the French bank are
+        # not files and should never be copies as such.
         names = sorted(n for n in os.listdir(BANK) if n.lower().endswith('.wav')
                        and os.path.isfile(os.path.join(BANK, n)))
         if len(names) != 396:
@@ -210,7 +196,7 @@ def put_file(link, name, size, crc, data):
 
 
 def choisir_dossier(link, lang, lecture):
-    """vrx_dir pour une langue. lecture=True : la carte ne doit RIEN creer (firmware a jour exige)."""
+    """Choose the target language directory; read-only mode must not create paths."""
     if lang == 'fr':
         return True
     link.send('vrx_dir %s%s' % (lang, ' lecture' if lecture else ''))
@@ -228,7 +214,7 @@ def choisir_dossier(link, lang, lecture):
 
 # Compare names, sizes and CRCs through read-only device commands.
 def verify(link, entries, lang='fr'):
-    """Verification en LECTURE SEULE : seule la commande vrx_list est envoyee."""
+    """Verify a language bank using read-only device inventory commands."""
     link.send('vrx_list crc')
     files = {}
     end = time.time() + 300
@@ -261,7 +247,7 @@ def verify(link, entries, lang='fr'):
     elif dossier != attendu:
         link.note('VERIFICATION : la carte a liste "%s" au lieu de "%s"' % (dossier, attendu))
         return False
-    # anciens firmwares : les sous-dossiers de langue apparaissent dans la liste (taille -1) ; ce ne sont pas des WAV
+    # old firmwares: language subfolders appear in the list (size -1); They are not WAV
     files = {n: v for n, v in files.items() if not (v[0] < 0 and not n.lower().endswith('.wav'))}
     expected = {name: (size, crc) for name, size, crc in entries}
     missing = sorted(set(expected) - set(files))
@@ -278,7 +264,7 @@ def verify(link, entries, lang='fr'):
     return not (missing or extra or bad_size or bad_crc) and len(files) == len(expected)
 
 
-LINK = Link  # remplacable par les tests (transport simule, aucune liaison serie)
+LINK = Link  # replaceable by tests (simultaneous transport, no serial link)
 
 
 # Never write in --verify-only mode, even when the remote bank is incomplete.

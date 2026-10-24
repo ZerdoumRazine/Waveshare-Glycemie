@@ -1,25 +1,14 @@
 #!/usr/bin/env python3
 # Checks release candidates for likely personal data.
-# FR: Vérifie la présence possible de données personnelles.
+#
 # Design note: Automated checks reduce risk but do not replace a human review.
-# EN: Scans public files, binaries and ZIP contents for known private data.
-# FR: Contrôle les sources, exécutables et ZIP avant publication.
-r"""Controle des donnees personnelles dans ce qui serait publie.
+# Scans public files, binaries and ZIP contents for known private data.
+#
+"""Check an export for personal information before publication.
 
-Examine, sans rien modifier :
-  - tous les fichiers suivis par git (le depot public est une copie de HEAD) ;
-  - l'historique git complet, blob par blob (utile seulement si le depot est pousse en ligne) ;
-  - le programme compile (build/glycemie_display.bin, et la copie publique si elle existe) ;
-  - les captures d'ecran (metadonnees, pas le contenu de l'image).
-
-Recherche : les identifiants reels lus dans private/device_secrets.h (jamais affiches), les adresses
-de courriel, les chemins personnels Windows, les noms de machine, et les valeurs de glycemie exportees.
-
-Usage :
-    python tools\controle_donnees_perso.py
-    python tools\controle_donnees_perso.py --historique      (ajoute l'analyse de l'historique git)
-Code de sortie 0 si rien de personnel n'est trouve dans ce qui serait publie.
-"""
+Look for actual configured secrets and sensitive local artifacts, including
+private firmware, NVS dumps, serial logs and patient data. The checks reduce
+accidental disclosure but are not a substitute for a careful human review."""
 import argparse
 import io
 import os
@@ -29,11 +18,11 @@ import sys
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 
-# Mots des credits volontaires : ils doivent RESTER (auteur, dedicace au fils, composants tiers).
+# Words of voluntary credits: they must RESTER (auteur, dedicace au fils, composants tiers).
 CREDITS_VOULUS = ('Razine', 'razine')
 
 BINAIRES = ('.png', '.jpg', '.jpeg', '.bin', '.elf', '.map', '.zip', '.pcm', '.wav', '.ico')
-# Fichiers dont le contenu est du signal ou de la compression : voir controler_media().
+# Files whose content is signal or compression: see controler_media().
 MEDIA = ('.png', '.jpg', '.jpeg', '.wav', '.pcm', '.mp3', '.ogg', '.ico')
 
 COURRIEL = re.compile(r'[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}')
@@ -42,9 +31,9 @@ CHEMINS = [
     (re.compile(r'[A-Za-z]:[\\/]Nouveau dossier', re.I), 'chemin "Nouveau dossier" (dossier d\'archive local)'),
     (re.compile(r'[A-Za-z]:[\\/]Waveshare', re.I), 'chemin local du projet'),
 ]
-# Adresses attendues et autorisees : composants tiers, adresses neutres, et les adresses de contact
-# des autorites de certification contenues dans le paquet de certificats racine d'ESP-IDF
-# (esp_crt_bundle, liste Mozilla) : elles viennent des certificats eux-memes, pas du projet.
+# Expected and authorized addresses: third party components, neutral addresses, and contact addresses
+# certification authorities contained in the root certificate packageESP-IDF
+# (esp_crt_bundle, Mozilla list): they come from certificates themselves, not from the project.
 COURRIELS_AUTORISES = re.compile(r'(noreply@|@users\.noreply\.github\.com|@exemple\.|@example\.|'
                                  r'@espressif\.com|@lvgl\.io|'
                                  r'support@waveshare|@dexcom\.com$|'
@@ -60,7 +49,7 @@ def git(*args):
 
 # Read known local secrets only for comparison; never include them in the report.
 def secrets_reels():
-    """Chaines a rechercher, lues dans private/device_secrets.h. Jamais affichees."""
+    """Read known private credential values for exact matching without displaying them."""
     chemin = os.path.join(ROOT, 'private', 'device_secrets.h')
     valeurs = {}
     if not os.path.exists(chemin):
@@ -95,13 +84,13 @@ def controler_texte(nom, texte, secrets, trouves):
     for motif, libelle in CHEMINS:
         for brut in set(motif.findall(texte)):
             trouves.append((nom, libelle, brut))
-    # valeurs de glycemie exportees : lignes CSV "date;valeur;tendance"
+# Glucose history CSV: detect actual export values without exposing them.
     if re.search(r'\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}.{0,4}[;,]\s*\d{2,3}\s*[;,]', texte):
         trouves.append((nom, 'donnees de glycemie exportees', 'ligne de type journal/CSV'))
 
 
 def chercher_secrets(nom, data, secrets, trouves):
-    """Cherche UNIQUEMENT les identifiants reels : pas d'heuristique sur des octets quelconques."""
+    """Search for known actual secrets; do not guess passwords from arbitrary binary data."""
     for cle, valeur in secrets.items():
         for encodage in ('utf-8', 'utf-16-le'):
             if valeur.encode(encodage) in data:
@@ -109,13 +98,7 @@ def chercher_secrets(nom, data, secrets, trouves):
 
 
 def controler_media(nom, data, secrets, trouves, metadonnees=4096):
-    """Fichier son ou image : les octets utiles sont du signal ou de la compression.
-
-    Y chercher des adresses de courriel ou des chemins ne produit que du hasard (une voix de 20 s en
-    contient forcement une par hasard), et ces fausses alertes finiraient par masquer les
-    vraies. On cherche donc les identifiants reels dans TOUT le fichier, et les adresses et chemins
-    seulement dans les zones de metadonnees : le debut et la fin.
-    """
+    """Handle media as binary data and inspect only metadata that could contain secrets."""
     chercher_secrets(nom, data, secrets, trouves)
     if metadonnees <= 0:
         return
@@ -131,12 +114,7 @@ def controler_media(nom, data, secrets, trouves, metadonnees=4096):
 
 # Inspect entries inside the archive, not the compressed byte stream.
 def controler_zip(nom, chemin, secrets, trouves):
-    """Examine une archive entree par entree.
-
-    Les octets COMPRESSES sont du hasard : y chercher des adresses de courriel ou des chemins
-    produirait de fausses alertes (et masquerait les vraies). On regarde donc les noms des entrees,
-    le texte decompresse, et les identifiants reels dans tout le reste.
-    """
+    """Inspect ZIP members individually, including paths and eligible text content."""
     import zipfile
     try:
         with zipfile.ZipFile(chemin) as zf:
@@ -210,7 +188,7 @@ def main():
                 textes += 1
                 controler_texte(rel, texte, secrets, trouves)
     print('%d fichiers suivis, dont %d fichiers texte' % (len(suivis), textes))
-    # Un controle qui n'a rien lu n'est pas une reussite : il ne prouve rien.
+    # A control that has read nothing is not a success: it proves nothing.
     rien_lu = len(suivis) < 50 or textes < 30
     if rien_lu:
         print('ANOMALIE : trop peu de fichiers lus pour que ce controle veuille dire quelque chose.')
@@ -223,7 +201,7 @@ def main():
             data = lire(chemin, binaire=True)
             avant = len(trouves)
             if rel.lower().endswith('.zip'):
-                controler_zip(rel, chemin, secrets, trouves)   # entree par entree, pas en vrac
+                controler_zip(rel, chemin, secrets, trouves)   # entry per entry, not in bulk
             elif rel.lower().endswith(MEDIA):
                 controler_media(rel, data, secrets, trouves)
             else:
@@ -252,8 +230,8 @@ def main():
         for sha, nom in objets:
             avant = len(trouves)
             if nom.lower().endswith(BINAIRES):
-                # Les anciens fichiers binaires comptent aussi : un firmware commite par erreur
-                # contiendrait les identifiants.
+                # Old binary files also count: a firmware commits by mistake
+                # would contain the identifiers.
                 brut = subprocess.run(['git', 'cat-file', '-p', sha], cwd=ROOT,
                                       capture_output=True).stdout
                 controler_binaire('historique:' + nom, brut, secrets, trouves)

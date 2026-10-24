@@ -1,36 +1,16 @@
 #!/usr/bin/env python3
 # Generates optional language recordings with Google Cloud TTS.
-# FR: Génère les annonces via Google Cloud TTS.
+#
 # Design note: Generation may incur API fees; avoid running it accidentally.
-# EN: Builds spoken WAV banks locally from project phrases using Google Cloud TTS.
-# FR: Génère des banques WAV à partir des textes du projet avec Google Cloud.
-"""Banque vocale Google Cloud Text-to-Speech pour glycemie_display, en six langues.
+# Builds spoken WAV banks locally from project phrases using Google Cloud TTS.
+#
+"""Generate optional speech recordings in six languages using Google Cloud Text-to-Speech.
 
-Meme timbre partout (Chirp 3 HD "Aoede") : francais, anglais, espagnol, allemand, italien,
-portugais (voix pt-BR, Google ne propose pas de Chirp 3 HD en pt-PT). Les textes et les nombres
-en lettres sont dans langues_voix.py.
-
-Generation UNE SEULE FOIS sur le PC avec l'API officielle (bibliotheque google-cloud-texttospeech) et les
-identifiants par defaut deja configures par gcloud (ADC) : ils ne sont jamais lus, copies ni affiches par ce
-script. Les WAV produits sont ensuite copies sur la microSD (/glycemie/audio/voice/) et lus localement par
-la carte : aucune connexion Internet ni appel Google depuis l'ESP32.
-
-Usage (environnement isole tools\\voice\\.venv_tts) :
-  python -B gen_voice_google.py --lang en --estimate   phrases, caracteres envoyes, cout (aucune requete)
-  python -B gen_voice_google.py --lang en --check      acces a l'API et presence de la voix
-  python -B gen_voice_google.py --lang en [--only a,b] generation des manquants, conversion, manifeste
-
-Sortie : francais dans bank/voice (inchange, la banque deja installee reste valable), les autres
-langues dans bank/<code>/voice. Sur la microSD : /glycemie/audio/voice pour le francais,
-/glycemie/audio/voice/<code> pour les autres.
-
-Chaine audio :
-  Google LINEAR16 (frequence native de la voix, 24 kHz) -> cache google_raw/ (jamais redemande si valide)
-  -> reechantillonnage polyphase 16 kHz (filtre Kaiser, -80 dB au-dela de 8 kHz)
-  -> silences de debut/fin rognes -> niveau identique a l'ancienne banque (-12 dBFS efficace pendant la parole,
-     crete <= -1,5 dBFS par limiteur a anticipation, limitation <= 6 dB, aucun echantillon ecrete)
-  -> bank/voice/<nom>.wav (PCM 16 bits, mono, 16 kHz) + bank/manifest.csv (nom ; texte ; duree ; taille ; crc32)
-"""
+Text and number phrases are defined in langues_voix.py. Output WAV files
+are prepared for the display's microSD card and played offline by the board.
+The generator uses credentials configured through Google Cloud application
+default credentials. Never embed service credentials in the repository.
+Calls to the synthesis API may incur charges; use --estimate before generating."""
 import argparse
 import csv
 import io
@@ -58,11 +38,7 @@ MANIFEST = os.path.join(BANK_DIR, 'manifest.csv')
 
 
 def configure(lang):
-    """Choisit la voix et les dossiers de la langue demandee.
-
-    Le francais garde exactement les chemins d'origine (bank/voice, bank/manifest.csv,
-    google_raw) : la banque deja generee et deja copiee sur la microSD reste utilisable telle
-    quelle. Les autres langues vivent dans un sous-dossier portant leur code."""
+    """Select the requested language's voice and output directory while preserving the firmware's expected microSD layout."""
     global LANG, VOICE_NAME, LANGUAGE, RAW_DIR, BANK_DIR, OUT_DIR, MANIFEST
     LANGUAGE, VOICE_NAME = langues_voix.VOIX[lang]
     LANG = lang
@@ -76,11 +52,11 @@ def configure(lang):
     MANIFEST = os.path.join(BANK_DIR, 'manifest.csv')
 
 RATE = 16000                       # frequence du lecteur audio existant (ES8311, AUDIO_SAMPLE_RATE)
-LEAD_S = 0.030                     # marge conservee avant la parole
-TAIL_S = 0.060                     # marge conservee apres la parole
-SILENCE_DB = -50.0                 # trame de 10 ms consideree comme silence en dessous de ce niveau
+LEAD_S = 0.030                     # margin retained before speech
+TAIL_S = 0.060                     # margin retained after speech
+SILENCE_DB = -50.0                 # 10 ms frame considered silence below this level
 FADE_S = 0.005
-TARGET_RMS_DB = -12.0              # memes cibles que tools/voice/pack_voice.py (niveau deja valide sur la carte)
+TARGET_RMS_DB = -12.0              # Same targets as tools/voice/pack_voice.py (level already valid on the map)
 ACTIVE_DB = -40.0
 CEILING_DB = -1.5
 MAX_REDUCTION_DB = 6.0
@@ -91,7 +67,7 @@ MAX_DURATION_S = 6.0
 
 # Generate the fixed alerts and number phrases for the selected language.
 def phrases():
-    """(nom de fichier, texte) dans l'ordre de generation, pour la langue configuree."""
+    """Yield filenames and phrases for the selected language in stable generation order."""
     return langues_voix.phrases(LANG)
 
 
@@ -100,7 +76,7 @@ def phrases():
 
 
 def read_wav_bytes(data):
-    """(echantillons int16 mono, frequence) ou None si le WAV n'est pas du PCM 16 bits mono lisible."""
+    """Decode supported 16-bit mono PCM WAV data into samples and sample rate, or return None."""
     try:
         with wave.open(io.BytesIO(data), 'rb') as w:
             if w.getsampwidth() != 2 or w.getnchannels() != 1 or w.getcomptype() != 'NONE':
@@ -141,14 +117,14 @@ def db(value):
 
 # Convert the service output to the sample rate required by the ESP32 codec.
 def resample(x, rate_in, rate_out):
-    """Reechantillonnage polyphase (insertion de zeros, filtre passe-bas Kaiser, decimation)."""
+    """Resample audio using a polyphase low-pass filter before decimation."""
     if rate_in == rate_out:
         return x.astype(np.float64)
     g = math.gcd(rate_in, rate_out)
     up, down = rate_out // g, rate_in // g
     fs_up = rate_in * up
     nyquist_out = min(rate_in, rate_out) / 2.0
-    transition = 0.1 * nyquist_out                   # 7,2 -> 8 kHz pour une sortie a 16 kHz
+    transition = 0.1 * nyquist_out                   # 7.2 -> 8 kHz for a 16 kHz output
     cutoff = nyquist_out - transition / 2.0
     attenuation = 80.0
     beta = 0.1102 * (attenuation - 8.7)
@@ -194,11 +170,7 @@ def active_rms(x, rate):
 
 # Keep decoded audio in a safe amplitude range to reduce clipping.
 def limit(x, rate):
-    """Limiteur a anticipation (meme principe que pack_voice.py) : |sortie| <= plafond, jamais d'ecretage.
-
-    gain requis r = min(1, plafond/|x|) ; minimum glissant sur [i-L, i+L] puis moyenne glissante de meme largeur
-    (chaque valeur moyennee est <= r[i]) ; retour du gain ralenti (RELEASE_S) sans depasser le gain lisse.
-    """
+    """Limit peaks using look-ahead gain reduction without hard clipping."""
     ceiling = 10.0 ** (CEILING_DB / 20.0)
     n = len(x)
     L = int(LOOKAHEAD_S * rate)
@@ -245,7 +217,7 @@ def process(raw, raw_rate):
 
 
 def make_client():
-    from google.cloud import texttospeech  # import differe : --estimate fonctionne sans reseau
+    from google.cloud import texttospeech  # import difference: --estimate works without network
     return texttospeech, texttospeech.TextToSpeechClient()
 
 
@@ -357,7 +329,7 @@ def generate(items, only):
         if not unchanged:
             with open(path, 'wb') as f:
                 f.write(data)
-        # verification : le fichier ecrit se relit comme un WAV PCM 16 bits mono 16 kHz de duree plausible
+        # Validate the written WAV as 16-bit mono PCM at 16 kHz with plausible duration.
         check_back = read_wav_file(path)
         if check_back is None or check_back[1] != RATE:
             raise SystemExit('%s : WAV final illisible' % name)

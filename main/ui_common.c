@@ -1,6 +1,5 @@
 /*
  * ui_common.c: Shared visual widgets, fonts and layout helpers.
- * FR: Composants visuels, polices et mise en page communs.
  * Design note: Consistent styles make the display legible from a distance.
  */
 
@@ -150,7 +149,7 @@ const char *ui_freshness_text(gm_freshness_t fresh)
 
 const char *ui_trend_text(uint8_t trend)
 {
-    /* Meme ordre que trend_t : l'indice 0 (TREND_NONE) n'affiche rien. */
+    /* Same order as trend_t : index 0 (TREND_NONE) does not display anything. */
     static const int16_t k_trend_ids[TREND_COUNT] = {
         -1, S_TREND_UP_FAST, S_TREND_UP, S_TREND_UP_SLOW, S_TREND_FLAT,
         S_TREND_DOWN_SLOW, S_TREND_DOWN, S_TREND_DOWN_FAST, S_TREND_UNKNOWN, S_TREND_OUT_OF_RANGE,
@@ -169,7 +168,7 @@ void ui_format_hm(int64_t epoch_ms, char *buf, size_t size)
     snprintf(buf, size, "%02d:%02d", tm_local.tm_hour, tm_local.tm_min);
 }
 
-/* Les pages sont transparentes : le degrade bleu nuit vers noir est peint une seule fois par l'ecran */
+/* The pages are transparent: the degrade blue night to black is painted once by the screen */
 void ui_navy_background(lv_obj_t *obj)
 {
     lv_obj_set_style_bg_opa(obj, LV_OPA_TRANSP, 0);
@@ -183,10 +182,10 @@ void ui_screen_background(lv_obj_t *obj)
     lv_obj_set_style_bg_grad_dir(obj, LV_GRAD_DIR_VER, 0);
 }
 
-/* Verre : degrade vertical (reflet en haut), bord fin semi-transparent, ombre douce decalee vers le bas.
- * Fond opaque aux couleurs du verre translucide deja melange au fond bleu nuit (identique sur ce fond uniforme, sans
- * melange pixel par pixel). Ombre fine : son cout de rendu croit avec sa largeur (mesure : ~15 ms par carte a 24 px
- * sur un rafraichissement complet de l'ecran) */
+/* Glass: vertical degrade (top reflection), semi-transparent fine edge, soft shadow down.
+ * Opaque background in the colours of the translucent glass already mixed in the dark blue background (identical on this uniform background, without
+ * pixel by pixel mixture). Fine shade: its rendering cost believes with its width (measured: ~15 ms per map has 24 px
+ * on a complete refreshment of the screen) */
 void ui_glass_style(lv_obj_t *obj, int32_t radius)
 {
     lv_obj_set_style_radius(obj, radius, 0);
@@ -210,8 +209,8 @@ lv_obj_t *ui_card(lv_obj_t *parent, int32_t x, int32_t y, int32_t w, int32_t h, 
     return card;
 }
 
-/* Halo : tache coloree floue. LVGL ne dessine l'ombre qu'autour de l'objet : le centre est donc rempli a la moitie
- * de l'opacite de l'ombre (raccord sans contour visible) */
+/* Halo: blurred color spot. LVGL draw l'ombre qu'around the object: the center is therefore filled with half
+ * opacite of the shadow (connection without visible outline) */
 lv_obj_t *ui_glow(lv_obj_t *parent, int32_t w, int32_t h, lv_color_t color, lv_opa_t opa, int32_t blur)
 {
     lv_obj_t *glow = lv_obj_create(parent);
@@ -239,7 +238,7 @@ void ui_glow_set(lv_obj_t *glow, lv_color_t color, lv_opa_t opa)
     }
 }
 
-/* Boutons en pilules (navigation, durees du graphique) : bouton actif en degrade bleu avec lueur */
+/* Pill buttons (navigation, hard graphics): active button in blue degrade with glow */
 void ui_pill_buttons_style(lv_obj_t *btnm, const lv_font_t *font, bool glass_container)
 {
     if (glass_container) {
@@ -270,7 +269,7 @@ void ui_pill_buttons_style(lv_obj_t *btnm, const lv_font_t *font, bool glass_con
     lv_obj_set_style_shadow_opa(btnm, LV_OPA_40, LV_PART_ITEMS | LV_STATE_CHECKED);
 }
 
-/* Anneau fin 0..100 (depart en haut, sens horaire), sans bouton ni appui */
+/* End ring 0.10 (start at top, clockwise), without button or push */
 lv_obj_t *ui_ring(lv_obj_t *parent, int32_t size, int32_t width)
 {
     lv_obj_t *arc = lv_arc_create(parent);
@@ -314,7 +313,7 @@ static lv_obj_t *icon_shape(lv_obj_t *parent, int32_t x, int32_t y, int32_t w, i
     return obj;
 }
 
-/* Petites icones 20 x 20 dessinees avec des formes natives (quelques objets, aucune image) */
+/* Small icons 20 x 20 drawings with native shapes (some objects, no images) */
 lv_obj_t *ui_icon(lv_obj_t *parent, ui_icon_t icon, lv_color_t color)
 {
     lv_obj_t *box = icon_shape(parent, 0, 0, 20, 20, 0);

@@ -1,11 +1,13 @@
 # Reading and maintaining WaveShare Glycémie
 
-**English** | [Français](CODE_GUIDE_FR.md)
+**English only**
 
 This guide explains where the project's logic lives. Comments in `main/`,
 `tools/`, and `tests/` describe module responsibilities and important
 engineering decisions, especially failure paths. The implementation stays in
 C, Python, PowerShell and CMake; **comments do not add functionality**.
+
+For the full source-reading sequence, see the [developer walkthrough](DEVELOPER_WALKTHROUGH.md).
 
 ## Where to look
 
@@ -26,7 +28,7 @@ C, Python, PowerShell and CMake; **comments do not add functionality**.
 
 ## Comment conventions
 
-- **File header:** describe what the module owns (English and French).
+- **File header:** describe what the module owns (English only).
 - **Non-obvious function:** explain its intention, invariant, or failure-handling rule.
 - **Inside a function:** comment a subtle decision, not every assignment.
 - **Keep comments current:** inaccurate explanations are worse than short ones.

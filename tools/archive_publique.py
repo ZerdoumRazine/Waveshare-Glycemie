@@ -1,31 +1,14 @@
 #!/usr/bin/env python3
 # Builds source archives from a controlled Git snapshot.
-# FR: Construit des archives depuis un état Git contrôlé.
+#
 # Design note: Never archive the personal working directory indiscriminately.
-# EN: Exports only tracked Git files and rejects unsafe publication artefacts.
-# FR: Archive uniquement les fichiers Git suivis et refuse les ressources privées.
-r"""Fabrique et controle l'archive publique du depot, a partir de ce que Git suit reellement.
+# Exports only tracked Git files and rejects unsafe publication artefacts.
+#
+"""Build and inspect a public archive using exactly the files tracked by Git.
 
-Un .gitignore ne nettoie PAS une archive faite en copiant un dossier : journaux, identifiants ou
-firmware personnel s'y retrouvent. Cet outil part donc de `git archive HEAD`, puis :
-  - relit le ZIP, nom par nom, et refuse tout element interdit (majuscules comprises) ;
-  - EXTRAIT l'archive et examine son CONTENU (identifiants reels, adresses de courriel, chemins
-    personnels) avec tools/controle_donnees_perso.py ;
-  - verifie que les fichiers obligatoires sont presents et que l'archive n'est pas vide ;
-  - verifie que l'archive correspond bien a l'etat termine du projet (rien de non commite) ;
-  - controle en plus les fichiers livres a cote (programme compile, application Windows) ;
-  - EFFACE l'archive si elle est refusee : une archive refusee ne doit pas rester parmi les
-    fichiers prets a partager.
-
-Un controle qui n'a rien pu lire est un ECHEC, jamais une reussite.
-
-Usage :
-    python tools\archive_publique.py
-    python tools\archive_publique.py --sortie D:\partage
-    python tools\archive_publique.py --livre tools\pc_app\dist\GlycemieConnexion.exe
-    python tools\archive_publique.py --accepter-modifications   (archive un etat non commite, a eviter)
-Code de sortie 0 seulement si tout est propre.
-"""
+The export is checked for private credentials, device backups, medical histories
+and other files that must not be redistributed. Reject unsafe archives rather
+than trusting filenames or an unverified working directory."""
 import argparse
 import hashlib
 import os
@@ -40,10 +23,10 @@ RACINE = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import controle_donnees_perso as cdp  # noqa: E402
 
-# Tout ce qui ne doit JAMAIS sortir : identifiants, donnees de sante, binaires personnels, caches.
-# Les motifs sont appliques SANS tenir compte de la casse (.BIN, .Pcm, PRIVATE/... sont vises aussi).
+# Never export personal credentials, patient histories, backups or local caches.
+# Apply exclusion rules case-insensitively
 INTERDITS = [
-    # private/ reste dans le depot avec son seul .gitignore (le dossier doit exister) : tout le reste est interdit
+    # private/ stays in the repository with its only .gitignore (the folder must exist): everything else is forbidden
     (r'(^|/)private/(?!\.gitignore$).+', 'identifiants prives'),
     (r'device_secrets\.h$', 'identifiants prives'),
     (r'(^|/)tools/logs/', 'journaux locaux (glycemies reelles, chemins du PC)'),
@@ -62,13 +45,13 @@ INTERDITS = [
     (r'\.csv\.perso$', 'donnees personnelles'),
     (r'(^|/)sauvegardes?/', 'sauvegarde de l\'appareil personnel'),
 ]
-ATTENDUS = ['README.md', 'README_FR.md', 'LICENSE', 'CREDITS.md', 'CMakeLists.txt',
+ATTENDUS = ['README.md', 'LICENSE', 'CREDITS.md', 'CMakeLists.txt',
             'main/app_main.c', 'main/credentials.c', 'main/ui_setup.c',
             'tools/assistant_config.py', 'tools/pc_app/glycemie_connexion.pyw',
             'tools/pc_app/construire_exe.ps1',
-            'docs/TUTORIEL_VOIX_FR.md', 'docs/VOICE_TUTORIAL_EN.md',
-            'docs/RETOUR_ARRIERE_FR.md', 'screenshots/01_accueil.png']
-MINIMUM_FICHIERS = 100   # un depot complet ; en dessous, l'archive est suspecte
+            'docs/VOICE_TUTORIAL_EN.md', 'docs/BEGINNER_TUTORIAL_EN.md',
+            'docs/ROLLBACK_EN.md', 'screenshots/01_accueil.png']
+MINIMUM_FICHIERS = 100   # a complete deposit; below, the archive is suspicious
 
 
 def git(*args):
@@ -78,7 +61,7 @@ def git(*args):
 
 # Inspect the actual bytes, including nested archives, instead of trusting filenames.
 def controler_contenu(dossier, secrets):
-    """Examine le contenu reellement extrait de l'archive. Renvoie (trouvailles, fichiers lus)."""
+    """Inspect extracted archive contents and return the findings and scanned files."""
     trouves, lus = [], 0
     for base, _, fichiers in os.walk(dossier):
         for nom in fichiers:
@@ -163,7 +146,7 @@ def main():
     for nom_fichier, genre, detail in trouvailles:
         problemes.append('contenu de %s : %s (%s)' % (nom_fichier, genre, detail))
 
-    # --- fichiers livres a cote (programme compile, application Windows) ----------------------
+    # --- coded book files (compile program, Windows application) ----------------------
     livres = []
     for livre in args.livre:
         if not os.path.exists(livre):

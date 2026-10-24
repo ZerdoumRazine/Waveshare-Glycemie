@@ -1,15 +1,9 @@
 /* ui_pages.h: Declarations for the five application pages.
- * FR: Déclarations des cinq pages de l'application.
  * Shared definitions for the firmware implementation.
  */
-/*
- * Pages de l'interface : ACCUEIL, GRAPHIQUE, AUJOURD'HUI, CONSOMMABLES, REGLAGES.
- * Toutes les fonctions s'executent dans la tache LVGL.
- */
-/* Public interface / Interface publique
- * EN: Shared view factory interfaces for the five touchscreen pages.
- * FR: Interfaces communes des cinq pages tactiles.
- */
+/* Five LVGL pages: Home, Chart, Today, Consumables and Settings.
+ * Page construction and updates run in the LVGL task. */
+/* Shared constructors and updates for all five touchscreen pages. */
 #pragma once
 
 #include <stdbool.h>
@@ -36,20 +30,20 @@ void ui_today_update(const ui_data_t *d, bool force);
 
 void ui_consumables_create(lv_obj_t *page);
 void ui_consumables_update(const ui_data_t *d, bool force);
-void ui_consumables_open_dialog(consumable_t c); /* confirmation "Nouveau capteur maintenant ?" */
+void ui_consumables_open_dialog(consumable_t c); /* Present the confirmation dialog for a new sensor insertion. */
 void ui_consumables_close_dialog(void);
 
 void ui_settings_create(lv_obj_t *page);
 void ui_settings_update(const ui_data_t *d, bool force);
 
-/* Assistant de premiere mise en route (langue, Wi-Fi, compte Dexcom) : couche au-dessus des pages */
+/* First Start Assistant (language, Wi-Fi, Dexcom account): layer above pages */
 void ui_setup_create(void);
 void ui_setup_open(bool premier_demarrage);
 void ui_setup_close(void);
 bool ui_setup_visible(void);
-void ui_setup_tick(void); /* avancement de la recherche de reseaux et de l'essai de connexion */
+void ui_setup_tick(void); /* progress in network search and connection test */
 
-/* Navigation et plage du graphique (tache LVGL) */
+/* Change the active page or history range on the LVGL task. */
 void ui_show_page(ui_page_t page);
 int ui_chart_hours(void);
 void ui_set_chart_hours(int hours);

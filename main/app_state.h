@@ -1,15 +1,13 @@
 /* app_state.h: Application-wide glucose and connection snapshots.
- * FR: États partagés des mesures et connexions.
  * Keep this header focused on the contracts used by other modules.
  */
 /*
- * Etat partage entre les taches (reseau, Dexcom, stockage, audio, alertes) et l'interface.
- * Les taches publient sous mutex ; l'interface lit une copie une fois par seconde.
- * L'historique (jusqu'a 24 h) est stocke a part et n'est recopie que lorsqu'il change.
+ * State sharing between the spots (network, Dexcom, storage, audio, alerts) and the interface.
+ * The spots publish under mutex; the interface reads one copy once a second.
+ * The history (up to 24 h) is stored separately and is only copied when it changes.
  */
 /* Public interface / Interface publique
- * EN: Thread-safe snapshots of link state, glucose data and history.
- * FR: État partagé des liaisons et des mesures, protégé entre tâches.
+ * Thread-safe snapshots of link state, glucose data and history.
  */
 #pragma once
 
@@ -30,19 +28,19 @@ typedef enum {
     DEX_STATE_CONNECTING,
     DEX_STATE_OK,
     DEX_STATE_NO_DATA,
-    DEX_STATE_RETRYING,     /* erreur reseau ou serveur : nouvel essai programme */
+    DEX_STATE_RETRYING,     /* Network or server error: retry according to the connection policy. */
     DEX_STATE_AUTH_REFUSED, /* identifiants refuses : tentatives arretees */
     DEX_STATE_LOCKED,       /* compte temporairement bloque par Dexcom */
-    DEX_STATE_AWAITING_ARM, /* identifiants jamais valides : tentative unique en attente d'autorisation */
-    DEX_STATE_AUTH_BLOCKED, /* tentative unique deja consommee sans verdict : verification requise */
+    DEX_STATE_AWAITING_ARM, /* Never valid identifiers: single attempt pending authorization */
+    DEX_STATE_AUTH_BLOCKED, /* unique attempt already consumed without verdict: verification required */
 } dexcom_state_t;
 
 typedef enum {
-    SD_STATE_UNKNOWN = 0,   /* pas encore initialisee */
-    SD_STATE_ABSENT,        /* aucune carte detectee */
+    SD_STATE_UNKNOWN = 0,   /* not yet initialized */
+    SD_STATE_ABSENT,        /* no detecte map */
     SD_STATE_OK,            /* montee, ecriture possible */
-    SD_STATE_UNSUPPORTED,   /* systeme de fichiers non reconnu : aucun formatage automatique */
-    SD_STATE_ERROR,         /* erreur d'acces : fonctionnement principal non affecte */
+    SD_STATE_UNSUPPORTED,   /* Unrecognized file system: no automatic formatting */
+    SD_STATE_ERROR,         /* Authentication error: preserve normal local display operation. */
 } sd_state_t;
 
 /* Codes de tendance Dexcom Share (ordre de pydexcom DEXCOM_TREND_DIRECTIONS) */
@@ -61,7 +59,7 @@ typedef enum {
 } trend_t;
 
 typedef struct {
-    int64_t wt_ms;   /* horodatage UTC de la mesure en ms (champ WT) */
+    int64_t wt_ms;   /* time stamping UTC Measurement in ms (WT field) */
     int16_t mgdl;
     uint8_t trend;   /* trend_t */
 } glucose_point_t;
@@ -78,7 +76,7 @@ typedef struct {
     dexcom_state_t dexcom;
     int32_t dexcom_retry_s;
     char dexcom_info[128];      /* diagnostic non sensible (etape, HTTP, code Dexcom) */
-    bool demo_mode;             /* donnees simulees (console de developpement uniquement) */
+    bool demo_mode;             /* simule data (development console only) */
 
     sd_state_t sd;
     char sd_type[12];
@@ -105,7 +103,7 @@ void app_state_set_sd(sd_state_t st, const char *type, uint32_t capacity_mb, uin
 void app_state_add_sd_rows(uint32_t rows);
 void app_state_set_audio_ok(bool ok);
 
-/* Historique : mesures triees de la plus recente a la plus ancienne */
+/* History: measures sorted from the most recent to the oldest */
 void app_history_set(const glucose_point_t *points, int count);
 int app_history_get(glucose_point_t *out, int max, uint32_t *seq);
 uint32_t app_history_seq(void);

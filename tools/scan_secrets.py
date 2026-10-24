@@ -1,15 +1,13 @@
 #!/usr/bin/env python3
 # Scans tracked content for credential-like patterns.
-# FR: Recherche des secrets possibles dans les fichiers versionnés.
+#
 # Design note: No pattern scan can guarantee every secret has been found.
-# EN: Looks for accidentally included credentials without ever echoing secret values.
-# FR: Recherche les identifiants accidentellement publiés sans les afficher.
-"""Recherche des identifiants prives dans des fichiers texte (journaux, rapports, sources).
+# Looks for accidentally included credentials without ever echoing secret values.
+#
+"""Scan source, reports and serial logs for accidentally embedded private credentials.
 
-N'affiche JAMAIS les valeurs : seulement le nom du champ et le fichier concerne.
-Usage : python scan_secrets.py <fichier ou dossier> [...]
-Code de sortie 1 si une valeur est trouvee.
-"""
+Do not publish detected secrets or include sensitive local artifacts in
+public packages. Exclude binary data and known safe placeholders as required."""
 import os
 import re
 import sys

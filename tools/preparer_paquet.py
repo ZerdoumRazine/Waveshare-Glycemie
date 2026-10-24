@@ -1,36 +1,17 @@
 #!/usr/bin/env python3
 # Assembles delivery resources and verifies their contents.
-# FR: Assemble et contrôle les ressources distribuées.
+#
 # Design note: Only documented public resources should enter a release.
-# EN: Builds the deliverable folders from clean sources, not from a personal device backup.
-# FR: Prépare le paquet complet sans reprendre une sauvegarde personnelle.
-r"""Assemble le dossier a remettre : sources, application Windows, installation, microSD, tutoriels.
+# Builds the deliverable folders from clean sources, not from a personal device backup.
+#
+"""Assemble the distributable package from public source and verified artifacts.
 
-Organisation produite :
+The output includes source code, the Windows setup utility, firmware installer,
+optional microSD speech banks, English manuals and checksums. Build from a
+clean export rather than a personal device backup. Scan every candidate file
+for private data, and reject incomplete or unsafe releases.
 
-    paquet_a_remettre/
-        LISEZMOI.txt              par ou commencer (francais, puis anglais)
-        code_source/              export propre du depot public (sans historique)
-        application_windows/      GlycemieConnexion.exe + sa notice
-        installation_ecran/       programme public + installer.ps1 + procedure exacte
-        microSD/                  contenu a copier tel quel sur la carte
-            glycemie/audio/voice/ francais a la racine, en/ es/ de/ it/ pt/ pour le reste
-        tutoriels/                guides et captures
-        telechargements/          les memes elements en ZIP, prets a distribuer
-        notices/                  manifestes, provenance et empreintes des banques vocales
-        SHA256SUMS.txt            empreinte de chaque fichier du paquet
-
-Ce dossier est destine a etre donne ou publie. Il ne contient JAMAIS : le dossier private\,
-un programme compile depuis le dossier personnel, un journal local, une sauvegarde d'appareil,
-ni le contenu de la microSD personnelle (les sons viennent des paquets publics de dist_voix\).
-
-Chaque fichier est verifie (tools/controle_donnees_perso.py). Si quelque chose de personnel est
-trouve, le paquet est EFFACE : un paquet refuse ne doit pas rester parmi les fichiers a remettre.
-
-Usage :
-    python tools\preparer_paquet.py
-    python tools\preparer_paquet.py --sans-zip      (plus rapide, sans les archives)
-"""
+Usage: python tools/preparer_paquet.py [--sans-zip]"""
 import argparse
 import hashlib
 import io
@@ -48,13 +29,13 @@ SOURCES = os.path.join(ROOT, 'Razine')
 LIVRAISON = os.path.join(ROOT, 'livraison')
 BANQUES = os.path.join(ROOT, 'dist_voix')
 
-# Fichiers d'accompagnement presents dans les paquets vocaux : utiles a lire, inutiles sur la carte.
+# Accompaniment files in voice packages: useful to read, useless on the map.
 HORS_CARTE = ('manifest.csv', 'SHA256SUMS.txt', 'PROVENANCE.md', 'LISEZMOI_README.txt')
 
 
 # Fingerprint the exact sources so a binary can be traced back to its build.
 def empreinte_sources(racine):
-    """Empreinte du CONTENU de tout ce qui entre dans le firmware : main, components, config, CMake."""
+    """Hash all firmware inputs, including source, components, configuration and build files."""
     h = hashlib.sha256()
     elements = []
     for dossier in ('main', 'components', 'config'):
@@ -87,7 +68,7 @@ def ecrire(chemin, texte):
 
 # Write archive members in a stable order to make package contents reproducible.
 def zipper(dossier, archive, base=''):
-    """ZIP reproductible : entrees triees, dates fixes."""
+    """Create a deterministic ZIP with sorted entries and fixed timestamps."""
     with zipfile.ZipFile(archive, 'w', zipfile.ZIP_DEFLATED) as zf:
         for racine, dossiers, fichiers in os.walk(dossier):
             dossiers.sort()
@@ -103,12 +84,7 @@ def zipper(dossier, archive, base=''):
 
 # Preserve the one French root directory and five language subfolders expected by firmware.
 def construire_microsd(cible, notices):
-    r"""Extrait les six banques publiques aux emplacements attendus par le firmware.
-
-    main/voice.c lit :   /sdcard/glycemie/audio/voice/<fichier>.wav        (francais)
-                         /sdcard/glycemie/audio/voice/<langue>/<fichier>.wav
-    Les paquets de dist_voix\ sont deja dans cette forme : rien n'est deplace ni renomme.
-    """
+    """Place all six approved voice banks in the microSD layout required by the firmware."""
     compte = {}
     for nom in sorted(os.listdir(BANQUES)):
         if not (nom.startswith('glycemie-voix-') and nom.endswith('.zip')):
@@ -159,9 +135,9 @@ def main():
         print('ARRET : la copie publique contient des identifiants.')
         return 1
 
-    # Une compilation ancienne ne doit jamais etre prise pour celle de la derniere version.
-    # On compare le CONTENU des sources du firmware (pas leur date : regenerer la copie publique
-    # les rend toutes "recentes" sans rien changer) a l'empreinte enregistree a la compilation.
+    # An old compilation must never be taken for the last version.
+    # We compare the CONTENU firmware sources (not their date: regenerate public copy
+    # makes them all "recent" without changing anything) to the fingerprint recorded at the compilation.
     attendue = os.path.join(LIVRAISON, 'sources.sha256')
     actuelle = empreinte_sources(SOURCES)
     if not os.path.exists(attendue):
@@ -188,7 +164,7 @@ def main():
         shutil.rmtree(cible, ignore_errors=True)
     os.makedirs(cible)
 
-    # --- 1. code_source : export propre, sans historique ---------------------------------------
+    # --- 1. code_source : own export, without history ---------------------------------------
     shutil.copytree(SOURCES, os.path.join(cible, 'code_source'),
                     ignore=shutil.ignore_patterns('.git', 'build', '__pycache__', '*.pyc'))
 
@@ -213,7 +189,7 @@ def main():
             copier(source, os.path.join(cible, 'notices', nom))
     ecrire(os.path.join(cible, 'microSD', 'LISEZMOI.txt'), NOTICE_MICROSD)
 
-    # Provenance du programme livre : toujours ecrite, pour que l'on sache de quoi il vient.
+    # Origin of the book program: always written, so that we know what it comes from.
     provenance = [
         "PROVENANCE DU PROGRAMME DE L'ECRAN",
         '',
@@ -239,23 +215,29 @@ def main():
            chr(10).join(provenance) + chr(10))
 
     # --- 5. tutoriels --------------------------------------------------------------------------
-    for nom in ('TUTORIEL_DEBUTANT_FR.md', 'BEGINNER_TUTORIAL_EN.md', 'TUTORIEL_VOIX_FR.md',
-                'VOICE_TUTORIAL_EN.md', 'RETOUR_ARRIERE_FR.md', 'LIMITATIONS_FR.md',
-                'HARDWARE_FR.md', 'DEPANNAGE_FR.md', 'LICENCES_TIERCES_FR.md',
-                'CONFIGURATION_DEXCOM_FR.md', 'UTILISATION_FR.md'):
+    # Ship exactly the maintained English manuals; never add obsolete French pages.
+    for nom in ('BEGINNER_TUTORIAL_EN.md', 'VOICE_TUTORIAL_EN.md',
+                'ROLLBACK_EN.md', 'RECOVERY_EN.md', 'LIMITATIONS_EN.md',
+                'HARDWARE_EN.md', 'TROUBLESHOOTING_EN.md',
+                'THIRD_PARTY_LICENSES_EN.md', 'DEXCOM_SETUP_EN.md',
+                'USER_GUIDE_EN.md', 'DEVELOPER_WALKTHROUGH.md',
+                'CODE_GUIDE_EN.md', 'ARCHITECTURE_EN.md',
+                'INSTALLATION_EN.md', 'PUBLICATION_GITHUB_EN.md',
+                'VERSION_HISTORY_EN.md', 'K22_TECHNICAL_REPORT_EN.md',
+                'RELEASE_NOTES_0_2_0.md'):
         source = os.path.join(SOURCES, 'docs', nom)
         if os.path.exists(source):
             copier(source, os.path.join(cible, 'tutoriels', 'docs', nom))
     captures = os.path.join(SOURCES, 'screenshots')
     if os.path.isdir(captures):
         shutil.copytree(captures, os.path.join(cible, 'tutoriels', 'screenshots'))
-    for nom in ('LICENSE', 'CREDITS.md', 'README.md', 'README_FR.md'):
+    for nom in ('LICENSE', 'CREDITS.md', 'README.md'):
         source = os.path.join(SOURCES, nom)
         if os.path.exists(source):
             copier(source, os.path.join(cible, nom))
     ecrire(os.path.join(cible, 'LISEZMOI.txt'), LISEZMOI)
 
-    # --- 6. Verification AVANT les archives -----------------------------------------------------
+# --- 6. Verify package contents before creating archives
     secrets = cdp.secrets_reels()
     trouves, lus = [], 0
     for base, _, fichiers in os.walk(cible):
@@ -286,7 +268,7 @@ def main():
         print('\nRESULTAT : A CORRIGER - le paquet a ete efface.')
         return 1
 
-    # --- 7. telechargements : les memes elements en ZIP -----------------------------------------
+    # --- 7. telecommunications : the same elements in ZIP -----------------------------------------
     if not args.sans_zip:
         archives = os.path.join(cible, 'telechargements')
         os.makedirs(archives, exist_ok=True)
@@ -302,7 +284,7 @@ def main():
                 lignes.append('%s  %s' % (hashlib.sha256(f.read()).hexdigest(), nom))
         ecrire(os.path.join(archives, 'SHA256SUMS.txt'), '\n'.join(lignes) + '\n')
 
-    # --- 8. Empreintes de tout le paquet --------------------------------------------------------
+    # --- 8. Prints of the whole package --------------------------------------------------------
     lignes, total, nb = [], 0, 0
     for base, _, fichiers in os.walk(cible):
         for nom in sorted(fichiers):
@@ -331,245 +313,169 @@ def main():
     return 0
 
 
-LISEZMOI = """WAVESHARE GLYCEMIE - dossier complet
+LISEZMOI = """WAVESHARE GLYCEMIE — complete package
 ====================================
 
-Afficheur familial qui montre en grand la glycemie partagee par un capteur Dexcom G7, avec des
-annonces parlees en six langues. Projet de Mohamed-Razine Zerdoum. Code sous licence MIT ;
-les composants tiers gardent leurs auteurs et leurs licences (voir CREDITS.md et LICENSE).
+A supplementary family display for glucose readings shared by a Dexcom G7,
+with touch controls and optional speech announcements in six languages.
+Project by Mohamed-Razine Zerdoum. Original code: MIT licence. Third-party
+software and audio retain their own licensing terms.
 
-AVERTISSEMENT
--------------
-Affichage complementaire EXPERIMENTAL. Ce n'est pas un dispositif medical. Il peut se tromper,
-afficher une valeur en retard ou s'interrompre. Il ne remplace ni le recepteur ni l'application
-Dexcom officiels, et AUCUNE DECISION DE TRAITEMENT ne doit se fonder sur ce qu'il affiche.
-Aucune certification ni validation medicale n'est revendiquee.
+IMPORTANT SAFETY NOTICE
+-----------------------
+EXPERIMENTAL DISPLAY, NOT CERTIFIED FOR MEDICAL USE. Its values may be delayed,
+incorrect or unavailable. This project does not replace an official Dexcom
+receiver, the Dexcom application or their alarms. Never base treatment
+decisions on this display.
 
-PAR OU COMMENCER
+GETTING STARTED
+---------------
+1. Read tutoriels/docs/BEGINNER_TUTORIAL_EN.md.
+2. Install the firmware using the installation_ecran/ package.
+3. Configure Wi-Fi and Dexcom Share using the touchscreen wizard or the
+   application_windows/ USB configuration program.
+4. Optionally copy the speech banks from microSD/ to the memory card.
+
+PACKAGE CONTENTS
 ----------------
-1. Lire  tutoriels\\docs\\TUTORIEL_DEBUTANT_FR.md  (tout y est, du materiel au depannage).
-2. Installer le programme sur l'ecran : dossier  installation_ecran\\  (sa notice explique tout).
-3. Saisir ses propres identifiants : sur l'ecran tactile, ou avec  application_windows\\.
-4. Copier les sons sur la carte microSD : dossier  microSD\\  (sa notice explique tout).
+code_source/         Source code, tests, developer notes and tooling.
+application_windows/ GlycemieConnexion.exe, the optional USB setup application.
+installation_ecran/  Firmware images and the installation script.
+microSD/             Optional six-language speech files for the card.
+tutoriels/           English-language guides and demonstration screenshots.
+telechargements/     Downloadable ZIP packages.
+notices/             Audio provenance, inventories and integrity checks.
+SHA256SUMS.txt       SHA-256 hashes for the distributed files.
 
-CE QUE CONTIENT CHAQUE DOSSIER
-------------------------------
-code_source\\          Tout le code, commente, avec ses tests et ses outils. C'est ce qui part
-                      sur GitHub. Rien n'y est personnel.
-application_windows\\  GlycemieConnexion.exe : configure l'ecran depuis le PC par le cable USB.
-                      Rien a installer (ni Python, ni bibliotheque).
-installation_ecran\\   Le programme public de l'ecran (sans aucun identifiant) et son
-                      installateur. C'est la PREMIERE installation, complete.
-microSD\\              A copier sur la carte memoire : les six banques de voix, aux emplacements
-                      attendus par le programme.
-tutoriels\\            Les guides (francais et anglais) et les captures d'ecran.
-telechargements\\      Les memes elements en archives ZIP, pretes a distribuer.
-notices\\              Manifestes, provenance et empreintes des banques vocales (a lire, pas a
-                      copier sur la carte).
-SHA256SUMS.txt        Empreinte de chaque fichier, pour verifier que rien n'a ete abime.
-
-CE QUI N'A PAS ETE ESSAYE
--------------------------
-L'installation, la mise a jour, la reconnexion Wi-Fi et Dexcom, les annonces parlees et
-l'ouverture de l'assistant ont ete verifiees sur un appareil reel. La PREMIERE CONFIGURATION
-d'un appareil neuf - saisir de nouveaux identifiants, les enregistrer, redemarrer - n'a ete
-validee qu'en simulation sur PC. Voir tutoriels\\docs\\LIMITATIONS_FR.md.
-
-
-WAVESHARE GLYCEMIE - complete package (English)
-===============================================
-
-A family display showing, in large digits, the glucose value shared by a Dexcom G7 sensor, with
-spoken announcements in six languages. A project by Mohamed-Razine Zerdoum. MIT licence; third
-party components keep their own authors and licences.
-
-WARNING
--------
-EXPERIMENTAL secondary display. Not a medical device. It can be wrong, show a late value or stop.
-It does not replace the official Dexcom receiver or app, and NO TREATMENT DECISION should be based
-on what it shows. No medical certification or validation is claimed.
-
-WHERE TO START
---------------
-1. Read  tutoriels\\docs\\BEGINNER_TUTORIAL_EN.md  (everything, from hardware to troubleshooting).
-2. Install the firmware: folder  installation_ecran\\  (its notice explains each step).
-3. Enter your own credentials: on the touchscreen, or with  application_windows\\.
-4. Copy the sounds onto the microSD card: folder  microSD\\  (its notice explains how).
-
-WHAT EACH FOLDER HOLDS
-----------------------
-code_source\\          All the code, commented, with its tests and tools. Nothing personal in it.
-application_windows\\  GlycemieConnexion.exe: configures the screen from the PC over USB.
-                      Nothing to install (no Python, no libraries).
-installation_ecran\\   The public firmware (no credentials at all) and its installer. This is the
-                      full first-time installation.
-microSD\\              To copy onto the memory card: the six voice banks, in the exact locations
-                      the firmware expects.
-tutoriels\\            The guides (French and English) and the screenshots.
-telechargements\\      The same items as ZIP archives, ready to distribute.
-notices\\              Manifests, provenance and checksums of the voice banks (to read, not to
-                      copy onto the card).
-SHA256SUMS.txt        Checksum of every file, to check nothing was damaged.
-
-NOT YET TESTED
---------------
-Installation, update, Wi-Fi and Dexcom reconnection, spoken announcements and opening the setup
-wizard were verified on a real device. FIRST-TIME SETUP of a blank device - entering new
-credentials, saving them, restarting - has only been validated in simulation on a PC.
+VALIDATION LIMIT
+----------------
+Firmware installation, update, reconnection, audio playback and the setup
+wizard have been exercised on an existing board. Entering and saving new
+credentials on a completely blank board has only been checked in simulation.
+See tutoriels/docs/LIMITATIONS_EN.md for details.
 """
 
-NOTICE_APPLICATION = """APPLICATION WINDOWS - GlycemieConnexion.exe
-===========================================
+NOTICE_APPLICATION = """WINDOWS USB SETUP — GlycemieConnexion.exe
+==========================================
 
-A QUOI CA SERT
---------------
-A renseigner, essayer, enregistrer ou effacer les acces de l'ecran (reseau Wi-Fi et compte Dexcom
-Share) depuis le PC, par le cable USB. C'est une alternative a l'assistant tactile de l'ecran,
-utile si taper au doigt est penible.
+PURPOSE
+-------
+This utility configures the display's Wi-Fi and Dexcom Share credentials over
+its UART/CH343 USB connection. It can test and save new settings or clear
+credentials. It does NOT install the firmware.
 
-CE N'EST PAS un programme d'installation : il ne met pas le logiciel sur l'ecran. Pour cela, voir
-le dossier  installation_ecran\\ .
+HOW TO USE IT
+-------------
+1. Connect the board to the PC through its UART/CH343 USB-C port.
+2. Open GlycemieConnexion.exe. No Python installation is required.
+3. Select "Rechercher" (Search) and choose the detected display.
+4. Select "Lire l'etat de l'appareil" (Read device state). Passwords stay masked.
+5. Enter Wi-Fi information and the Dexcom Share account and region.
+6. Choose "Essayer la connexion" (Try connection) and review its result.
+7. "Enregistrer" (Save) activates only after a successful connection trial.
+   Existing credentials are kept until the change succeeds and is confirmed.
+8. Disconnect and reconnect the display so it starts with the new settings.
 
-COMMENT S'EN SERVIR
+WINDOWS SMARTSCREEN
 -------------------
-1. Branchez l'ecran au PC avec son cable USB-C (celui de la prise UART).
-2. Double-cliquez sur GlycemieConnexion.exe. Rien a installer : ni Python, ni bibliotheque.
-3. "Rechercher" puis choisissez l'ecran dans la liste (USB-Enhanced-SERIAL CH343).
-4. "Lire l'etat de l'appareil" montre ce qui est deja enregistre, mots de passe masques.
-5. Remplissez le reseau Wi-Fi, puis le compte Dexcom et la region.
-6. "Essayer la connexion" : l'appareil essaie, et explique en clair ce qui bloque le cas echeant.
-7. "Enregistrer" ne devient actif qu'APRES un essai reussi. Tant que vous n'appuyez pas, les acces
-   precedents de l'ecran restent en place.
-8. Debranchez une seconde, rebranchez : l'ecran se connecte.
-
-AU PREMIER LANCEMENT
---------------------
-Windows peut afficher "Editeur inconnu" (SmartScreen) : Informations complementaires -> Executer
-quand meme. Le programme n'est pas signe numeriquement (un certificat coute cher), mais son
-empreinte SHA-256 est publiee : verifiez-la avec
+The executable is not code-signed. Windows may show an unknown publisher
+warning. Verify the published SHA-256 hash before running it:
     Get-FileHash GlycemieConnexion.exe -Algorithm SHA256
 
-CE QU'IL NE FAIT PAS
---------------------
-Il ne va jamais sur Internet, n'ecrit aucun mot de passe sur le PC, et n'affiche jamais un mot de
-passe en clair (sauf si vous cochez "Afficher"). Les acces saisis servent uniquement aux
-connexions normales de l'appareil : votre box Wi-Fi et les serveurs Dexcom Share.
+PRIVACY
+-------
+The tool does not contact Dexcom or the Internet directly, and does not
+store your passwords on the PC. Credentials are sent over USB to the display
+for its own Wi-Fi and Dexcom connections.
 
-SI L'ECRAN N'EST PAS DETECTE
-----------------------------
-- Essayez l'autre prise USB-C de la carte : une seule est reliee au pont serie.
-- Beaucoup de cables USB-C ne transportent que le courant : essayez-en un autre.
-- Fermez tout autre logiciel qui occupe le port (moniteur serie, idf.py monitor).
+IF THE DEVICE IS NOT FOUND
+--------------------------
+Try a USB-C data cable (some are power-only), verify that Windows lists
+USB-Enhanced-SERIAL CH343, and close any other application using its COM port.
 
-Le code source de cette application est dans  code_source\\tools\\pc_app\\ .
+Source: code_source/tools/pc_app/.
 """
 
-NOTICE_INSTALLATION = """INSTALLATION DU PROGRAMME SUR L'ECRAN
-=====================================
+NOTICE_INSTALLATION = """FIRMWARE INSTALLATION — Waveshare ESP32-P4 7B
+============================================
 
-Ce dossier installe le logiciel sur une carte NEUVE comme sur une carte deja utilisee. C'est une
-installation COMPLETE : amorce, table des partitions et programme.
+BOARD AND REQUIREMENTS
+----------------------
+This build targets Waveshare ESP32-P4-WIFI6-Touch-LCD-7B with ESP32-P4 rev 1.3
+(pre-v3). Other board revisions are not validated.
+Use a USB-C DATA cable on the UART/CH343 port and a Windows 10 or 11 PC.
+Install Python 3, then in PowerShell run:
+    py -3 -m pip install esptool
 
-MATERIEL
---------
-- Carte Waveshare ESP32-P4-WIFI6-Touch-LCD-7B (ecran tactile 7 pouces, 1024 x 600).
-- Un cable USB-C qui transporte les DONNEES (beaucoup ne font que charger).
-- La prise USB-C "UART" de la carte : c'est celle qui apparait sur le PC comme
-  "USB-Enhanced-SERIAL CH343". L'autre prise USB-C ne sert pas ici.
-
-CE QU'IL FAUT SUR LE PC
------------------------
-- Windows 10 ou 11.
-- Python 3 (python.org, cocher "Add python.exe to PATH").
-- Puis, une seule fois, dans PowerShell :    py -3 -m pip install esptool
-
-INSTALLER
----------
-1. Branchez l'ecran. Attendez deux secondes.
-2. Clic droit sur  installer.ps1  ->  Executer avec PowerShell.
-3. Comptez deux minutes. Le script affiche "C'est installe." a la fin.
-4. L'ecran redemarre et ouvre son assistant de configuration.
-
-Si plusieurs appareils sont branches, le script s'arrete et vous montre la liste. Relancez-le en
-indiquant le bon port, par exemple :    .\\installer.ps1 -Port COM7
-
-CE QUE FAIT - ET NE FAIT PAS - L'INSTALLATION
----------------------------------------------
-Ecrit : l'amorce (0x2000), la table des partitions (0x8000) et le programme (0x10000).
-Ces adresses viennent de la compilation reelle du projet, pas d'une supposition.
-N'efface PAS la memoire des reglages (langue, volume, dates de capteur et de catheter, stock).
-Ne formate PAS la microSD et n'ecrit rien dessus.
-Ne touche PAS au second processeur ESP32-C6 (celui du Wi-Fi).
-N'utilise aucune operation irreversible : pas d'effacement general, pas d'eFuse, pas de Secure
-Boot, pas de chiffrement de flash.
-
-APRES L'INSTALLATION
+INSTALL THE FIRMWARE
 --------------------
-Le programme ne contient AUCUN identifiant. Chacun saisit les siens :
-- sur l'ecran tactile : l'assistant s'ouvre tout seul au premier demarrage ;
-- ou depuis le PC : dossier  application_windows\\ .
+1. Extract the complete installation archive into one Windows folder.
+2. Connect the board's UART/CH343 USB-C port.
+3. Close serial monitors or other software using that COM port.
+4. Open PowerShell in this folder and run:
+    powershell -ExecutionPolicy Bypass -File .\\installer.ps1
+5. The script checks the hashes, detects the hardware and asks for approval.
+6. If automatic port selection fails, provide a port explicitly, for example:
+    powershell -ExecutionPolicy Bypass -File .\\installer.ps1 -Port COM7
+7. After reboot, configure Wi-Fi and Dexcom with the touchscreen wizard
+   or with the separately supplied GlycemieConnexion.exe program.
 
-Les deux choses sont differentes : ICI on installe le logiciel, LA on le configure.
+WHAT THE INSTALLER CHANGES
+--------------------------
+It writes the bootloader (0x2000), partition table (0x8000) and firmware
+(0x10000). It does not request a full-chip erase, format the microSD or
+update the ESP32-C6 Wi-Fi coprocessor. It does not enable irreversible
+eFuse, Secure Boot or flash encryption operations.
+Back up any previously configured device before installing.
 
-VERIFIER LES FICHIERS
----------------------
-SHA256SUMS.txt contient l'empreinte de chaque fichier. Sous Windows :
+VALIDATE AND RECOVER
+--------------------
+SHA256SUMS.txt lists integrity hashes for the distributed files. On Windows:
     Get-FileHash glycemie_display.bin -Algorithm SHA256
+For backup and recovery guidance, read
+tutoriels/docs/ROLLBACK_EN.md.
 
-REVENIR EN ARRIERE
-------------------
-Avant d'installer sur un appareil qui fonctionne deja, sauvegardez-le :
-voir  tutoriels\\docs\\RETOUR_ARRIERE_FR.md  (sauvegarde verifiee, retour en arriere, et marche a
-suivre si l'ecran ne demarre plus).
+WARNING: Experimental supplementary display, not a medical alarm system.
 """
 
-NOTICE_MICROSD = """CONTENU A COPIER SUR LA CARTE microSD
-=====================================
+NOTICE_MICROSD = """OPTIONAL SPEECH AUDIO — microSD instructions
+============================================
 
-COPIER LE CONTENU DU DOSSIER microSD A LA RACINE DE VOTRE CARTE, PAS LE DOSSIER microSD LUI-MEME.
+The display works without these recordings; alert beeps remain available.
+To install speech, copy the CONTENTS of microSD/ to the card root, not the
+microSD directory itself.
 
-Autrement dit, apres la copie, la carte doit contenir un dossier  glycemie\\  a sa racine :
+Expected locations:
+    glycemie/audio/voice/alert_low.wav      French fallback bank
+    glycemie/audio/voice/en/alert_low.wav   English
+    glycemie/audio/voice/es/                Spanish
+    glycemie/audio/voice/de/                German
+    glycemie/audio/voice/it/                Italian
+    glycemie/audio/voice/pt/                Portuguese
 
-    (racine de la carte)\\glycemie\\audio\\voice\\alert_low.wav      <- francais, a la racine
-    (racine de la carte)\\glycemie\\audio\\voice\\en\\alert_low.wav   <- anglais
-    (racine de la carte)\\glycemie\\audio\\voice\\es\\ ... de\\ ... it\\ ... pt\\
+The French recordings are stored directly in voice/ so the firmware can use
+them as a fallback when the selected language's speech bank is missing.
+Each language bank contains 396 WAV files.
 
-C'est exactement ce que le programme cherche. Le francais est a la racine parce qu'il sert de
-secours quand la banque d'une autre langue manque.
+EXISTING CARD
+-------------
+Back up the card and merge files; do not delete glycemie/history/ or
+glycemie/logs/. Never accept a Windows prompt to format the card to repair
+it. A FAT32 card is required; exFAT is not supported.
 
-Vous pouvez ne copier qu'une seule langue : prenez  glycemie\\audio\\voice\\ (francais) et, si
-besoin, le sous-dossier de votre langue. Chaque langue pese environ 20 Mo.
-
-CARTE DEJA UTILISEE
--------------------
-N'effacez rien et ne remplacez pas tout le contenu : ajoutez seulement ce qui manque. Les dossiers
-glycemie\\history\\ et glycemie\\logs\\ de votre carte contiennent votre historique de mesures.
-Ne formatez pas la carte, et refusez si Windows propose de la "reparer".
-
-CARTE NEUVE
------------
-microSD de 8 a 64 Go, formatee en FAT32. exFAT n'est PAS reconnu par le programme.
-La carte reellement utilisee et testee pour ce projet est une 64 Go SDXC formatee en FAT32.
-
-SANS LECTEUR DE CARTE
+WITHOUT A CARD READER
 ---------------------
-La carte peut rester dans l'ecran : les sons passent par le meme cable USB que l'installation.
-Il faut Python et le dossier  code_source\\tools\\  :
-
+Leave the microSD in the display and use the UART/CH343 USB-C connection.
+From the source repository on a PC with Python 3, install pyserial:
     py -3 -m pip install pyserial
-    py -3 tools\\voice\\sd_voice_upload.py --port COM7 --lang fr --log copie_voix_fr.log
+Then use tools/voice/sd_voice_upload.py with the extracted voice-bank folder
+and the appropriate --lang code. See
+tutoriels/docs/VOICE_TUTORIAL_EN.md for the complete verified procedure.
 
-Comptez environ 7 minutes par langue. L'outil se termine par CONFORME quand les 396 fichiers ont
-ete ecrits puis relus. Pour verifier sans rien ecrire, ajoutez  --verify-only .
-
-ATTENTION : copier les sons N'INSTALLE PAS le programme de l'ecran. Ce sont deux choses
-differentes ; l'installation se fait avec le dossier  installation_ecran\\ .
-
-CE QUI N'EST PAS ICI
---------------------
-Aucun historique, aucun journal, aucun enregistrement personnel : ces fichiers sont crees par
-l'appareil lui-meme, sur votre carte. Les manifestes, la provenance et les empreintes des banques
-sont dans le dossier  notices\\ , a lire mais pas a copier sur la carte.
+Audio files are separate from firmware installation. WAV provenance and
+third-party terms are listed in notices/ and in
+tutoriels/docs/THIRD_PARTY_LICENSES_EN.md. The audio package contains no
+personal medical records or device credentials.
 """
 
 

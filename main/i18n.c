@@ -1,19 +1,16 @@
 /*
  * i18n.c: Six-language interface text catalog.
- * FR: Catalogue des textes d'interface en six langues.
  * Design note: String IDs must remain stable even when translations change.
  */
 
-/*
- * Maps stable text IDs to French, English, Spanish, German, Italian and Portuguese.
- * Associe des identifiants de texte aux six langues de l'interface.
- */
+/* All six interface translations share stable text IDs and format placeholders.
+ * Do not change the translation tables when editing developer comments. */
 #include "i18n.h"
 
 #include <stdio.h>
 #include <string.h>
 
-/* Langue courante : lue depuis la NVS au demarrage (settings.c), francais avant cela. */
+/* Current language: read from the NVS at the start (settings.c), French before that. */
 static lang_t s_lang = LANG_FR;
 
 lang_t i18n_lang(void)
@@ -45,12 +42,8 @@ const char *lang_code(lang_t lang)
     return (lang >= 0 && lang < LANG_COUNT) ? k_lang_codes[lang] : k_lang_codes[LANG_FR];
 }
 
-/* ------------------------------------------------------------------------------------------------
- * Table des traductions : une ligne par texte, dans l'ordre de str_id_t.
- * Ordre des colonnes : francais, anglais, espagnol, allemand, italien, portugais.
- * Les specificateurs de format (%d, %s, %%) doivent etre identiques et dans le meme ordre
- * sur toute la ligne : i18n_check() le verifie au demarrage.
- * ---------------------------------------------------------------------------------------------- */
+/* Format placeholders (%d, %s, %%) must match across all six languages;
+ * i18n_check() verifies this at startup. */
 static const char *const k_tr[S_COUNT][LANG_COUNT] = {
 [S_NAV_HOME] = {"ACCUEIL", "HOME", "INICIO", "START", "HOME", "INÍCIO"},
 [S_NAV_GRAPH] = {"GRAPHIQUE", "CHART", "GRÁFICO", "VERLAUF", "GRAFICO", "GRÁFICO"},
@@ -456,7 +449,7 @@ static const char *const k_tr[S_COUNT][LANG_COUNT] = {
 [S_DATE_DAY_HM] = {"%02d/%02d à %02d:%02d", "%02d/%02d at %02d:%02d", "%02d/%02d a las %02d:%02d",
                              "%02d.%02d um %02d:%02d", "%02d/%02d alle %02d:%02d", "%02d/%02d às %02d:%02d"},
 
-/* --- Assistant de configuration ------------------------------------------------------------- */
+/* First-run configuration wizard labels. */
 [S_SETUP_WELCOME] = {"Bienvenue", "Welcome", "Bienvenido", "Willkommen", "Benvenuto", "Bem-vindo"},
 [S_SETUP_INTRO] = {"Cet écran affiche la glycémie d'un capteur Dexcom G7. Trois étapes suffisent : la langue, le Wi-Fi, le compte Dexcom.",
                              "This display shows glucose from a Dexcom G7 sensor. Three steps: language, Wi-Fi, Dexcom account.",
@@ -549,7 +542,7 @@ static const char *const k_tr[S_COUNT][LANG_COUNT] = {
                              "Modalità dimostrativa: i valori sono fittizi, nessun account viene usato.",
                              "Modo demonstração: os valores são fictícios, nenhuma conta é usada."},
 [S_SETUP_EMPTY] = {"À renseigner", "Required", "Falta rellenar", "Bitte ausfüllen", "Da compilare", "Por preencher"},
-/* --- Section CONNEXION des reglages ----------------------------------------------------------- */
+/* Connection settings labels. */
 [S_CONN_TITLE] = {"CONNEXION", "CONNECTION", "CONEXIÓN", "VERBINDUNG", "CONNESSIONE", "LIGAÇÃO"},
 [S_CONN_WIFI] = {"Réseau Wi-Fi", "Wi-Fi network", "Red Wi-Fi", "WLAN-Netz", "Rete Wi-Fi", "Rede Wi-Fi"},
 [S_CONN_DEXCOM] = {"Compte Dexcom", "Dexcom account", "Cuenta Dexcom", "Dexcom-Konto", "Account Dexcom", "Conta Dexcom"},
@@ -600,7 +593,7 @@ const char *tr(str_id_t id)
         return "";
     }
     const char *s = k_tr[id][s_lang];
-    /* Repli sur le francais si une traduction venait a manquer : jamais de texte vide a l'ecran. */
+    /* Replies to the French if a translation is missing: never empty text on screen. */
     return (s != NULL && s[0] != '\0') ? s : k_tr[id][LANG_FR];
 }
 
@@ -609,9 +602,7 @@ const char *tr_fr(str_id_t id)
     return (id >= 0 && id < S_COUNT && k_tr[id][LANG_FR] != NULL) ? k_tr[id][LANG_FR] : "";
 }
 
-/* ------------------------------------------------------------------------------------------------
- * Dates longues
- * ---------------------------------------------------------------------------------------------- */
+/* Long date formatting. */
 
 static const char *const k_days[LANG_COUNT][7] = {
     {"Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"},
@@ -637,9 +628,9 @@ static const char *const k_months[LANG_COUNT][12] = {
      "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"},
 };
 
-/* Mise en forme propre a chaque langue : "Jeudi 15 octobre", "Thursday 15 October",
+/* Formatting each language: "Jeudi 15 octobre", "Thursday 15 October",
  * "jueves, 15 de octubre", "Donnerstag, 15. Oktober", "giovedì 15 ottobre",
- * "quinta-feira, 15 de outubro". Le francais garde "1er" pour le premier du mois. */
+ * "quinta-feira, 15 de outubro." The French keep "1er" for the first of the month. */
 const char *i18n_day_name(int wday)
 {
     return k_days[s_lang][(wday >= 0 && wday < 7) ? wday : 0];
@@ -679,7 +670,7 @@ void i18n_format_date_long(const struct tm *tm_local, char *buf, size_t size)
         }
         break;
     }
-    /* Espagnol, italien et portugais : majuscule en tete de bandeau, comme les autres langues. */
+    /* Spanish, Italian and Portuguese: capital in headband, like other languages. */
     if (buf[0] >= 'a' && buf[0] <= 'z') {
         buf[0] = (char)(buf[0] - 'a' + 'A');
     }
