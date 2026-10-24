@@ -37,7 +37,7 @@ MAP = {
  "screenshots/README_FR.md":"screenshots/README.md",
  "tests/README_FR.md":"tests/README.md",
 }
-CANONICAL={"README.md","CREDITS_EN.md","docs/CODE_GUIDE_EN.md",
+CANONICAL={"README.md","CREDITS.md","CREDITS_EN.md","docs/CODE_GUIDE_EN.md",
            "docs/BEGINNER_TUTORIAL_EN.md","docs/VOICE_TUTORIAL_EN.md"}
 COUNTS=Counter()
 TRANSLATOR=None
@@ -122,14 +122,14 @@ def cprocess(s,change=True):
             end=s.find("*/",i+2)
             if end<0:raise RuntimeError("unclosed C comment")
             o.append(s[last:i])
-            o.append("/*"+(block(s[i+2:end]) if change else "")+"*/")
+            o.append("/*"+block(s[i+2:end])+"*/" if change else " ")
             i=end+2;last=i;continue
         if s.startswith("//",i):
             end=s.find("\n",i+2)
             if end<0:end=len(s)
             o.append(s[last:i])
             part=comment_line(s[i+2:end].strip())
-            o.append("// "+part if change and part is not None else "//")
+            o.append("// "+part if change and part is not None else " ")
             i=end;last=i;continue
         i+=1
     o.append(s[last:])
@@ -241,7 +241,7 @@ def migrate():
 
     source={x:(ROOT/x).read_text(encoding="utf-8-sig") for x in MAP}
     for old,new in MAP.items():
-        if new in CANONICAL:continue
+        if old=="docs/COMMENT_PUBLIER_FR.md" or new in CANONICAL:continue
         target=ROOT/new
         if target.exists():raise FileExistsError(str(target))
         target.write_text(markdown(source[old]),encoding="utf-8")
@@ -283,7 +283,7 @@ def migrate():
         s=path.read_text(encoding="utf-8")
         if path.suffix in (".c",".h"):
             new=cprocess(dedup_file_headers(s))
-            if re.sub(r"\s+"," ",cprocess(new,False))!=re.sub(r"\s+"," ",cprocess(s,False)):
+            if re.sub(r"\s+"," ",cprocess(new,False)).strip()!=re.sub(r"\s+"," ",cprocess(s,False)).strip():
                 raise RuntimeError("C tokens changed outside comments: "+rel)
         elif path.suffix in (".py",".pyw"):
             new=pyprocess(s)
