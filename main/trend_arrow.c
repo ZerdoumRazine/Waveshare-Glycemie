@@ -38,7 +38,8 @@ static lv_point_precise_t pt(float x, float y)
     return (lv_point_precise_t){(lv_value_precise_t)lroundf(x), (lv_value_precise_t)lroundf(y)};
 }
 
-/* Fleche centree en (cx, cy), orientee selon angle_deg (0 = droite, 90 = haut), longueur totale length */
+/* Draw an arrow centered at (cx, cy), oriented by angle_deg:
+ * 0 degrees points right and 90 points up. length is the full arrow size. */
 /* Draw the symbol after child objects to preserve legibility. */
 static void draw_arrow(lv_layer_t *layer, const arrow_ctx_t *ctx, float cx, float cy, float angle_deg, float length)
 {

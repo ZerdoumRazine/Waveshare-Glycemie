@@ -33,7 +33,7 @@ static const int k_low_default[STOCK_COUNT] = {2, 3};
 static SemaphoreHandle_t s_mutex;
 static int s_qty[STOCK_COUNT] = {STOCK_UNKNOWN, STOCK_UNKNOWN};
 static int s_low[STOCK_COUNT];
-static int64_t s_change[STOCK_COUNT]; /* dernier changement deja decompte */
+static int64_t s_change[STOCK_COUNT]; /* This replacement has already been deducted from inventory. */
 static volatile uint32_t s_revision;
 static stock_event_t s_events[EVENT_MAX];
 static int s_event_count;

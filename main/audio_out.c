@@ -278,7 +278,7 @@ esp_err_t audio_out_init(void)
         app_state_set_audio_ok(false);
         return ESP_FAIL;
     }
-    /* Courbe du volume general (API esp_codec_dev) : dB demandes = dB DAC vises + compensation du pilote */
+    /* Convert user-facing volume to the codec's dB curve, compensating for the driver. */
     const float hw_gain = esp_codec_dev_col_calc_hw_gain(&s_hw_gain);
     esp_codec_dev_vol_map_t map[VOLUME_POINTS];
     for (int i = 0; i < VOLUME_POINTS; i++) {
@@ -591,7 +591,7 @@ esp_err_t audio_out_measure(int volume_pct, audio_playback_fn_t play_voice, floa
         }
         if (!voice) {
             tone_sum += goertzel(rx, CHUNK, 1000);
-            h2_sum += goertzel(rx, CHUNK, 2000); /* harmoniques : indice de saturation ampli / haut-parleur */
+            h2_sum += goertzel(rx, CHUNK, 2000); /* Harmonic distortion can indicate amplifier or speaker saturation. */
             h3_sum += goertzel(rx, CHUNK, 3000);
             tone_chunks++;
         }

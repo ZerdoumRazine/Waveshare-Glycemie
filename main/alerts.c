@@ -65,8 +65,8 @@ static alert_slot_t s_slots[ALERT_COUNT];
 static SemaphoreHandle_t s_mutex;
 static TaskHandle_t s_task;
 static alert_view_t s_view = {.type = ALERT_NONE, .style = ALERT_NONE, .ongoing = ALERT_NONE};
-/* Sensor reminder [0] / catheter [1] during presentation (-1: none): guard until'a OK, jusqu'at the next reminder
- * or up'a l'even if he is already remembered in NVS as indicated */
+/* Pending consumable reminder: sensor (0) or infusion set (1), or -1 if none.
+ * Keep it visible until acknowledgment or the next scheduled reminder. */
 static int s_reminder[2] = {-1, -1};
 static bool s_test_active;
 static alert_type_t s_test_as = ALERT_TEST; /* type simule par l'alerte de test */
@@ -187,8 +187,8 @@ static void alerts_task(void *arg)
         cond[ALERT_NO_DATA] = count > 0 && age_s >= (s_slots[ALERT_NO_DATA].active ? 10 : 15) * 60LL;
         value[ALERT_NO_DATA] = (int)(age_s / 60);
 
-        /* Sensor / catheter recalls: each recall is presented only once (memorise in NVS ringing,
-         * never replay after a restart); a new reminder replaces the previous with a new levee */
+        /* Record each consumable reminder in NVS to avoid replay after restart.
+ * A newer reminder replaces the previous presentation when appropriate. */
         for (int i = 0; i < 2; i++) {
             const alert_type_t t = i == 0 ? ALERT_SENSOR : ALERT_CATHETER;
             bool done = false;
@@ -264,7 +264,7 @@ static void alerts_task(void *arg)
                 test_ready = true;
             } else if (current == ALERT_NONE ||
                        (t == ALERT_CATHETER && current == ALERT_SENSOR && slot->seq > s_slots[ALERT_SENSOR].seq)) {
-                /* reminder sensor already present but not acquit: it does not block a more recent catheter reminder */
+                /* An unacknowledged sensor reminder must not block a newer infusion-set reminder. */
                 current = (alert_type_t)t;
             }
         }
@@ -273,7 +273,7 @@ static void alerts_task(void *arg)
             current = ALERT_TEST;
         }
 
-        alert_type_t presented = ALERT_NONE; /* sensor / catheter reminder that just ringed */
+        alert_type_t presented = ALERT_NONE; /* The consumable reminder that was just raised. */
         if (current != ALERT_NONE) {
             alert_slot_t *slot = &s_slots[current];
             const alert_cfg_t *c = &k_cfg[current];
@@ -368,7 +368,7 @@ void alerts_snooze(int minutes)
         slot->active = false;
         slot->snooze_until_us = esp_timer_get_time() + (int64_t)minutes * 60 * 1000000;
         if (t == ALERT_SENSOR || t == ALERT_CATHETER) {
-            /* a sensor recall or catheter report will return once */
+            /* Restore an eligible sensor or infusion-set reminder when due. */
             slot->acked = false;
         }
         char resume[16] = "--:--";

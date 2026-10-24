@@ -111,7 +111,7 @@ void ui_chart_create(ui_chart_t *c, lv_obj_t *parent, int32_t x, int32_t y, int3
     c->line_low = reference_line(c->box, UI_G_LOW);
     c->line_high = reference_line(c->box, UI_G_HIGH);
 
-    /* Lueur : trait large et translucide ; courbe fine claire par-dessus (memes valeurs) */
+    /* Add a broad translucent glow beneath the thin, high-contrast data line. */
     c->glow = chart_layer(c->box, w, h);
     c->glow_series = lv_chart_add_series(c->glow, UI_G_OK, LV_CHART_AXIS_PRIMARY_Y);
     lv_obj_set_style_line_opa(c->glow, LV_OPA_20, LV_PART_ITEMS);

@@ -34,7 +34,7 @@ static const char *TAG = "nuit";
 #define NIGHT_COL_HINT lv_color_hex(0xB07A00)
 
 typedef enum {
-    SIM_AUTO = 0, /* horaire reel */
+    SIM_AUTO = 0, /* Current local schedule. */
     SIM_NIGHT,    /* test : nuit simulee */
 } sim_t;
 

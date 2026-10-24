@@ -89,7 +89,7 @@ static volatile sd_state_t s_state = SD_STATE_UNKNOWN;
 static SemaphoreHandle_t s_card_mutex;
 static volatile int s_voice_files = -1;
 
-/* Last copy of the Dexcom reel cache (never demonstration data) */
+/* Retain only the last real Dexcom data snapshot, never synthetic demo readings. */
 static glucose_point_t *s_snapshot;
 static glucose_point_t *s_work;
 static int s_snapshot_count;
@@ -558,7 +558,7 @@ static void sync_history(void)
     for (int i = count - 1; i >= 0; i--) {
         const glucose_point_t *p = &s_work[i];
         if (p->wt_ms / 1000 <= s_last_written_ms / 1000) {
-            continue; /* le CSV is horodate to the second: comparison to the second */
+            continue; /* CSV timestamps have second-level precision; compare at that granularity. */
         }
         char path[64];
         day_file(HISTORY_DIR, "csv", p->wt_ms, 0, path, sizeof(path));

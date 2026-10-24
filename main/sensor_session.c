@@ -85,8 +85,9 @@ esp_err_t sensor_session_init(void)
             s_start_s = 0;
         }
         if (nvs_get_u8(h, KEY_REMINDERS, &s_done_mask) != ESP_OK) {
-            /* mask absent (previous versions): 24 hours already indicates if l'ancien 24 h ou un rappel plus tardif l'a
-             * 2 h if l'ancienne echeance l'a was; no writing here, the time of installation remains intact */
+            /* Older records lack reminder flags. Infer whether 24-hour and two-hour
+ * alerts were already emitted from the stored legacy reminder timestamps.
+ * Do not modify the original insertion date while migrating state. */
             uint8_t old = 0;
             if (nvs_get_u8(h, KEY_OLD_REMINDERS, &old) != ESP_OK) {
                 old = 0;

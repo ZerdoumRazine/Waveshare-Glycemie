@@ -19,13 +19,9 @@
 
 static const char *TAG = "ui_conso";
 
-/*
- * CONSOMMABLES : two main sections, CAPTEUR G7 and SITE DE PERFUSION (catheter), and under each map STOCK.
- * NOUVEAU CAPTEUR / NOUVEAU CATHETER One confirmation, then the current time comes the start time
- * (no date or time entry) The inventory then loses a unit (only once by change).
- * STOCK [-] quantite [+], quantite support = direct input; "NON RENSEIGNE"as long as the user has nothing
- * seized (no decrementation turns it into 0); discrete "STOCK FAIBLE" at the threshold.
- */
+/* The consumables page has sensor and infusion-set sections, each with
+ * stock controls. A confirmed replacement records the current time and
+ * decreases inventory once; merely opening the dialog changes nothing. */
 
 #define SEC_Y    12
 #define SEC_W    482
@@ -436,7 +432,7 @@ static void update_sensor(int64_t now_s)
     ui_set_text(s->detail, buf);
 }
 
-/* Present the catheter guideline granting to the selected replacement interval. */
+/* Display the reminder schedule for the user-selected infusion-set interval. */
 static void update_catheter(int64_t now_s)
 {
     section_t *s = &s_sections[CONSUMABLE_CATHETER];

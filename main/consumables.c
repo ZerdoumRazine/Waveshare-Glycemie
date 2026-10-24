@@ -3,10 +3,8 @@
  * Design note: A reboot does not indicate that a new item was installed.
  */
 
-/*
- * Maintains infusion-set dates, configurable intervals and reminders in persistent storage.
- * Keeps the dates and recalls of the catheter in persist memory.
- */
+/* Track infusion-set replacement dates, configurable reminder intervals and
+ * acknowledgment flags in persistent storage. */
 #include "consumables.h"
 
 #include <inttypes.h>
@@ -61,7 +59,7 @@ static int64_t catheter_reminder_time(int reminder, int64_t start_s, int hours)
 }
 
 /* Verrou pris */
-/* Persist a confirmed catheter change so an regular reboot preserves the date. */
+/* Store the confirmed infusion-set change so routine reboots retain its date. */
 static esp_err_t persist_catheter(void)
 {
     s_revision++;
@@ -127,7 +125,8 @@ esp_err_t consumables_init(void)
             s_cath_start_s = 0;
         }
         if (nvs_get_u8(h, KEY_REMINDERS, &s_cath_done) != ESP_OK) {
-            /* mask absent (previous versions): reminder 2 hours already indicates if l'ancien 2 h ou l'ture */
+            /* Older records lack this reminder mask. Infer whether the two-hour reminder
+ * has already fired from the previously stored reminder or due-time state. */
             uint8_t old = 0;
             if (nvs_get_u8(h, KEY_OLD_REMINDERS, &old) != ESP_OK) {
                 old = 0;
