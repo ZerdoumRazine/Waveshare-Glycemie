@@ -4,26 +4,11 @@
 # Design note: The backup is private because it may contain Wi-Fi, Dexcom and health data.
 # Reads a complete flash backup before maintenance without changing the device.
 #
-"""Identify and SAUVEGARDER l'ecran avant toute mise a jour. Ce programme n'Written JAMAIS in the camera.
+"""Identify and back up a Waveshare device before firmware installation.
 
-He does three things in this order:
-  1. identification: type of chip, revision, memory size, partition table, program in place;
-  2. backup: copy of flash memory (complete, or only useful parts) in a folder
-     prive, hors du depot public ;
-  3. verification: the copy is reread and compared to the device (esptool) verify_flash) and its footprint
-     SHA-256 est enregistree.
-
-What he does not, never: erase (erase_flash), write (write_flash), touch eFuses, Secure
-Boot, flash encryption, or second processor ESP32-C6 that provides Wi-Fi.
-
-The card remains plugged in USB. No data goes on the Internet.
-
-Usage :
-    python tools\\sauvegarde_appareil.py --identifier            (lecture seule, tres rapide)
-    python tools\\sauvegarde_appareil.py (identification + useful backup)
-    python tools\\sauvegarde_appareil.py -- full (safeguard TOUTE memory: longer)
-    python tools\\sauvegarde_appareil.py --port COM7 --vitesse 921600
-"""
+Use read-only esptool commands to save the permitted flash regions and inspect
+partition layout. Never write, erase, format or modify the device as part of a
+backup. Handle saved dumps as sensitive because they may contain credentials."""
 import argparse
 import datetime
 import hashlib
@@ -46,12 +31,7 @@ ZONES_PAR_DEFAUT = [
 
 
 def esptool_cmd(impose=None):
-    """Esptool command to use: that ofESP-IDF if it is installed, otherwise the Python module.
-
-    No personal path n'est inscrit ici : l'environment ESP-IDF is found by variables
-    IDF_TOOLS_PATH / IDF_PATH (which the window defined " ESP-IDF 5.5 PowerShell"), by a
-    installation in the project, or by the --esptool option.
-    """
+    """Select the ESP-IDF esptool when installed, otherwise use the Python module."""
     candidats = []
     if impose:
         candidats.append([impose] if impose.lower().endswith('.exe') else [sys.executable, impose])
@@ -84,7 +64,7 @@ def esptool_cmd(impose=None):
 
 
 def lancer(cmd, args, timeout=900):
-    """Execute esptool and return (code, output). No command d'ecriture n'is accepted here."""
+    """Run an allowed read-only esptool command and return its status and output."""
     interdits = {'erase_flash', 'erase_region', 'write_flash', 'burn_efuse', 'write_mem',
                  'erase-flash', 'erase-region', 'write-flash', 'burn-efuse'}
     if interdits & set(args):
@@ -96,7 +76,7 @@ def lancer(cmd, args, timeout=900):
 
 # Inspect partition metadata to confirm the hardware layout.
 def lire_partitions(chemin_bin):
-    """Analyze a raw partition table (0x8000): [(name, type, subtype, address, size)]."""
+    """Parse the flash partition table into name, type, subtype, address and size records."""
     entrees = []
     with open(chemin_bin, 'rb') as f:
         data = f.read()

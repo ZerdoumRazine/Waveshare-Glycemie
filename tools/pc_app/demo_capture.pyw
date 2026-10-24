@@ -4,13 +4,10 @@
 #!/usr/bin/env python3
 # Launches a demonstration of the Windows configuration UI without a real device.
 #
-"""Open'application avec des DONNEES FICTIVES, le temps d'make it a capture for the tutorial.
+"""Launch the setup application with fictional demonstration data for safe screenshots.
 
-No port n'est ouvert, aucun appareil n'is keyed: the list of ports and the log are
-completed with examples. Passwords posters here are invented.
-
-Use: python tools\\pc_app\\capture_fenetre.py tools\\pc_app\\demo_capture.pyw output.png
-"""
+No personal Dexcom account, Wi-Fi password or patient's measurement should
+appear in documentation or promotional material."""
 import importlib.util
 import os
 import sys

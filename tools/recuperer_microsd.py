@@ -4,27 +4,11 @@
 # Design note: Validate transferred data before accepting it as a backup.
 # Retrieves recoverable microSD data over a read-only serial protocol.
 #
-"""Recover by Cable USB what the programme INSTALLE agree to reread on the microSD.
+"""Read recoverable microSD information over the Waveshare UART/CH343 USB link.
 
-No card reader n'est necessaire : tout passe par la console serie de l'apparatus, in
-LECTURE SEULE. Nothing is written, erased or formatted on the map.
-
-What the current program allows:
-  - the complete inventory (sd_check) : all files, their size, and for each day of
-    measures the number of values, duplicates, first and last line;
-  - the content of the JOURNAUX (/glycemie/logs) : order sd_lire ;
-  - fingerprints CRC32 files of VOIX (vrx_list the bank of the
-    map corresponds to the one already present on the PC, without transferring the sounds;
-  - the contents of the filesHISTORIQUE (/glycemie/history) only if the program installs
-    knows the command "sd_dump" (added in K22). Otherwise, these files are lists but not copies:
-    the tool clearly says it instead of making it look like a complete backup.
-
-The backup goes into private\\sauvegardes\\: a private folder, never published.
-
-Usage :
-    python tools\\recuperer_microsd.py --port COM7
-    python tools\\recuperer_microsd.py --port COM7 --bank "D:\\\\chemin\\\\vers\\\\voice\\\\fr"
-"""
+Queries operate through firmware serial commands and must not format or
+modify the card. Recover logs or inventories only where the installed
+firmware explicitly supports those read-only operations."""
 import argparse
 import base64
 import binascii
@@ -45,7 +29,7 @@ SAUVEGARDES = os.path.join(ROOT, 'private', 'sauvegardes')
 
 # Inventory remote files before attempting any copy.
 def inventaire(app, attente=120):
-    """sd_check : list everything, read only. Return (file, resume_csv, crude)."""
+    """Request the microSD inventory using the read-only sd_check command."""
     app.envoyer('sd_check')
     lignes, fichiers, csv, entete = [], [], {}, ''
     fin_attendue = 0
@@ -76,7 +60,7 @@ def inventaire(app, attente=120):
 
 
 def lire_journal(app, nom, attente=90):
-    """sd_lire : contents of a file of /glycemie/logs. Returns (lines, octets_annonces)."""
+    """Read a permitted log file with sd_lire and report the announced byte count."""
     app.envoyer('sd_lire %s' % nom)
     contenu, octets, fini = [], None, False
     import time
@@ -97,7 +81,7 @@ def lire_journal(app, nom, attente=90):
 
 # Verify each transferred file before accepting it as a usable backup.
 def dump_fichier(app, chemin, attente=180):
-    """sd_dump (K22) : contenu exact en base64 + CRC32. Renvoie (octets, crc) ou (None, raison)."""
+    """Decode sd_dump base64 data and CRC32, or report why the read failed."""
     app.envoyer('sd_dump %s' % chemin)
     morceaux, crc_annonce, taille_annoncee, fini, refus = [], None, None, False, None
     import time
@@ -128,7 +112,7 @@ def dump_fichier(app, chemin, attente=180):
 
 
 def voix_de_la_carte(app, attente=120):
-    """vrx_list crc: {name: (size, crc)} voice files, without transferring anything."""
+    """List speech-file sizes and CRC values without transferring the WAV contents."""
     app.envoyer('vrx_begin')
     app.lire(8, 'VRX BEGIN')
     app.envoyer('vrx_list crc')
@@ -149,7 +133,7 @@ def voix_de_la_carte(app, attente=120):
 
 # Use remote CRCs to check audio without sending the same WAVs again.
 def comparer_banque(fichiers_carte, dossier_pc):
-    """Compares the fingerprints of the card to those of a bank already present on the PC."""
+    """Compare card speech-file checksums with an existing local bank."""
     if not fichiers_carte or not dossier_pc or not os.path.isdir(dossier_pc):
         return None
     identiques, differents, absents = [], [], []

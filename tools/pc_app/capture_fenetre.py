@@ -4,14 +4,10 @@
 # Design note: Show fictitious examples instead of personal credentials or glucose history.
 # Captures the Windows configuration window for screenshots without changing device data.
 #
-"""Capture the Windows application window, for tutorials (never the desktop around).
+"""Capture only the visible window of the Windows setup utility for tutorials.
 
-Launch the app, wait its window, photograph EXACTEMENT Her rectangle, then shut up.
-The expanded display screens (4K) are taken into account: the coordinates are read in real pixels.
-
-Usage :
-    python tools\\pc_app\\capture_fenetre.py dist\\GlycemieConnexion.exe ..\\..\\screenshots\\pc_app\\01.png
-"""
+Exclude surrounding desktop content, notifications and unrelated windows so
+documentation screenshots do not reveal personal information."""
 import ctypes
 import os
 import subprocess
@@ -31,7 +27,7 @@ user32 = ctypes.windll.user32
 
 # Use the real window bounds rather than an arbitrary crop.
 def cadre_visible(hwnd):
-    """Rectangle REELLEMENT visible from the window: without the shadow door, therefore without a piece of office."""
+    """Return the visible window rectangle without shadow or neighboring desktop pixels."""
     rect = wintypes.RECT()
     try:
         # DWMWA_EXTENDED_FRAME_BOUNDS = 9
@@ -46,7 +42,7 @@ def cadre_visible(hwnd):
 
 
 def fenetres_du_processus(pids):
-    """[(handle, title)] visible windows belonging to one of these processes."""
+    """Enumerate visible windows owned by any of the requested processes."""
     trouvees = []
     PROTO = ctypes.WINFUNCTYPE(ctypes.c_bool, wintypes.HWND, wintypes.LPARAM)
 
@@ -67,7 +63,7 @@ def fenetres_du_processus(pids):
 
 # Locate the application process before selecting a visible window.
 def pids_du_nom(nom):
-    """PID all processes bearing this name (PyInstaller launches two: parent and child)."""
+    """Find process IDs for this executable; PyInstaller may run parent and child processes."""
     sortie = subprocess.run(['tasklist', '/FI', 'IMAGENAME eq %s' % nom, '/FO', 'CSV', '/NH'],
                             capture_output=True, text=True).stdout
     pids = set()

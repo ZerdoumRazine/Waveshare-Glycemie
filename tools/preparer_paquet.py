@@ -4,33 +4,14 @@
 # Design note: Only documented public resources should enter a release.
 # Builds the deliverable folders from clean sources, not from a personal device backup.
 #
-"""Assemble the folder to submit: sources, Windows application, installation, microSD, tutorials.
+"""Assemble the distributable package from public source and verified artifacts.
 
-Organisation produite :
+The output includes source code, the Windows setup utility, firmware installer,
+optional microSD speech banks, English manuals and checksums. Build from a
+clean export rather than a personal device backup. Scan every candidate file
+for private data, and reject incomplete or unsafe releases.
 
-    paquet_a_remettre/
-        LISEZMOI.txt              par ou commencer (francais, puis anglais)
-        code_source/ own export of public deposit (without history)
-        application_windows/      GlycemieConnexion.exe + sa notice
-        installation_ecran/       programme public + installer.ps1 + procedure exacte
-        microSD/ content to copy as is on the map
-            glycemie/audio/voice/ French at the root, in/ es/ de/ it/ pt/ for the rest
-        tutoriels/                guides et captures
-        the same elements in ZIP, ready to distribute
-        notices/ manifests, source and fingerprints of voice banks
-        SHA256SUMS.txt prints each file in the package
-
-This file is intended to be given or published. It contains JAMAIS : the private\\ folder,
-a program compiles from the personal folder, a local log, a device backup,
-or the content of personal microSD (the sounds come from public packages of dist_voix\\).
-
-Each file is checked (tools/controle_donnees_perso.py). If something personal is
-find, the package is EFFACE : a package refuses must not remain among the files to be delivered.
-
-Usage :
-    python tools\\preparer_paquet.py
-    python tools\\preparer_paquet.py -- without-zip (faster, without archives)
-"""
+Usage: python tools/preparer_paquet.py [--sans-zip]"""
 import argparse
 import hashlib
 import io
@@ -54,7 +35,7 @@ HORS_CARTE = ('manifest.csv', 'SHA256SUMS.txt', 'PROVENANCE.md', 'LISEZMOI_READM
 
 # Fingerprint the exact sources so a binary can be traced back to its build.
 def empreinte_sources(racine):
-    """Print of CONTENU everything that comes into the firmware: hand, components, config, CMake."""
+    """Hash all firmware inputs, including source, components, configuration and build files."""
     h = hashlib.sha256()
     elements = []
     for dossier in ('main', 'components', 'config'):
@@ -87,7 +68,7 @@ def ecrire(chemin, texte):
 
 # Write archive members in a stable order to make package contents reproducible.
 def zipper(dossier, archive, base=''):
-    """ZIP reproductible : entrees triees, dates fixes."""
+    """Create a deterministic ZIP with sorted entries and fixed timestamps."""
     with zipfile.ZipFile(archive, 'w', zipfile.ZIP_DEFLATED) as zf:
         for racine, dossiers, fichiers in os.walk(dossier):
             dossiers.sort()
@@ -103,12 +84,7 @@ def zipper(dossier, archive, base=''):
 
 # Preserve the one French root directory and five language subfolders expected by firmware.
 def construire_microsd(cible, notices):
-    """Extract the six public banks at the locations expected by the firmware.
-
-    main/voice.c bed: /sdcard/glycemie/audio/voice/<file>.wav (english)
-                         /sdcard/glycemie/audio/voice/<language>/<file>.wav
-    Packages of dist_voix\\ are already in this form: nothing is replaced or renamed.
-    """
+    """Place all six approved voice banks in the microSD layout required by the firmware."""
     compte = {}
     for nom in sorted(os.listdir(BANQUES)):
         if not (nom.startswith('glycemie-voix-') and nom.endswith('.zip')):

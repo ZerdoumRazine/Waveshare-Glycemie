@@ -4,13 +4,12 @@
 # Design note: Reject unrelated files such as logs or personal histories.
 # Validates original six-language WAVs and writes an audio-only release ZIP.
 #
-"""Control and repaquette only WAV the microSD of the project.
+"""Validate and repackage the historical six-language WAV release for microSD.
 
-Enter: historical v0.1.1.0 microSD package, downloaded from the PRIVATE Release.
-Output: v0.2.0 microSD archive, without user file, cache or log,
-and footprint SHA-256 independent.
-This program does not contact Dexcom or Google, and does not create any audio files.
-"""
+Check the original archive's SHA-256, the expected WAV names, and the supported
+PCM audio format. Include only approved recordings and a fresh provenance
+notice; exclude patient files, logs and unrelated archive entries. This tool
+does not synthesize audio or contact Dexcom or Google."""
 from __future__ import annotations
 
 import argparse

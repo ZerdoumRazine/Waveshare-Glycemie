@@ -4,22 +4,11 @@
 # Design note: Automated checks reduce risk but do not replace a human review.
 # Scans public files, binaries and ZIP contents for known private data.
 #
-"""Controls personal data in what would be published.
+"""Check an export for personal information before publication.
 
-Review, without changing anything:
-  - all files followed by git (the public deposit is a copy of HEAD) ;
-  - the complete git history, blob by blob (useful only if the deposit is pushed online);
-  - the compile programme (build/glycemie_display.bin, and the public copy if it exists);
-  - catches d'ecran (metadonnees, pas le contenu de l'image).
-
-Search: real identifiers read in private/device_secrets.h (never posters), addresses
-e-mail, Windows personal paths, machine names, and export glycemie values.
-
-Usage :
-    python tools\\controle_donnees_perso.py
-    python tools\\controle_donnees_perso.py --historique      (ajoute l'analyse de l'historique git)
-Output code 0 if nothing personal is found in what would be published.
-"""
+Look for actual configured secrets and sensitive local artifacts, including
+private firmware, NVS dumps, serial logs and patient data. The checks reduce
+accidental disclosure but are not a substitute for a careful human review."""
 import argparse
 import io
 import os
@@ -60,7 +49,7 @@ def git(*args):
 
 # Read known local secrets only for comparison; never include them in the report.
 def secrets_reels():
-    """Chains to seek, read in private/device_secrets.h. Never shown."""
+    """Read known private credential values for exact matching without displaying them."""
     chemin = os.path.join(ROOT, 'private', 'device_secrets.h')
     valeurs = {}
     if not os.path.exists(chemin):
@@ -101,7 +90,7 @@ def controler_texte(nom, texte, secrets, trouves):
 
 
 def chercher_secrets(nom, data, secrets, trouves):
-    """Search UNIQUEMENT real identifiers: no heuristic on any bytes."""
+    """Search for known actual secrets; do not guess passwords from arbitrary binary data."""
     for cle, valeur in secrets.items():
         for encodage in ('utf-8', 'utf-16-le'):
             if valeur.encode(encodage) in data:
@@ -109,13 +98,7 @@ def chercher_secrets(nom, data, secrets, trouves):
 
 
 def controler_media(nom, data, secrets, trouves, metadonnees=4096):
-    """Sound or image file: useful bytes are signal or compression.
-
-    Searching for email addresses or paths produces only random (a voice of 20 s in
-    and these false warnings would eventually mask the
-    True. So we're looking for real identifiers in TOUT the file, and addresses and paths
-    only in the metadones zones: the beginning and the end.
-    """
+    """Handle media as binary data and inspect only metadata that could contain secrets."""
     chercher_secrets(nom, data, secrets, trouves)
     if metadonnees <= 0:
         return
@@ -131,12 +114,7 @@ def controler_media(nom, data, secrets, trouves, metadonnees=4096):
 
 # Inspect entries inside the archive, not the compressed byte stream.
 def controler_zip(nom, chemin, secrets, trouves):
-    """Examine an archive by entering.
-
-    Bytes COMPRESSES are by chance: look for email addresses or paths
-    produce false alerts (and hide the real ones). So we look at the names of the entrances,
-    the compress text, and real identifiers in everything else.
-    """
+    """Inspect ZIP members individually, including paths and eligible text content."""
     import zipfile
     try:
         with zipfile.ZipFile(chemin) as zf:

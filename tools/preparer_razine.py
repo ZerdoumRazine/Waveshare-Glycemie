@@ -4,22 +4,10 @@
 # Design note: Refuse to overwrite an existing repository or folder.
 # Exports a safe tracked-file snapshot without overwriting an existing repository.
 #
-"""Prepare the published copy of the project (Razine folder) from what Git actually follows.
+"""Prepare a sanitized source export from files actually tracked by Git.
 
-Why this method: copying a folder by hand leaves logs, backups or
-a personal firmware. Here, the content comes from `git archive HEAD` : only files saved
-in the deposit are part of it, and the private\\ folder is never part of it.
-
-The copy is then verified: prohibited files, known secrets, email addresses,
-personal paths (tools/controle_donnees_perso.py). This control remains heuristic.
-The destination must be a file INEXISTANT : the script refuses to replace a
-copy or deposit Git already present. No history Git is not changed.
-
-Usage :
-    python tools\\preparer_razine.py
-    python tools\\preparer_razine.py --dossier D:\\partage\\waveshare-glycemie
-    python tools\\preparer_razine.py --accepter-modifications   (a eviter : etat non commite)
-"""
+Use a separate destination directory, preserve source history in the actual
+repository, and exclude private data or generated local build artifacts."""
 import argparse
 import os
 import shutil
@@ -41,7 +29,7 @@ def git(*args):
 
 
 def enlever_lecture_seule(fonction, chemin, _erreur):
-    """Git objects are read only: you remove l'attribut avant d'Clear."""
+    """Clear the read-only attribute on Git files before removing a temporary copy."""
     try:
         os.chmod(chemin, 0o700)
         fonction(chemin)

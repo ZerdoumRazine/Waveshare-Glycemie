@@ -4,24 +4,14 @@
 # Design note: Do not display, log or persist account passwords on the PC.
 # Provides the Windows USB setup interface; credential changes remain a confirmable trial.
 #
-"""Configuring the WaveShare Glycemie screen from the PC (Windows graphical window).
+"""Windows graphical utility for configuring a Waveshare glucose display over USB.
 
-This program is used to inform, try, save or erase accesses from the screen (Wi-Fi network and
-Dexcom Share account) by cable USBwithout installing anything and recompiling the firmware.
-
-Security regulation applies here as on screen:
-    keep previous accesses -> try new -> save only after success
-    AND confirmation. A failure, abandonment or disconnection leaves the device with its accesses
-    precedents.
-
-This program never goes on the Internet,'ecrit aucun mot de passe dans un fichier et n'never displays
-a clear password (unless you check "Afficher"). There is no account, no subscription, no service
-online: Entered accesses are used only for the device's normal connections (its Wi-Fi box and
-Dexcom Share servers).
-
-The dialogue with the device is entirely ensured by tools/assistant_config.py (same code as
-l'assistant en ligne de commande).
-"""
+The device's Wi-Fi and Dexcom Share details are sent over the local serial
+connection. The utility tests replacements before allowing a confirmed save
+and preserves the prior device configuration if a trial fails or is cancelled.
+No passwords are stored on the PC or sent directly to online services by this
+program; fields are masked by default. The serial protocol is implemented by
+tools/assistant_config.py."""
 import os
 import queue
 import sys
@@ -223,7 +213,7 @@ class Fenetre(object):
 
     # Keep serial I/O off the Tkinter thread so the interface remains responsive.
     def lancer(self, travail, titre):
-        """Execute 'travail(app, dire)' in a separate wire: the window never freezes."""
+        """Run device operations on a worker thread so the Tkinter UI remains responsive."""
         if self.occupe:
             return
         port = self.port_choisi()
@@ -277,7 +267,7 @@ class Fenetre(object):
         self._tache = self.racine.after(120, self._vider_file)
 
     def fermer(self):
-        """Clean closure: no more spots waiting, then the window disappears."""
+        """Shut down worker activity before closing the window."""
         if self._tache is not None:
             self.racine.after_cancel(self._tache)
             self._tache = None
@@ -431,7 +421,7 @@ class Fenetre(object):
 
 
 def ecran_haute_definition():
-    """4K screens / enlarged display: without this, Windows is the window and everything is blurred."""
+    """Enable Windows DPI awareness to avoid blurry scaling on high-resolution displays."""
     if sys.platform != 'win32':
         return
     try:

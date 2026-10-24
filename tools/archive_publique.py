@@ -4,28 +4,11 @@
 # Design note: Never archive the personal working directory indiscriminately.
 # Exports only tracked Git files and rejects unsafe publication artefacts.
 #
-"""Fabrique et controle l'archive publique du depot, a partir de ce que Git suit reellement.
+"""Build and inspect a public archive using exactly the files tracked by Git.
 
-A .gitignore does not clean PAS an archive made by copying a folder: logs, identifiers or
-personal firmware can be found there. This tool therefore starts from `git archive HEAD`, then:
-  - read it again ZIP, name by name, and refuses any prohibited element (including majuscules);
-  - EXTRAIT l'archive et examine son CONTENU (identifiants reels, adresses de courriel, chemins
-    personal) with tools/controle_donnees_perso.py ;
-  - verifies that mandatory files are present and that'archive n'is not empty;
-  - Verifies that l'archive correspond bien a l'state completes the project (nothing non-committe);
-  - Controls additional book files (compile program, Windows application);
-  - EFFACE the archive if it is refused: an archive refuses must not remain among the
-    files ready to share.
-
-A control that could not read anything is a ECHECNever a success.
-
-Usage :
-    python tools\\archive_publique.py
-    python tools\\archive_publique.py --exit D:\\share
-    python tools\\archive_publique.py --livre tools\\pc_app\\dist\\GlycemieConnexion.exe
-    python tools\\archive_publique.py -- accept-modifications (archive a non-commit state, a avoid)
-Output code 0 only if everything is clean.
-"""
+The export is checked for private credentials, device backups, medical histories
+and other files that must not be redistributed. Reject unsafe archives rather
+than trusting filenames or an unverified working directory."""
 import argparse
 import hashlib
 import os
@@ -78,7 +61,7 @@ def git(*args):
 
 # Inspect the actual bytes, including nested archives, instead of trusting filenames.
 def controler_contenu(dossier, secrets):
-    """Examine the content extracted from the archive. Returns (street, read files)."""
+    """Inspect extracted archive contents and return the findings and scanned files."""
     trouves, lus = [], 0
     for base, _, fichiers in os.walk(dossier):
         for nom in fichiers:
