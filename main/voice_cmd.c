@@ -3,10 +3,7 @@
  * Design note: Disabled in the standard public build to avoid false triggers.
  */
 
-/*
- * Optional experimental voice-command recognizer; excluded from the public firmware.
- * Experimental voice recognition, absent from distributed firmware.
- */
+/* Experimental voice recognition module; not linked into the public firmware. */
 #include "voice_cmd.h"
 
 #include <inttypes.h>
@@ -55,22 +52,22 @@ static const char *TAG = "voixcmd";
 #define MN_ID_GLUCOSE_Z    4                    /* "Glucose" GLoKbZ: same action as "Glycemie", own threshold */
 #define GLYCEMIE_MIN_PROB  0.155f               /* accept if prob >= 0.155f : score displayed >= 0.16 */
 #define GLUCOSE_Z_MIN_PROB 0.205f               /* accept if prob > 0.25f: score displays >= 0.21 */
-/* K19 (2026-09-21): sensor in two different sentences, own MultiNet identifiers. Identifier 2 (old)
- * "Nouveau capteur" / "New sensor") n'a plus aucune phrase : il ne sert qu'test variants (vcmd_ajout 2),
- * Journalised without any action. */
+/* Historical K19 recognition experiment: a sensor change requires two
+ * separate command IDs and an explicit confirmation. The old single
+ * command is kept only for diagnostics, with no state-changing action. */
 #define MN_ID_LEGACY_SENSOR   2
-#define MN_ID_SENSOR_REGISTER 5                 /* "Enregistrer nouveau capteur" : announcement only */
-#define MN_ID_SENSOR_CONFIRM  6                 /* "Confirmer capteur" : only sentence that records */
+#define MN_ID_SENSOR_REGISTER 5                 /* First sensor command: announce the pending operation only. */
+#define MN_ID_SENSOR_CONFIRM  6                 /* Second sensor command: confirm the sensor-change operation. */
 #define MN_ID_MAX             6
 #define SENSOR_REGISTER_MIN_PROB 0.180f         /* own thresholds, selected from the scores recorded (detection_accepted) */
 #define SENSOR_CONFIRM_MIN_PROB  0.150f
 #define SENSOR_QUIET_US    (5 * 60 * 1000000LL) /* Unconfirmed sensor announcement: no announcement for 5 min */
 #define LEVEL_FRAMES       64                   /* microphone level over the last ~2 seconds (32 ms tracks) */
-#define INJECT_MAX_BYTES   (256 * 1024)         /* test vrx_inject : 8 s de son au plus */
+#define INJECT_MAX_BYTES   (256 * 1024)         /* Test audio injection is limited to eight seconds. */
 
-/* Phonemes de MultiNet7 anglais (alphabet de tools/multinet_g2p.py written for the French pronunciation:
- * "glycemie" /gli.se.mi/, "nouveau capteur" /nu.vo kap.toer/, "nouveau catheter" /nu.vo ka.te.ter/.
- * Two variants per command (close vowels): same command ID. */
+/* Multinet7 uses an English phoneme inventory, including phonetic
+ * approximations of French phrases. Alternative pronunciations share
+ * one command ID. Maintain those identifiers for model compatibility. */
 static const struct {
     int id;
     const char *text;
@@ -78,8 +75,8 @@ static const struct {
 } k_phrases[] = {
     {VOICE_CMD_GLUCOSE, "GLYCEMIE", "GLmSdMm"},
     {VOICE_CMD_GLUCOSE, "GLYCEMIE B", "GLgSfMm"},
-    /* K19 : "enregistrer nouveau capteur" /year.re.jis.tre nu.vo kap.teur/ then "confirmer capteur" /kon.fir.me kap.tor/
-     * (old "NoVb KaPTk" and "No SfNSk" removed: false triggers all came from "New sensor") */
+    /* K19: two-stage sensor-change phrases replaced a previous command
+ * that caused false triggers in recorded recognition tests. */
     /* French nasal voyelles "en" / "con" : heard by this English model with or without N. "Save" : with
      * the schwa ("an-re-gister") or without ("an-r'gister"). Alternatives to "confirm": the only one heard during the
      * Synthesis Voice Injection Tests (2026-09-21, logs 350-359: Hortense, 0.1427) is KbFmMd. Few
@@ -100,11 +97,9 @@ static const struct {
     {VOICE_CMD_CATHETER, "NOUVEAU CATHETER E", "NoVb KaTfTfR"},
     {VOICE_CMD_CATHETER, "NOUVEAU CATHETER F", "NoVb KaTdTkR"},
     {VOICE_CMD_CATHETER, "NOUVEAU CATHETER G", "NoVb KcTfTf"},
-    /* English orders kept at the same time as the French (user's request):
-     * distance to this English model (log 203: "new sensor" p=0.24, "glucose" recognized in each test). Phones of the
-     * English dictionary (CMU) : GLUCOSE G L UW K OW S, NEW N (Y) UW, SENSOR S EH N S ER, CATHETER K AE TH AH T ER.
-     * 2026-09-17 (log 221) : variante GLoKbS retiree (vraies detections 0,16-0,19 et faux declenchements 0,14-0,20
-     * indissociable); GLoKbZ has its own ID for the filter of detection_accepted() */
+    /* English and French experimental voice commands coexist. Pronunciation
+ * candidates and confidence thresholds were tuned using recorded tests;
+ * do not treat this experimental module as reliable medical control. */
     {MN_ID_GLUCOSE_Z, "GLUCOSE Z", "GLoKbZ"},
     {VOICE_CMD_CATHETER, "NEW CATHETER", "No KavcTk"},
     {VOICE_CMD_CATHETER, "NEW CATHETER Y", "NYo KavcTk"},
@@ -127,9 +122,9 @@ static const char *volatile s_error = "";
 static srmodel_list_t *s_models;          /* single project partition (pointers in flash) */
 
 /* State of recognition (patch voicecmd; readings for the interface) */
-static volatile voice_cmd_id_t s_pending = VOICE_CMD_NONE; /* commande a confirmer */
+static volatile voice_cmd_id_t s_pending = VOICE_CMD_NONE; /* Command awaiting a second explicit confirmation. */
 static volatile int64_t s_confirm_until_us;                /* 0 : window not yet open (phrase in progress) */
-static volatile bool s_listening;                          /* mot d'eveil entendu : commande attendue */
+static volatile bool s_listening;                          /* Wake word accepted; now listening for a command. */
 static volatile int64_t s_listen_until_us;
 static volatile uint32_t s_await_seq;                      /* registration request to the spot LVGL */
 static int64_t s_await_since_us;
@@ -160,7 +155,7 @@ static volatile uint32_t s_ignored;        /* detections below the threshold of 
 static volatile uint32_t s_wake_count;
 static volatile uint32_t s_read_errors;
 static int64_t s_proc_us;                 /* cumulative calculation time (WakeNet + MultiNet) */
-static int64_t s_audio_us;                /* duree audio traitee */
+static int64_t s_audio_us;                /* Duration of processed microphone audio. */
 static int64_t s_wn_us;
 static int64_t s_mn_us;
 static volatile float s_cpu_pct;
@@ -254,16 +249,10 @@ static void cancel_pending(const char *why, bool announce)
     }
 }
 
-/* Software filter by order (2026-09-17, logs 203, 208, 220, 221). MultiNet7 only issues an order if
- * exp(logP / (tokens + 2)) > exp(-2) ~ 0,135 (strict library test); scores read 2 decimals.
- * "Glycemie" : no false triggering observed, true detections >= 0.16 -> prob >= 0.155f (smaller float
- * Display 0.16. "Glucose" GLoKbZ: false <= 0.16, true >= 0.24, false old variant GLoKbS <= 0.20
- * -> prob > 0.205f (0.205f) is displayed 0.20. Non-filter catheter: double confirmation.
- * K19 (2026-09-21): false sensor triggers raised from 18 to 19/09 (Journal 226): all "New sensor",
- * 0.1390 / 0.1399 / 0.1422 / 0.1429 / 0.1656; True "Nouveau capteur" 0.16 to 0.36 (logs 194, 203, 226).
- * "Save new sensor" (only sentence that causes an ad): prob >= 0.180f, above all
- * False lifting with a margin. "Confirm sensor" only acts within 10 seconds of the announcement: prob >= 0.150f,
- * above the library floor without making confirmation impossible. */
+/* Filter detections by per-command confidence thresholds. MultiNet7
+ * has its own score floor; sensor changes additionally require a second
+ * explicit detection within the confirmation window to prevent accidental
+ * changes after a spurious wake phrase. Historical scores remain in logs. */
 static bool detection_accepted(int mn_id, float prob)
 {
     if (mn_id == VOICE_CMD_GLUCOSE) {
@@ -451,11 +440,11 @@ static uint32_t rd_u32(const uint8_t *p)
     return (uint32_t)p[0] | ((uint32_t)p[1] << 8) | ((uint32_t)p[2] << 16) | ((uint32_t)p[3] << 24);
 }
 
-/* The "model" partition is at 16 MB: a Quad flash cannot project it as a memory (24 bit address,
- * esp_srmodel_init() echouerait). srmodels.bin (format pack_model.py: number of models, then for each name[32],
- * number of files, and for each file name[32], start, size) is read in PSRAM puis charge par l'API
- * officielle srmodel_load(). Play only once, by a temporary spot a pile in RAM internal: a reading of
- * flash disables the cache, forbidden from the voice spotcmd whose stack is in PSRAM. */
+/* Recognition assets live in a high flash region that cannot be mapped
+ * with the selected 24-bit Quad flash setup. Copy the packed model into
+ * PSRAM and load it through Espressif's srmodel_load API. This must run
+ * from a task with an internal-RAM stack because flash reads can suspend
+ * the cache. Do not load models from the PSRAM-stack recognition task. */
 typedef struct {
     TaskHandle_t waiter;
     uint8_t *data;
@@ -677,7 +666,8 @@ static void voice_task(void *arg)
             }
         }
 
-        /* Canaux gauche et droit (deux micros) moyennes, son de test eventuel, niveau */
+        /* Combine both microphone channels and optional injected test audio,
+ * then compute the input level for recognition diagnostics. */
         for (int i = 0; i < chunk; i++) {
             mono[i] = (int16_t)(((int)stereo[2 * i] + (int)stereo[2 * i + 1]) / 2);
         }

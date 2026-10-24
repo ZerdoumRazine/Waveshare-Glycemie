@@ -157,7 +157,7 @@ static void glucose_file_name(int value, char *name, size_t size)
 /* Audio cache: alert sentence and then value */
 static void render_alert(int type, int value)
 {
-    /* "Call back. The sensor must be changed tomorrow." / "... in two hours." / "Recall. The catheter must..." */
+    /* Select the localized sensor or infusion-set reminder speech phrase. */
     static const char *const k_sensor[SENSOR_REMIND_COUNT] = {
         [SENSOR_REMIND_24H] = "sensor_rappel_24h.wav",
         [SENSOR_REMIND_2H] = "sensor_rappel_2h.wav",
@@ -215,7 +215,7 @@ static void render_alert(int type, int value)
     }
 }
 
-/* Audio cache: TEST VOIX */
+/* Cached audio output used by the voice test control. */
 static void render_test(int number, int unused)
 {
     (void)unused;

@@ -3,19 +3,15 @@
  * Design note: Network failure must not destroy the saved configuration.
  */
 
-/*
- * Coordinates the ESP32-C6 network driver, reconnection and Wi-Fi scanning.
- * Coordinates the Wi-Fi driver, its reconnections and network search.
- */
+/* Manage Wi-Fi through the ESP32-C6 coprocessor, including scans,
+ * reconnects and applying updated credentials. */
 #include "wifi_manager.h"
 
-/*
- * The start of Wi-Fi (recording of events managers, waiting by group)
- * d'evenements) suit le squelette de l'example station of Espressive, taken as such by Waveshare
- * (examples/esp-idf/05_wifistation, SPDX-License-Identifier: Apache-2.0). Tout le reste - liaison
- * par ESP-Hosted, reconnection, search for networks, hot application of identifiers - is
- * propre a ce projet.
- */
+/* The initial station event-handler pattern was adapted from Espressif's
+ * Apache-2.0 Wi-Fi station example, also used by Waveshare:
+ * examples/esp-idf/05_wifistation.
+ * ESP-Hosted integration, reconnection, scanning and runtime credential
+ * updates are project-specific. Preserve the upstream attribution. */
 
 #include <inttypes.h>
 #include <stdio.h>
@@ -289,7 +285,7 @@ int wifi_manager_scan(wifi_reseau_t *out, int max)
     for (uint16_t i = 0; i < count && n < max; i++) {
         const char *ssid = (const char *)records[i].ssid;
         if (ssid[0] == '\0') {
-            continue; /* reseau masque : saisie manuelle du nom */
+            continue; /* Hidden SSID: connect using the manually entered network name. */
         }
         int deja = -1;
         for (int j = 0; j < n; j++) {

@@ -149,30 +149,27 @@ static consumable_t parse_consumable(const char *word)
                                          : (strncmp(word, "capt", 4) == 0 ? CONSUMABLE_SENSOR : CONSUMABLE_COUNT);
 }
 
-/* Development console: "snap", "info" (state, without secret),
- * "dexcom_status" (authentication lock), "dexcom_auth" (allows one attempt),
- * "page <0-4>", "range <3|6|12|24>", "demo <off|normal|low|verylow|high|veryhigh|gap|stale>",
- * langue de l'interface : "lang" (langue courante), "lang fr|en|es|de|it|pt",
- * tests de fiabilite : "wifi_test_disconnect", "dexcom_test_session", "ui_age_offset <min>",
- * microSD: "sd_check", "sd_repair", "sd_format EFFACER", "sd_test_eject <s>", "sd_test_remount <n>",
- * tactile : "touch_info", "touch_log 0|1", "touch_map <swap> <mirror_x> <mirror_y>",
- * sound: "volume <0-100>", "test_sound", "test_voice", "audio_info", "voice_old <type> <valeur>" (former vote),
- * Test alert: "alert_test", "alert_sim <type> <valeur>", "alert_test off", "alert_ok", "alert_snooze", "alert_info",
- * voice bank via cable USB-Series: "vrx_begin", "vrx_put", "vrx_list", "vrx_end" (see voice_rx.h),
- * night mode (tests without changing the time): "night_test" (apercu), "night_on", "night_wake", "night_off", "night_info",
- * "night_schedule HH:MM HH:MM" et "night_enable (regs recorded, as in LOGIES),
- * stock : "stock_info", "stock_set|stock_add|stock_seuil capteur|catheter <valeur>" (-1 = not provided),
- * "stock_consume (the same path as a real change: once per epoch),
- * consumables: "conso_info", "conso_dialog capteur|catheter", "dialog_close", "catheter_interval 48|72",
- * "catheter_reminders_reset", "conso_restore <epoch> <recalls>" sensor
- * without line CSV), "conso_csv_purge <epoch>" (retirement of consumables.csv the test lines date from epoch or after),
- * Identifiers (Assistant by USB, no value displayed): "ident_info", "ident_wifi <reseau>|<mot de passe>",
- * "ident_dexcom <compte>|<mot de passe>|<ous|us|jp>" (mises a l'essai), "ident_test", "ident_etat",
- * "ident_enregistrer" (after a successful test), "ident_annuler", "ident_effacer", "ident_demo 0|1",
- * commandes vocales : "vcmd_on", "vcmd_off", "vcmd_eveil 0|1", "vcmd_gain <dB>", "vcmd_info",
- * "vcmd_sim <id> [probabilite]" (1 glycemia, 3 catheter, 4 glucose, 5 record new sensor, 6 confirm
- * sensor: same path as a true detection), "vcmd_niveaux 0|1", "voice_glucose", "voice_reply <n>",
- * "vrx_inject" (son de test ajoute aux micros, voir voice_rx.h), journaux microSD : "sd_lire <logs file>", saving a file: "sd_dump <chemin sous /glycemie>" */
+/* Developer serial console commands (values are never echoed as secrets):
+ * - Status and diagnostics: snap, info, dexcom_status, dexcom_auth.
+ * - Navigation and demo: page <0-4>, range <3|6|12|24>, demo <mode>,
+ *   lang, lang fr|en|es|de|it|pt, ui_age_offset <minutes>.
+ * - Connectivity and hardware: wifi_test_disconnect, dexcom_test_session,
+ *   touch_info, touch_log, touch_map, audio_info, test_sound, test_voice.
+ * - MicroSD: sd_check, sd_repair, sd_format EFFACER, sd_test_eject,
+ *   sd_test_remount, sd_lire, sd_dump, vrx_begin, vrx_put, vrx_list, vrx_end.
+ * - Alerts: alert_test, alert_sim, alert_ok, alert_snooze, alert_info.
+ * - Night mode: night_test, night_on, night_wake, night_off, night_info,
+ *   night_schedule, night_enable.
+ * - Consumables and inventory: stock_info, stock_set, stock_add, stock_seuil,
+ *   stock_consume, conso_info, conso_dialog, dialog_close, catheter_interval,
+ *   catheter_reminders_reset, conso_restore, conso_csv_purge.
+ * - USB credential wizard: ident_info, ident_wifi, ident_dexcom, ident_test,
+ *   ident_etat, ident_enregistrer, ident_annuler, ident_effacer, ident_demo.
+ * - Experimental voice recognition: vcmd_on, vcmd_off, vcmd_eveil,
+ *   vcmd_gain, vcmd_info, vcmd_sim, vcmd_niveaux, voice_glucose,
+ *   voice_reply, vrx_inject.
+ * Commands with parameters are validated by their corresponding handlers.
+ * Debugging operations must not be used as substitute clinical alarms. */
 static void console_task(void *arg)
 {
     (void)arg;
@@ -349,9 +346,7 @@ static void console_task(void *arg)
                 alerts_test_start(ALERT_TEST, 0);
                 printf("ALERT_TEST alerte de test demandee\n");
             } else if (strncmp(line, "alert_sim ", 10) == 0) {
-                /* test alert simulating a real type: 0 very low, 1 bass, 2 no data, 3 very high,
-                 * 4 height, 5 sensor (value = recall 0: 24 h, 1: 2 h), 6 catheter (value = recall 0: 2 h);
-                 * Dexcom data and real inchanged alerts */
+                /* Inject a synthetic alert type without changing the real Dexcom stream or its alerts. */
                 int type = 0;
                 int value = 0;
                 if (sscanf(line + 10, "%d %d", &type, &value) == 2) {
@@ -438,8 +433,7 @@ static void console_task(void *arg)
                 stock_print();
             } else if (strncmp(line, "stock_set ", 10) == 0 || strncmp(line, "stock_add ", 10) == 0 ||
                        strncmp(line, "stock_seuil ", 12) == 0 || strncmp(line, "stock_consume ", 14) == 0) {
-                /* Testing: stock_set|stock_add|stock_seuil sensor stock_consume sensor
-                 * <epoch of change> (the same path as NOUVEAU CAPTEUR / NOUVEAU CATHETER) */
+                /* Inventory test commands use the same once-per-change path as the UI. */
                 const char *args = strchr(line, ' ') + 1;
                 char what[12] = "";
                 long long value = 0;
@@ -640,11 +634,9 @@ void app_main(void)
     /* Pas de trace HTTP scale: URL Dexcom contiennent l'identifiant de session */
     esp_log_level_set("HTTP_CLIENT", ESP_LOG_WARN);
 
-    /* Screen, touch and LVGL : block taken from the official example Waveshare 09_lvgl_demo_v9
-     * (examples/esp-idf/09_lvgl_demo_v9/main/main.c, SPDX-FileCopyrightText: 2025 Espressif
-     * Systems (Shanghai) CO LTD, SPDX-License-Identifier: Apache-2.0), sauf le tactile.
-     * L'adaptateur tourne l'image of 180 degrees, but the GT911 of this map already gives coordinates in
-     * orientation displays: mirrors X/Y of the example reversed the touch (physical finding 2026-09-14). */
+    /* Waveshare's example initializes the display and LVGL. Touch integration
+ * and the application-specific behavior are implemented by this project.
+ * Preserve the upstream Espressif copyright and Apache-2.0 attribution. */
     bsp_display_cfg_t cfg = {
         .lv_adapter_cfg = ESP_LV_ADAPTER_DEFAULT_CONFIG(),
         .rotation = ESP_LV_ADAPTER_ROTATE_180,
@@ -712,7 +704,7 @@ void app_main(void)
             ESP_LOGE(TAG, "Tache glycemie bloquee depuis %lld s : redemarrage", (long long)heartbeat_age);
             esp_restart();
         }
-        /* Monitoring of'interface : diagnostic seulement (le watchdog de taches reste l'single net) */
+        /* UI telemetry is diagnostic only; the task watchdog remains authoritative. */
         if (display != NULL) {
             const int64_t ui_age_ms = ui_heartbeat_age_ms();
             if (ui_age_ms > 5000 && (ui_freeze_reported_ms == 0 || ui_age_ms - ui_freeze_reported_ms >= 20000)) {

@@ -3,10 +3,7 @@
  * Design note: A large number must not hide that a reading is stale.
  */
 
-/*
- * Keeps the glucose value visually dominant and indicates trend and data freshness.
- * Highlights the value, trend and seniority of the data.
- */
+/* Keep the latest reading, trend and age visible without hiding stale-data warnings. */
 #include "i18n.h"
 #include "ui_pages.h"
 
@@ -17,18 +14,13 @@
 #include "trend_arrow.h"
 #include "ui_alert.h"
 
-/*
- * ACCUEIL (1024 x 496): UNE only large map GLYCEMIE occupying the entire content area.
- * The time and date are in the banner (ui_main.c) : the entire page serves glycemia.
- * The card bears the cooler tablet, the geant value (320 px) with local halo and thin shade layer,
- * l'anneau de fraicheur, l'trend icon draws, variation and trend text.
- * Depth "2.5D" by superposition: background degrade of the screen -> maps degrade to fine edge, short shadow and
- * second very discreet inner contour -> local halo -> digits and their shadow carries. No big blurred shadow,
- * no transparency over the whole surface.
- * L'ambiance de la grande carte suit l'State DEJA calculation of glycemia (no new threshold): very dark colour
- * drive the accent color, more neutral when the data is old.
- * No statistics, no consumables, no stock, no mini-graphic: this information has its own page.
- */
+/* Home page layout: one prominent glucose card fills the content area.
+ * The shared header displays date and time. Inside the card, render the
+ * large glucose number, freshness ring, trend arrow and recent change.
+ * Layer subtle highlights and shadows without obscuring the value.
+ * Use the already computed glucose status to select colors; never invent
+ * a second set of clinical thresholds for decoration.
+ * Daily statistics, history and consumables remain on their own pages. */
 
 #define MAIN_X        16
 #define MAIN_Y        8
@@ -394,11 +386,11 @@ static void update_header(const ui_data_t *d)
     ui_set_text(s_last, buf);
     const bool stale = d->fresh == GM_FRESH_STALE || d->fresh == GM_FRESH_NONE;
     ui_set_text_color(s_last, stale ? UI_G_CRIT : (d->fresh == GM_FRESH_LATE ? UI_G_HIGH : UI_G_TEXT2));
-    /* RETARD ou DONNEES ANCIENNES : time and age of last measurement more visible */
+    /* Highlight the last reading's age when it is late or stale. */
     set_last_font(d->fresh == GM_FRESH_OK ? g_fonts.xs : g_fonts.s);
 }
 
-/* Ring: progress towards the next measurement (day), orange in RETARD, red full if DONNEES ANCIENNES */
+/* Freshness ring: normal progress, orange for late data, red for stale data. */
 /* Use colors and halo intensity as presentation only, never as a treatment recommendation. */
 static void update_ring(const ui_data_t *d)
 {

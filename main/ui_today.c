@@ -3,10 +3,7 @@
  * Design note: Show incomplete coverage honestly in daily summaries.
  */
 
-/*
- * Calculates and renders today's statistics using local midnight and available readings.
- * Calculate daily statistics from midnight local.
- */
+/* Compute today's aggregates from the available readings since local midnight. */
 #include "i18n.h"
 #include "ui_pages.h"
 
@@ -14,13 +11,12 @@
 #include <string.h>
 #include <time.h>
 
-/*
- * AUJOURD'HUI (since midnight, local time): TIR 70-180, medium, minimum, maximum, coverage, low time (< 70) and
- * High (> 180), low/high episodes (at least 3 consecutive measurements, 15 min). Calculates history 24 hours
- * already in memory (no extra reading), only when history or minute changes.
- * Fries of the day : 96 creneaux of 15 min drawings in beaches of the same state (drawing event, no objects by
- * creneau, no image).
- */
+/* Daily summary: time in range (70–180 mg/dL), mean, minimum, maximum,
+ * coverage, time below/above range, and sustained out-of-range episodes.
+ * An episode needs at least three consecutive five-minute readings.
+ * Reuse the in-memory 24-hour history and refresh only when readings or
+ * the current minute change. The compact timeline groups the 96
+ * fifteen-minute slots by state rather than creating one widget per slot. */
 
 #define PAD        20
 #define LINE_Y     58
@@ -31,8 +27,8 @@
 #define TILE_GAP   12
 #define SLOTS      96
 #define SLOT_MS    (15 * 60 * 1000LL)
-#define GAP_MS     (10 * 60 * 1000LL)  /* au-dela : mesures non consecutives */
-#define EVENT_MIN  3                   /* 3 mesures = 15 min */
+#define GAP_MS     (10 * 60 * 1000LL)  /* Readings farther apart are not treated as consecutive. */
+#define EVENT_MIN  3                   /* Three five-minute readings define a sustained episode. */
 
 typedef enum {
     SLOT_FUTURE = 0,

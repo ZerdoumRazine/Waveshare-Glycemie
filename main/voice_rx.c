@@ -309,7 +309,7 @@ static void cmd_list(const char *args)
         s_check = heap_caps_malloc(FILE_MAX, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
     }
     uint32_t free_mb = 0;
-    /* The listing follows the folder chosen by vrx_dir : verification in LECTURE SEULE of any language */
+    /* Enumerate the language directory selected by vrx_dir without writing to the card. */
     const int count = sd_storage_list_voice(s_subdir, list_file, &ctx, &free_mb);
     if (count < 0) {
         reply("VRX LIST ERR microSD indisponible\n");
