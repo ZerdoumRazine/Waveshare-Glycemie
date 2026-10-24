@@ -84,7 +84,7 @@ def controler_texte(nom, texte, secrets, trouves):
     for motif, libelle in CHEMINS:
         for brut in set(motif.findall(texte)):
             trouves.append((nom, libelle, brut))
-    # Export glycemia values: lines CSV "date;valeur;tendance"
+# Glucose history CSV: detect actual export values without exposing them.
     if re.search(r'\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}.{0,4}[;,]\s*\d{2,3}\s*[;,]', texte):
         trouves.append((nom, 'donnees de glycemie exportees', 'ligne de type journal/CSV'))
 

@@ -24,7 +24,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import controle_donnees_perso as cdp  # noqa: E402
 
 # Everything that should JAMAIS exit: IDs, health data, personal binary, caches.
-# The reasons applied SANS consider the breakage (.BIN.Pcm, PRIVATE/... are also targeted).
+# Apply exclusion rules case-insensitively
 INTERDITS = [
     # private/ stays in the repository with its only .gitignore (the folder must exist): everything else is forbidden
     (r'(^|/)private/(?!\.gitignore$).+', 'identifiants prives'),

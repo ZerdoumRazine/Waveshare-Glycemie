@@ -24,7 +24,7 @@ foreach ($name in $required) {
     }
 }
 
-# Checking file prints AVANT Any flash.
+# Check file checksums before starting any flash operation.
 $hashFile = Join-Path $dir 'SHA256SUMS.txt'
 if (-not (Test-Path $hashFile)) {
     throw "SHA256SUMS.txt absent. L'archive doit etre extraite en entier."

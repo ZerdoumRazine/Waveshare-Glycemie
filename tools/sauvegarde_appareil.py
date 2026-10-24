@@ -135,7 +135,7 @@ def main():
     base = ['--port', port, '--baud', args.vitesse]
     print('Appareil sur %s' % port)
 
-    # --- 1. Identification (lecture seule) -------------------------------------------------
+# --- 1. Read-only identification
     print('\n--- Identification ---')
     code, sortie = lancer(cmd, base + ['flash_id'], timeout=180)
     if code != 0:

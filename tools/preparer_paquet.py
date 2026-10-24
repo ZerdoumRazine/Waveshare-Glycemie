@@ -231,7 +231,7 @@ def main():
             copier(source, os.path.join(cible, nom))
     ecrire(os.path.join(cible, 'LISEZMOI.txt'), LISEZMOI)
 
-    # --- 6. Verification AVANT archives -----------------------------------------------------
+# --- 6. Verify package contents before creating archives
     secrets = cdp.secrets_reels()
     trouves, lus = [], 0
     for base, _, fichiers in os.walk(cible):

@@ -24,7 +24,7 @@ PART_BIN = os.path.join(BUILD, 'partition_table', 'partition-table.bin')
 SECRETS = os.path.join(ROOT, 'private', 'device_secrets.h')
 
 # Provision identical to the original firmware (backup_original/ANALYSE_PARTITIONS.txt), plus partition "model"
-# voice controls (ESP-SR) adds 2026-09-15 APRES original partitions (their offsets are interchanged)
+# Voice-recognition assets added on 2026-09-15 after the original partition layout
 ORIGINAL_PARTITIONS = [
     ('nvs', 'data', 'nvs', 0x9000, 0x6000),
     ('phy_init', 'data', 'phy', 0xF000, 0x1000),

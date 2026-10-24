@@ -329,7 +329,7 @@ def main():
     check('appareil eteint : etat inconnu, pas de plantage',
           ac.Appareil(AppareilSimule(muet=True)).etat() is None)
 
-    # --- 8. Effacement : confirmation obligatoire ----------------------------------------------
+# --- 8. Credential deletion requires explicit confirmation
     simule = AppareilSimule(deja=((SSID, MDP_WIFI), (USER, MDP_DEX, 'ous')))
     app = ac.Appareil(simule)
     with Journal() as j:

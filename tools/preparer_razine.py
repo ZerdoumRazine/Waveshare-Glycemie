@@ -85,7 +85,7 @@ def main():
     with zipfile.ZipFile(zip_temp) as zf:
         zf.extractall(extrait)
 
-    # --- 2. Verification AVANT replace existing copy --------------------------------
+# --- 2. Verify before replacing an existing export
     secrets = cdp.secrets_reels()
     problemes = []
     noms = []
@@ -117,7 +117,7 @@ def main():
         shutil.rmtree(temporaire, ignore_errors=True)
         return 1
 
-    # --- 3. Copy SANS replacement of existing folder or change of history ---------
+# --- 3. Copy without replacing the destination or rewriting history
     shutil.copytree(extrait, cible)
     shutil.rmtree(temporaire, ignore_errors=True)
 
