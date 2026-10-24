@@ -4,13 +4,11 @@
 # Design note: Target revision and partition offsets must match the actual board.
 # Checks board revision, partition layout and binary headers before flashing.
 #
-"""Automatic verifications AVANT any flash of glycemie_display (ESP32-P4 rev1.3).
+"""Run pre-flash validation checks for the Waveshare ESP32-P4 rev 1.3 build.
 
-Play only: this script n'accede pas a la carte. A lancer dans l'environment ESP-IDF Project:
-    . tools\\idf_env.ps1 (or export.ps1 / get_idf of an installation ESP-IDF 5.5.5)
-    python tools\\verif_avant_flash.py
-Output code 0 only if all controls pass.
-"""
+Confirm expected firmware outputs, target configuration and partition
+assumptions before invoking any installation procedure. This script validates
+artifacts; it does not flash the device."""
 import json
 import os
 import re

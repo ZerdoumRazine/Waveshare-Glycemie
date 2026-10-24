@@ -4,14 +4,10 @@
 # Design note: Keep generated audio separate from code copyright and user data.
 # Processes a legacy Windows voice into short PCM clips for local use only.
 #
-"""Assemble the vocal extracts WAV in one block PCM integrated with firmware.
+"""Prepare PCM audio data from generated WAV recordings for optional firmware assets.
 
-- rumbles the silences of beginning and end (marge 30 ms);
-- normalizes the level: same level effective during speech for all extracts (TARGET_RMS_DB),
-  limit a CEILING_DB by an anticipation limiter (smooth gain, never secretion);
-- ecrit firmware/glycemie_display/main/voice/voice_fr.pcm (int16 little-endian, mono, 16 kHz) ;
-- Genere firmware/glycemie_display/main/voice_clips.h (index of excerpts).
-"""
+Normalize and limit samples, preserve the output format expected by the
+device, and avoid clipping when combining the generated recordings."""
 import array
 import collections
 import math
@@ -75,7 +71,7 @@ def trim(samples):
 
 
 def active_rms(x):
-    """Effective value on windows 20 ms above ACTIVE_DB (full ladder = 1.0)."""
+    """Measure RMS over active 20 ms audio windows above the noise threshold."""
     floor = 10.0 ** (ACTIVE_DB / 10.0)
     energies = []
     for i in range(0, max(1, len(x) - WINDOW + 1), WINDOW):
@@ -88,12 +84,7 @@ def active_rms(x):
 
 # Control peaks before embedding clips in a personal firmware build.
 def limit(x):
-    """Anticipated limiter: - output <= ceiling without recording.
-
-    required gain r[i] = min(1, ceiling/ minimum slippery on [i-L, i+L], then slippery average of
-    same width: each average value is <= r[i], so the crete never exceeds the ceiling.
-    The return of the gain is then slowed (RELEASE_S) without ever passing the smooth gain.
-    """
+    """Apply look-ahead gain reduction to keep output below the configured peak ceiling."""
     ceiling = 10.0 ** (CEILING_DB / 20.0)
     n = len(x)
     req = [ceiling / abs(v) if abs(v) > ceiling else 1.0 for v in x]

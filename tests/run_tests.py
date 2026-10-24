@@ -4,19 +4,10 @@
 # Design note: Simulated components are not a substitute for hardware validation.
 # Compile actual firmware C modules against host stubs before executing their tests.
 #
-"""Compiles and executes firmware unit tests on PC (without card) ESP32).
+"""Compile and execute firmware unit tests on a desktop without an ESP32 board.
 
-The tests compile the VRAI Code C: glucose_math.c, app_state.c, sensor_session.c,
-consumables.c and stock.c. Only material dependencies (NVS, FreeRTOS, journal, microSD)
-are replaced by the stoppers tests/hote/shims.
-
-Usage :
-    python tests\\run_tests.py compiles then executes all the suites
-    python tests\\run_tests.py --list displays only what would be compiled
-
-Compiler: gcc, clang or MSVC (Build Tools Visual Studio). None ESP-IDF required.
-Output code 0 only if all suites pass.
-"""
+Use host shims for ESP-IDF services while testing real C modules. This does
+not replace the full ESP-IDF target build or an end-to-end hardware test."""
 import argparse
 import json
 import os
@@ -63,7 +54,7 @@ FORCE_INCLUDE = os.path.join(SHIMS, 'compat_hote.h')
 
 # Detect the Visual Studio toolchain when GCC and Clang are unavailable.
 def trouver_msvc():
-    """Returns (environment, cl.exe path) for MSVC, or (None, None)."""
+    """Locate the MSVC compiler and its configured environment, if available."""
     vswhere = os.path.join(os.environ.get('ProgramFiles(x86)', r'C:\Program Files (x86)'),
                            'Microsoft Visual Studio', 'Installer', 'vswhere.exe')
     if not os.path.exists(vswhere):

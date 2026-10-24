@@ -4,33 +4,13 @@
 # Design note: Generation may incur API fees; avoid running it accidentally.
 # Builds spoken WAV banks locally from project phrases using Google Cloud TTS.
 #
-"""Voice bank Google Cloud Text-to-Speech for glycemie_displayin six languages.
+"""Generate optional speech recordings in six languages using Google Cloud Text-to-Speech.
 
-Same stamp everywhere (Chirp 3 HD "Aoede") : French, English, Spanish, German, Italian,
-Portuguese (voix pt-BR, Google does not offer Chirp 3 HD in pt-PT). Texts and numbers
-in letters are in langues_voix.py.
-
-Generation UNE SEULE FOIS on the PC with theAPI official library (google-cloud-texttospeech library) and the
-identifiers by default already configures by gcloud (ADC) : they are never read, copies or posters by this
-script. The WAV are then copies on the microSD (/glycemie/audio/voice/) and read locally by
-map: no Internet connection or Google call from the mapESP32.
-
-Usage (environnement isole tools\\voice\\.venv_tts) :
-  python -B gen_voice_google.py --lang in --estimated sentences, characters sent, cost (no request)
-  python -B gen_voice_google.py --lang en --check access to theAPI and presence of the voice
-  python -B gen_voice_google.py --lang to [--only a,b] generation of missing, conversion, manifest
-
-Exit: French in bank/voice (inchange, bank already installed remains valid), other
-languages in bank/<code>/voice. On the microSD: /glycemie/audio/voice for French,
-/glycemie/audio/voice/<code> for others.
-
-Chaine audio :
-  Google LINEAR16 (native voice sequence, 24 kHz) -> cache google_raw/ (never asks if valid)
-  -> reechantillonnage polyphase 16 kHz (filtre Kaiser, -80 dB au-dela de 8 kHz)
-  -> silences debut/fin -> level identical to the old bank (-12 dBFS effective during speech,
-     crete <= -1.5 dBFS per anticipation limiter, limitation <= 6 dB, no ecrete sample)
-  -> bank/voice/<name>.wav (PCM 16 bits, mono, 16 kHz) + bank/manifest.csv (name; text; hard; Size ; crc32)
-"""
+Text and number phrases are defined in langues_voix.py. Output WAV files
+are prepared for the display's microSD card and played offline by the board.
+The generator uses credentials configured through Google Cloud application
+default credentials. Never embed service credentials in the repository.
+Calls to the synthesis API may incur charges; use --estimate before generating."""
 import argparse
 import csv
 import io
@@ -58,11 +38,7 @@ MANIFEST = os.path.join(BANK_DIR, 'manifest.csv')
 
 
 def configure(lang):
-    """Chooses the voice and files of the language requested.
-
-    The French keep exactly the original paths (bank/voice, bank/manifest.csv,
-    google_raw) : the bank already generated and already copied on the microSD remains usable such
-    What. The other languages live in a sub-folder with their code."""
+    """Select the requested language's voice and output directory while preserving the firmware's expected microSD layout."""
     global LANG, VOICE_NAME, LANGUAGE, RAW_DIR, BANK_DIR, OUT_DIR, MANIFEST
     LANGUAGE, VOICE_NAME = langues_voix.VOIX[lang]
     LANG = lang
@@ -91,7 +67,7 @@ MAX_DURATION_S = 6.0
 
 # Generate the fixed alerts and number phrases for the selected language.
 def phrases():
-    """(filename, text) in generation order, for the configured language."""
+    """Yield filenames and phrases for the selected language in stable generation order."""
     return langues_voix.phrases(LANG)
 
 
@@ -100,7 +76,7 @@ def phrases():
 
 
 def read_wav_bytes(data):
-    """(int16 mono sample, frequency) or None if the WAV is not of PCM 16 single readable bits."""
+    """Decode supported 16-bit mono PCM WAV data into samples and sample rate, or return None."""
     try:
         with wave.open(io.BytesIO(data), 'rb') as w:
             if w.getsampwidth() != 2 or w.getnchannels() != 1 or w.getcomptype() != 'NONE':
@@ -141,7 +117,7 @@ def db(value):
 
 # Convert the service output to the sample rate required by the ESP32 codec.
 def resample(x, rate_in, rate_out):
-    """Reechantillonnage polyphase (insertion de zeros, filtre passe-bas Kaiser, decimation)."""
+    """Resample audio using a polyphase low-pass filter before decimation."""
     if rate_in == rate_out:
         return x.astype(np.float64)
     g = math.gcd(rate_in, rate_out)
@@ -194,11 +170,7 @@ def active_rms(x, rate):
 
 # Keep decoded audio in a safe amplitude range to reduce clipping.
 def limit(x, rate):
-    """Anticipated limiter (the same principle as pack_voice.py) :
-
-    required gain r = min(1, ceiling/ minimum slippery on [i-L, i+L] and then slippery average of the same width
-    (each average value is <= r[i]); return of slowed gain (RELEASE_S) without exceeding the smooth gain.
-    """
+    """Limit peaks using look-ahead gain reduction without hard clipping."""
     ceiling = 10.0 ** (CEILING_DB / 20.0)
     n = len(x)
     L = int(LOOKAHEAD_S * rate)

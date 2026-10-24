@@ -4,12 +4,7 @@
 # Design note: Catch unintentional binaries and secrets before a public release.
 # Check tracked paths, third-party notices and public-source invariants.
 #
-"""Depot controls before publication: project consistency and lack of private data.
-
-Don't compile anything and don't access the card. To be launched from the root of the project:
-    python tests\\test_depot.py
-Output code 0 only if all controls pass.
-"""
+"""Check repository structure, documentation links and the absence of known private data before publication."""
 import io
 import os
 import re
@@ -32,7 +27,7 @@ def check(nom, ok, detail=''):
 
 # Use the tracked Git file list, not arbitrary temporary build output.
 def fichiers_versionnes():
-    """What Git would actually publish; a default (no deposit Git), all the tree except exclusions."""
+    """List files tracked by Git; use a conservative file-tree fallback when no Git checkout is available."""
     try:
         sortie = subprocess.run(['git', '-C', ROOT, 'ls-files', '-z'], capture_output=True, timeout=60)
         suivis = [n for n in sortie.stdout.decode('utf-8').split('\0') if n]

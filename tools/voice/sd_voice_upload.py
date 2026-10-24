@@ -4,22 +4,12 @@
 # Design note: Verification-only mode must not create or overwrite files.
 # Copies existing WAV banks over USB with CRC32 checks and a read-only verification mode.
 #
-"""Copy the voice bank (tools/voice/bank) on the Waveshare microSD by the cable USB-Series, without removing the
-map and no network. Temporary tool: firmware vrx * console commands (main/voice_rx.c).
+"""Upload or verify optional speech WAV banks on the Waveshare microSD over USB serial.
 
-- temporary debit 921600 bauds (automatic return of the card to 115200; withdrawal to 115200 if the change failed);
-- each file: 896 bytes blocks acquit one by one (no card stamp overflow), CRC32 verifies
-  by the memory card then after rereading on the microSD; file already present and identical: jump;
-- Final verification: complete list reread on the map with CRC32, compares to the manifest (accurate number, sizes,
-  missing or surplus files, integrite) and free space. Verification does not send QUE read commands
-  (vrx_dir ... reading, vrx_list crc) : no file byte is transmitted, even if the card is not compliant.
-The port is open without acting on DTR/RTS The card doesn't start again.
-
-Usage (environnement du projet, pyserial) :
-  .venv\\Scripts\\python.exe -B tools\\voice\\sd_voice_upload.py --port COM7 --log tools\\logs\\NNN_copie.log
-  ... --verify-only verification alone: no writing, no folder created (needs firmware that
-                       answer "VRX LIST dossier=..." for languages other than French)
-"""
+The card can remain installed in the device. Each language uses an expected
+folder layout and a manifest of recordings. Verify transferred files with
+read-back checksums, preserve unrelated card contents and never format the
+card. --verify-only must not create or modify files."""
 import argparse
 import csv
 import os
@@ -41,11 +31,7 @@ MANIFEST = os.path.join(HERE, 'bank', 'manifest.csv')
 
 # Select either a developer bank or the public ZIP extracted to a folder.
 def configure(lang, sd_root=None):
-    """Bank from working files or from the ZIP microSD extracted.
-
-    --sd-root points to a folder containing glycemie/audio/voice, for
-    Copy the telecharges directly without restarting a Google generation.
-    """
+    """Resolve a language bank from local generated files or an extracted microSD ZIP."""
     global BANK, MANIFEST
     if sd_root is not None:
         root = os.path.abspath(sd_root)
@@ -88,7 +74,7 @@ class Link:
         self.ser.write((command + '\n').encode('ascii'))
 
     def line(self, timeout):
-        """Next line of the map (mask), None after timeout seconds."""
+        """Read the next masked device response line, returning None at timeout."""
         end = time.time() + timeout
         while True:
             if b'\n' in self.buffer:
@@ -106,7 +92,7 @@ class Link:
                 self.buffer += chunk
 
     def expect(self, pattern, timeout):
-        """First line VRX a pattern correspondent (regex); Other lines (journal) are not known."""
+        """Read until a response line matches the requested VRX pattern; ignore unrelated logs."""
         regex = re.compile(pattern)
         end = time.time() + timeout
         while True:
@@ -210,7 +196,7 @@ def put_file(link, name, size, crc, data):
 
 
 def choisir_dossier(link, lang, lecture):
-    """vrx_dir for a language. read=True: the map must not RIEN create (day firmware requires)."""
+    """Choose the target language directory; read-only mode must not create paths."""
     if lang == 'fr':
         return True
     link.send('vrx_dir %s%s' % (lang, ' lecture' if lecture else ''))
@@ -228,7 +214,7 @@ def choisir_dossier(link, lang, lecture):
 
 # Compare names, sizes and CRCs through read-only device commands.
 def verify(link, entries, lang='fr'):
-    """Verification in LECTURE SEULE : only the command vrx_list is sent."""
+    """Verify a language bank using read-only device inventory commands."""
     link.send('vrx_list crc')
     files = {}
     end = time.time() + 300

@@ -4,13 +4,10 @@
 # Design note: Logs may contain health data; keep them out of the public repository.
 # Captures serial diagnostics while redacting known credentials and personal details.
 #
-"""Capture of the serial newspaperESP32P4 with secret masking.
+"""Capture diagnostic output from the ESP32-P4 serial connection.
 
-No flash writing: port opening, optional reset by RTS (as esptool hard_reset),
-lecture, commandes console optionnelles ("info", "snap").
-The values of private/device_secrets.h and all UUID (session, account) are masks
-before displaying and writing the journal.
-"""
+Mask known secret values before storing any log. Logs may still contain
+sensitive information and require review before sharing."""
 import argparse
 import base64
 import datetime

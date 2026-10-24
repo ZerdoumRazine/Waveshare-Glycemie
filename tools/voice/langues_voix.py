@@ -4,19 +4,11 @@
 # Design note: The WAV file names must match the firmware's expected clips.
 # Defines fixed spoken phrases and grammar-aware number words in six languages.
 #
-"""Texts of the voice bank, language by language (English, French, Spanish, German, Italian, Portuguese).
+"""Define spoken announcements in French, English, Spanish, German, Italian and Portuguese.
 
-Used by gen_voice_google.py. Each language provides:
-  - Google Cloud voice to use (same stamp everywhere: Chirp 3 HD "Aoede") ;
-  - 35 fixed sentences (alerts, reminders of consumables, trends, voice responses);
-  - the number in letters from 40 to 400, for the 361 files "glucose_NNN.wav".
-
-Portuguese is a generation with the voice pt-BR: Google does not offer Chirp 3 HD voices in pt-PT.
-
-The sentences follow the wording of the original French. Two habits are preserved:
-  - "cathetere" in French, because the voice swallowed the final R of "catheter" (user's finding)
-  - the numbers are written in letters rather than numbers, so that the pronunciation is stable.
-"""
+Each language produces the same expected filenames and categories, but the
+spoken phrases and written-out numbers are localized. Keep the manifest and
+filenames compatible with the playback firmware."""
 
 # --------------------------------------------------------------------------------------------------
 # Nombres en lettres, de 40 a 400
@@ -44,7 +36,7 @@ def _fr_below_100(n):
 
 # Spell a French number with the language-specific tens and hundreds rules.
 def number_fr(n):
-    """Traditional spelling: seventy-eight, two hundred, one hundred."""
+    """Spell an integer using the French number conventions needed by voice announcements."""
     if n < 100:
         return _fr_below_100(n)
     hundreds, rest = divmod(n, 100)
@@ -66,7 +58,7 @@ def _en_below_100(n):
 
 # Express number words in US English for the matching voice bank.
 def number_en(n):
-    """Common use for a measurement: one hundred twenty, two hundred, oven hundred."""
+    """Spell an integer in natural spoken English for a glucose reading."""
     if n < 100:
         return _en_below_100(n)
     hundreds, rest = divmod(n, 100)
@@ -91,7 +83,7 @@ def _es_below_100(n):
 
 # Handle Spanish hundreds and the cien/ciento distinction.
 def number_es(n):
-    """cien per 100 alone, ciento vene, doscientos, cuatrocientos."""
+    """Spell a number in Spanish, including the cien/ciento distinction."""
     if n < 100:
         return _es_below_100(n)
     hundreds, rest = divmod(n, 100)
@@ -118,7 +110,7 @@ def _de_below_100(n):
 
 # Use German unit-before-ten forms when building compound numbers.
 def number_de(n):
-    """einhundertzwanzig, zweihundert, vierhundert; Only one word, as in current German."""
+    """Spell a number using the combined German number-word conventions."""
     if n < 100:
         return _de_below_100(n)
     hundreds, rest = divmod(n, 100)
@@ -147,7 +139,7 @@ def _it_below_100(n):
 
 # Handle Italian elisions around compound numbers.
 def number_it(n):
-    """centoventi, duecento, quattrocento; One word."""
+    """Spell a number in Italian using the standard combined number words."""
     if n < 100:
         return _it_below_100(n)
     hundreds, rest = divmod(n, 100)
@@ -176,7 +168,7 @@ def _pt_below_100(n):
 
 # Use Brazilian Portuguese wording for the installed Portuguese voice.
 def number_pt(n):
-    """Cem alone, cento e came, duzentos, quatrocentos."""
+    """Spell a number in Portuguese, including the cem/cento distinction."""
     if n < 100:
         return _pt_below_100(n)
     hundreds, rest = divmod(n, 100)
@@ -457,7 +449,7 @@ GLUCOSE_MAX = 400
 
 # Return stable clip filenames and spoken text for a single language.
 def phrases(lang):
-    """[(filename, text)] in generation order, for the language requested."""
+    """Return recording filenames and localized phrases in their defined generation order."""
     if lang not in FIXES:
         raise ValueError('langue inconnue : %s (%s)' % (lang, ', '.join(LANGUES)))
     textes = FIXES[lang]

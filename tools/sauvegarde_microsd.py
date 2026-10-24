@@ -4,23 +4,11 @@
 # Design note: A backup should be checked, not just copied.
 # Makes a verified file copy from removable media without writing to the card.
 #
-"""Copy and VERIFIER the content of the microSD, without ever changing it.
+"""Back up and verify microSD card contents without modifying the original.
 
-Map n'est que LUE : aucun fichier n'it is written, replaced or erased, and it is never
-formatee. If Windows proposes to repair or format it, refuse.
-
-Deroulement :
-  1. each file is read, its footprint SHA-256 calculates and then copies in the backup folder;
-  2. Then, TOUT is read from both sides and compares (map and copy): this is the verification;
-  3. a manifest (manifest.json) and a fingerprint file (SHA256SUMS.txt) are recorded.
-
-The backup goes into private\\sauvegardes\\: a private folder, never published.
-
-Usage :
-    python tools\\sauvegarde_microsd.py --lister shows removable drives
-    python tools\\sauvegarde_microsd.py --reader E: copy and verify
-    python tools\\sauvegarde_microsd.py --reader E: --check-only compare to an existing copy
-"""
+List available drives, copy selected files to a separate destination, and
+verify size or checksum information. Keep patient histories and device logs
+out of public repositories and release packages."""
 import argparse
 import datetime
 import hashlib
@@ -38,7 +26,7 @@ BLOC = 1 << 20
 
 # List candidate media; the user must identify the correct card.
 def lecteurs_amovibles():
-    """[(lettre, nom, taille_Go, libre_Go, systeme_de_fichiers, amovible)] vus par Windows."""
+    """List Windows removable drives with label, size, free space and filesystem details."""
     if sys.platform != 'win32':
         return []
     requete = ("Get-CimInstance Win32_LogicalDisk | ForEach-Object { "
@@ -72,7 +60,7 @@ def empreinte(chemin):
 
 # Walk files read-only and preserve their relative names.
 def parcourir(racine):
-    """[(relative path, size)] of all files, read-only."""
+    """Enumerate relative file paths and sizes without modifying the source tree."""
     fichiers = []
     for base, dossiers, noms in os.walk(racine):
         dossiers[:] = [d for d in dossiers if d.upper() not in ('SYSTEM VOLUME INFORMATION',

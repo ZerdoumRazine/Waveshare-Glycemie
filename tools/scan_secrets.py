@@ -4,12 +4,10 @@
 # Design note: No pattern scan can guarantee every secret has been found.
 # Looks for accidentally included credentials without ever echoing secret values.
 #
-"""Search for private identifiers in text files (newspapers, reports, sources).
+"""Scan source, reports and serial logs for accidentally embedded private credentials.
 
-Show JAMAIS values: only the field name and file is relevant.
-Use: python scan_secrets.py <file or folder> [...]
-Output code 1 if a value is found.
-"""
+Do not publish detected secrets or include sensitive local artifacts in
+public packages. Exclude binary data and known safe placeholders as required."""
 import os
 import re
 import sys

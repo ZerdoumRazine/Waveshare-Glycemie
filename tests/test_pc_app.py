@@ -4,14 +4,7 @@
 # These tests use simulations; they do not connect to a patient's device.
 # Exercise the Windows Tkinter setup interface with simulated serial devices.
 #
-"""Windows application controls (tools/pc_app/glycemie_connexion.pyw), without a branch.
-
-The window is actually built (Tk) and then closed: these tests verify the logic of
-l'interface, pas son apparence. Aucun port serie n'is open: list of ports and opening
-are replaced by simulations.
-
-Usage : python tests\\test_pc_app.py
-"""
+"""Test the Windows USB setup application's logic with simulated device responses and without physical hardware."""
 import importlib.util
 import io
 import os
