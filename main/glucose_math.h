@@ -1,14 +1,10 @@
 /* glucose_math.h: Pure helpers for numerical glucose calculations.
  * The declarations below are shared with other firmware modules.
  */
-/*
- * Calculations on glycemia history (pure functions, without state):
- * age and freshness, delta between consecutive measures, real pace, next measurement, statistics.
- * The tables are sorted from the most recent to the oldest measure.
- */
-/* Public interface / Interface publique
- * Pure calculations of freshness and deltas; safe for host tests.
- */
+/* Pure calculations on newest-first glucose readings: age, freshness,
+ * recent delta, observed cadence, estimated next reading and statistics.
+ * Functions can be tested on a desktop without device state or hardware. */
+/* Side-effect-free freshness, deltas and history calculations. */
 #pragma once
 
 #include <stdbool.h>
@@ -17,9 +13,9 @@
 
 typedef enum {
     GM_FRESH_NONE = 0, /* no measurement or time unknown */
-    GM_FRESH_OK,       /* A JOUR */
-    GM_FRESH_LATE,     /* RETARD : the measure expected late */
-    GM_FRESH_STALE,    /* DONNEES ANCIENNES */
+    GM_FRESH_OK,       /* Fresh value. */
+    GM_FRESH_LATE,     /* Late: an expected reading has not arrived yet. */
+    GM_FRESH_STALE,    /* Stale value; never present it as current. */
 } gm_freshness_t;
 
 

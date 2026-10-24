@@ -5,9 +5,7 @@
  * Common interface elements: dimensions, colors, fonts, calculated data
  * once a second and shared between pages.
  */
-/* Public interface / Interface publique
- * Shared LVGL colours, fonts and formatting helpers for all pages.
- */
+/* Shared LVGL palette, fonts and formatting helpers. */
 #pragma once
 
 #include <stdbool.h>
@@ -48,24 +46,24 @@
 #define UI_COL_DATE      lv_color_hex(0xAFBACD)
 #define UI_COL_TRACK     lv_color_hex(0x1C2940) /* bottom of the progression bars */
 
-/* Style 2.5D "dark glass" (visual recast): night to black blue background, translucent cards with thin edge and soft shadow.
- * Colours d'accent de la glycemie plus douces ; le panneau d'alert keeps its colors (UI_COL_REDORANGE...). */
+/* Semi-transparent dark cards with subtle borders and shadows. Glucose
+ * accents are muted; alert-panel colors retain their urgency semantics. */
 #define UI_G_BG_TOP      lv_color_hex(0x0C1834)
 #define UI_G_BG_BOT      lv_color_hex(0x000000)
-#define UI_G_GLASS_TOP   lv_color_hex(0x192844) /* verre 84 % deja melange au fond */
-#define UI_G_GLASS_BOT   lv_color_hex(0x0B1424) /* verre 73 % deja melange au fond */
+#define UI_G_GLASS_TOP   lv_color_hex(0x192844) /* Glass fill at approximately 84% opacity. */
+#define UI_G_GLASS_BOT   lv_color_hex(0x0B1424) /* Glass fill at approximately 73% opacity. */
 #define UI_G_GLASS_DOWN  lv_color_hex(0x2A3F66) /* carte appuyee */
-#define UI_G_EDGE        lv_color_hex(0x46609A) /* bord fin (opacite partielle) */
+#define UI_G_EDGE        lv_color_hex(0x46609A) /* Thin border with partial opacity. */
 #define UI_G_LINE        lv_color_hex(0x1C2A44) /* web and navigation nets */
 #define UI_G_TEXT        lv_color_hex(0xF4F7FC)
 #define UI_G_TEXT2       lv_color_hex(0x9AA8C2)
 #define UI_G_TEXT3       lv_color_hex(0x63718C)
-#define UI_G_ACCENT      lv_color_hex(0x4C8DFF) /* bleu d'interface (boutons, anneau) */
+#define UI_G_ACCENT      lv_color_hex(0x4C8DFF) /* Interface blue for navigation buttons and progress rings. */
 #define UI_G_ACCENT_DEEP lv_color_hex(0x2F5FD6)
-#define UI_G_OK          lv_color_hex(0x42E2B8) /* glycemie normale : vert-bleu doux */
-#define UI_G_LOW         lv_color_hex(0xFFC04D) /* basse : ambre */
-#define UI_G_HIGH        lv_color_hex(0xFF9A3D) /* elevee : orange */
-#define UI_G_CRIT        lv_color_hex(0xFF5C6C) /* tres basse / tres elevee : rouge doux */
+#define UI_G_OK          lv_color_hex(0x42E2B8) /* Normal-range glucose: muted teal accent. */
+#define UI_G_LOW         lv_color_hex(0xFFC04D) /* Low-glucose accent: amber. */
+#define UI_G_HIGH        lv_color_hex(0xFF9A3D) /* High-glucose accent: orange. */
+#define UI_G_CRIT        lv_color_hex(0xFF5C6C) /* Urgent-low/high accent: muted red. */
 #define UI_G_STALE       lv_color_hex(0x6B7A94)
 
 typedef struct {

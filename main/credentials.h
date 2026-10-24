@@ -49,13 +49,13 @@ esp_err_t credentials_clear(void);   /* Clear everything: NVS, memory and authen
  * commit only on success and explicit user confirmation. A failed test,
  * cancellation or reboot must never discard known working credentials. */
 bool credentials_trial_active(void);
-void credentials_trial_begin(void);  /* photograph current accesses; no effect if already in progress */
+void credentials_trial_begin(void);  /* Snapshot current credentials; a second begin call is a no-op. */
 esp_err_t credentials_trial_set_wifi(const char *ssid, const char *password);
 esp_err_t credentials_trial_set_dexcom(const char *user, const char *password, const char *region);
-esp_err_t credentials_trial_commit(void);  /* record the test (after success and confirmation) */
+esp_err_t credentials_trial_commit(void);  /* Persist the validated trial only after user confirmation. */
 void credentials_trial_cancel(void);       /* Restore previous trial snapshot, including in-memory values. */
 
-/* Mode of demonstration: Simulated data, no account. Remember from start to start. */
+/* Persist demo-mode preference without requiring a Dexcom account. */
 bool credentials_demo(void);
 esp_err_t credentials_set_demo(bool on);
 
