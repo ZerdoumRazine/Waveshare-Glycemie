@@ -4,7 +4,7 @@
 > It must not be used for treatment decisions and does not replace the official Dexcom
 > application, its alarms, or any certified monitoring system.
 
-*Documentation en français : **[README_FR.md](README_FR.md)** (version de référence, plus détaillée).*
+Developer documentation is maintained in English; on-device languages are unchanged.
 
 A permanent wall display showing a Dexcom G7 reading large enough to be read from several
 metres away: value, trend arrow, change since the previous reading, data age, 24 h chart,
@@ -26,12 +26,12 @@ components keep their own authors and licences.
 | 🔧 **Set up the device** | [Beginner's tutorial](docs/BEGINNER_TUTORIAL_EN.md) — buy, connect, install, configure |
 | ⬇️ **Download the programs** | [Releases](../../releases) — firmware, Windows app and checksums (voice banks are separate) |
 | 🔊 **Prepare the microSD** | [Voice tutorial](docs/VOICE_TUTORIAL_EN.md) — optional six-language banks, including how to generate your own |
-| 🧩 **Understand the code** | [English code guide](docs/CODE_GUIDE_EN.md) · [Guide français](docs/CODE_GUIDE_FR.md) · [`main/`](main/) |
+| 🧩 **Understand the code** | [English code guide](docs/CODE_GUIDE_EN.md) · [`main/`](main/) |
 
 > **Not yet tried end to end on a brand-new device.** Installation, update, reconnection,
 > announcements and the setup wizard were verified on the author's own device; first-time setup of
 > a blank device (entering new credentials, saving, restarting) has only been validated in
-> simulation. See [docs/LIMITATIONS_FR.md](docs/LIMITATIONS_FR.md).
+> simulation. See [docs/LIMITATIONS_EN.md](docs/LIMITATIONS_EN.md).
 
 *Real screenshot taken from the board, in demo mode (fictitious data).*
 
@@ -98,7 +98,7 @@ esp_hosted 1.4.x · ESP‑SR 2.5.3. Resolved versions are committed in `dependen
 
 **For a ready-to-install device**, follow the [beginner's tutorial](docs/BEGINNER_TUTORIAL_EN.md). The public firmware is configured after installation, on the touchscreen or with the Windows application; it does not require personal credentials compiled into the source.
 
-**Developers** can build the firmware from source with ESP-IDF 5.5.5. See the [technical installation instructions](docs/INSTALLATION_FR.md) (French):
+**Developers** can build the firmware from source with ESP-IDF 5.5.5. See the [technical installation instructions](docs/INSTALLATION_EN.md) (French):
 
 ```powershell
 git clone https://github.com/ZerdoumRazine/Waveshare-Glycemie.git waveshare-glycemie
@@ -132,16 +132,16 @@ The main beginner and voice guides are available in **English and French**. Most
 |---|---|
 | [docs/BEGINNER_TUTORIAL_EN.md](docs/BEGINNER_TUTORIAL_EN.md) | **Start here**: buy, connect, install, configure, copy the sounds, test, troubleshoot |
 | [docs/VOICE_TUTORIAL_EN.md](docs/VOICE_TUTORIAL_EN.md) | **Spoken announcements**: install a language pack (10 min) or build your own audio |
-| [docs/TUTORIEL_DEBUTANT_FR.md](docs/TUTORIEL_DEBUTANT_FR.md) | Same beginner's guide, in French |
-| [docs/RETOUR_ARRIERE_FR.md](docs/RETOUR_ARRIERE_FR.md) | Back up the device, roll back, recover a screen that will not start (French) |
-| [docs/TUTORIEL_VOIX_FR.md](docs/TUTORIEL_VOIX_FR.md) | Same guide, in French |
-| [docs/INSTALLATION_FR.md](docs/INSTALLATION_FR.md) | ESP-IDF on Windows, build, flash, microSD |
-| [docs/DEPANNAGE_FR.md](docs/DEPANNAGE_FR.md) | Troubleshooting, serial console, FAQ |
+| [docs/BEGINNER_TUTORIAL_EN.md](docs/BEGINNER_TUTORIAL_EN.md) | Same beginner's guide, in French |
+| [docs/ROLLBACK_EN.md](docs/ROLLBACK_EN.md) | Back up the device, roll back, recover a screen that will not start (French) |
+| [docs/VOICE_TUTORIAL_EN.md](docs/VOICE_TUTORIAL_EN.md) | Same guide, in French |
+| [docs/INSTALLATION_EN.md](docs/INSTALLATION_EN.md) | ESP-IDF on Windows, build, flash, microSD |
+| [docs/TROUBLESHOOTING_EN.md](docs/TROUBLESHOOTING_EN.md) | Troubleshooting, serial console, FAQ |
 
 ---
 
 ## Licence
 
-The project's original code is released under the **MIT licence** (see [LICENSE](LICENSE)). Project initiated and led by **Mohamed-Razine Zerdoum** — [English credits](CREDITS_EN.md) · [Crédits français](CREDITS.md). Third-party components retain their authors and applicable licences: [third-party licences](docs/LICENCES_TIERCES_FR.md).
+The project's original code is released under the **MIT licence** (see [LICENSE](LICENSE)). Project initiated and led by **Mohamed-Razine Zerdoum** — [English credits](CREDITS.md) · [Crédits français](CREDITS.md). Third-party components retain their authors and applicable licences: [third-party licences](docs/THIRD_PARTY_LICENSES_EN.md).
 
 This is an experimental supplementary display, not certified for medical use. It can report delayed or incorrect readings and must never replace official glucose monitoring, alerts, or treatment guidance.

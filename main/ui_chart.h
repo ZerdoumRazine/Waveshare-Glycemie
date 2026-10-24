@@ -1,5 +1,4 @@
 /* ui_chart.h: Chart drawing and selected time-window contracts.
- * FR: Tracé des courbes et fenêtres temporelles.
  * Shared definitions for the firmware implementation.
  */
 /*
@@ -7,13 +6,12 @@
  * zone cible, seuils, courbe par creneaux de 5 min, axe horaire, derniere valeur.
  *
  * Exploration tactile (option) : un appui ou un glissement sur la zone de trace selectionne la mesure REELLE la plus
- * proche horizontalement (jamais de valeur interpolee) et affiche un curseur, le point et une bulle
- * (heure, glycemie, tendance et variation seulement si l'historique les contient). Le curseur disparait quelques
- * secondes apres le relachement. Aucune lecture microSD ni allocation pendant le glissement.
+ * close horizontally (never of interpole value) and displays a cursor, point and bubble
+ * (hour, glycemia, trend and variation only if history contains them). The cursor disappears a few
+ * seconds after release. No microSD reading or allocation during slippage.
  */
 /* Public interface / Interface publique
- * EN: Graph widget and point exploration from cached glucose history.
- * FR: Courbe et exploration des mesures historiques.
+ * Graph widget and point exploration from cached glucose history.
  */
 #pragma once
 
@@ -47,14 +45,14 @@ typedef struct {
     lv_point_precise_t high_pts[2];
     int y_max;
 
-    /* Exploration tactile : positions des points reellement traces (pixels dans la zone) et index d'historique */
+    /* Touch exploration: positions of real trace points (pixels in the area) and historical index */
     bool explore;
     int16_t *pt_x;
     int16_t *pt_y;
     int16_t *pt_index;
     int pt_count;
-    int selected;            /* index dans pt_* ; -1 = aucun */
-    int64_t sel_wt_ms;       /* horodatage du point selectionne (retrouve apres un redessin) */
+    int selected;            /* index in pt * ; -1 = none */
+    int64_t sel_wt_ms;       /* time stamping of the selected point (refined after a redrawing) */
     bool cursor_visible;
     uint32_t last_move_ms;   /* limitation du rythme pendant le glissement */
     uint32_t release_ms;     /* 0 = doigt pose ou curseur deja masque */
@@ -69,9 +67,9 @@ typedef struct {
 void ui_chart_create(ui_chart_t *c, lv_obj_t *parent, int32_t x, int32_t y, int32_t w, int32_t h, bool time_labels);
 void ui_chart_update(ui_chart_t *c, const ui_data_t *d, int hours);
 
-/* Exploration tactile : a appeler une fois apres ui_chart_create (aucun effet si la memoire manque) */
+/* Touch exploration: to call once after ui_chart_create (aucun effet si la memoire manque) */
 void ui_chart_enable_explore(ui_chart_t *c);
-/* A appeler a chaque seconde : masque le curseur quelques secondes apres le relachement */
+/* To call every second: hide the cursor a few seconds after release */
 void ui_chart_explore_tick(ui_chart_t *c);
 /* Masque immediatement le curseur (changement de duree ou de page) */
 void ui_chart_explore_reset(ui_chart_t *c);

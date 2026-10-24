@@ -1,11 +1,10 @@
 /* dexcom_share.h: Read-only Dexcom Share client API.
- * FR: API en lecture seule du client Dexcom Share.
  * The declarations below are shared with other firmware modules.
  */
 /*
  * Client Dexcom Share natif ESP-IDF (esp_http_client + TLS verifie par le bundle de certificats).
  *
- * Protocole d'apres pydexcom (MIT, gagebenne/pydexcom, commit 3447aa08) :
+ * Protocol after pydexcom (MIT, gagebenne/pydexcom, commit 3447aa08) :
  *   1. POST General/AuthenticatePublisherAccount  {accountName, password, applicationId} -> accountId
  *   2. POST General/LoginPublisherAccountById     {accountId, password, applicationId}   -> sessionId
  *   3. POST Publisher/ReadPublisherLatestGlucoseValues?sessionId=..&minutes=..&maxCount=..  corps {}
@@ -16,8 +15,7 @@
  * API non officielle : ce module isole entierement le service distant.
  */
 /* Public interface / Interface publique
- * EN: Dexcom Share HTTPS client types, timestamps and result codes.
- * FR: Interface du client HTTPS Dexcom Share.
+ * Dexcom Share HTTPS client types, timestamps and result codes.
  */
 #pragma once
 
@@ -47,7 +45,7 @@ typedef enum {
 typedef struct {
     dex_step_t step;
     int http_status;       /* 0 si aucune reponse HTTP */
-    bool request_sent;     /* la requete (et donc les identifiants) a pu partir */
+    bool request_sent;     /* the request (and therefore the identifiers) may have left */
     char esp_error[40];    /* erreur ESP-IDF reseau/TLS */
     char code[64];         /* champ Code de Dexcom */
     char message[160];     /* champ Message de Dexcom, identifiants masques */
@@ -71,10 +69,10 @@ void dexcom_invalidate_session(dexcom_client_t *client);
 /* Test DNS + TLS du serveur Dexcom SANS identifiants (aucune authentification) */
 dex_result_t dexcom_probe_tls(dexcom_client_t *client, int *http_status);
 
-/* Connexion en 2 etapes (l'etape 1 est sautee si l'identifiant de compte est deja connu) */
+/* 2 step connection (Step 1 is skipped if the account ID is already known) */
 dex_result_t dexcom_login(dexcom_client_t *client);
 
-/* Lecture des mesures (plus recente en premier) */
+/* Reading measurements (more recent first) */
 dex_result_t dexcom_read_glucose(dexcom_client_t *client, int minutes, int max_count,
                                  glucose_point_t *out, int max_out, int *out_count);
 

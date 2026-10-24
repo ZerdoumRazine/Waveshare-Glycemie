@@ -1,12 +1,11 @@
 /*
  * app_state.c: Shared application snapshot and live connection state.
- * FR: État partagé et informations de connexion.
  * Design note: Consumers should see coherent data snapshots.
  */
 
 /*
  * Protects shared connection status and the glucose history with a mutex.
- * Protège les états de connexion et l'historique partagé.
+ * Protects connection states and shared history.
  */
 #include "app_state.h"
 

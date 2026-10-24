@@ -208,7 +208,7 @@ py -3 tools\voice\sd_voice_upload.py --port COM7 --lang en --sd-root "C:\Wavesha
 For more details, backups and troubleshooting see the
 [voice tutorial](VOICE_TUTORIAL_EN.md).
 The recordings come from Google Cloud Text-to-Speech and are not covered
-by the source-code MIT licence ([provenance](LICENCES_TIERCES_FR.md)).
+by the source-code MIT licence ([provenance](THIRD_PARTY_LICENSES_EN.md)).
 
 ## 6. Test
 
@@ -250,7 +250,7 @@ screen: they match a care team's instructions, not a comfort setting.
 | "Dexcom username or password refused" | follower account instead of the sharing account | use the Dexcom app's own account |
 | "Account locked" | too many attempts | wait; this is a Dexcom protection |
 | No sound | sounds missing from the microSD, or volume at zero | step 5, then SETTINGS → volume |
-| The device no longer starts at all | installation interrupted | [RETOUR_ARRIERE_FR.md](RETOUR_ARRIERE_FR.md) (in French), BOOT mode |
+| The device no longer starts at all | installation interrupted | [ROLLBACK_EN.md](ROLLBACK_EN.md) (in French), BOOT mode |
 | The PC no longer sees the device | another program is holding the port | close serial monitors, replug |
 
 None of this damages the device: everything can be redone.
@@ -261,13 +261,13 @@ None of this damages the device: everything can be redone.
 
 None of this is needed to use the device:
 
-- [INSTALLATION_FR.md](INSTALLATION_FR.md) — install ESP-IDF and **build it yourself** (French).
+- [INSTALLATION_EN.md](INSTALLATION_EN.md) — install ESP-IDF and **build it yourself** (French).
 - [VOICE_TUTORIAL_EN.md](VOICE_TUTORIAL_EN.md) — **generate** the voices with Google Cloud (paid,
   about €2) instead of using the ready-made packs.
-- [RETOUR_ARRIERE_FR.md](RETOUR_ARRIERE_FR.md) — back up the device, roll back, recover a screen
+- [ROLLBACK_EN.md](ROLLBACK_EN.md) — back up the device, roll back, recover a screen
   that no longer starts (French).
-- [HARDWARE_FR.md](HARDWARE_FR.md) — the board in detail, pinout, partitions (French).
-- [LIMITATIONS_FR.md](LIMITATIONS_FR.md) — what the project **does not do**, plainly (French).
+- [HARDWARE_EN.md](HARDWARE_EN.md) — the board in detail, pinout, partitions (French).
+- [LIMITATIONS_EN.md](LIMITATIONS_EN.md) — what the project **does not do**, plainly (French).
 
 ---
 

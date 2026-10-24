@@ -1,19 +1,17 @@
 /* ui_alert.h: Public controls for the on-screen alert panel.
- * FR: Commandes du panneau d'alerte à l'écran.
  * The declarations below are shared with other firmware modules.
  */
 /*
  * Alertes a l'ecran :
  * - panneau plein ecran (titre, valeur, OK = acquitter, RAPPEL DANS 30 MIN) a chaque nouvelle levee d'alerte,
- *   affiche 30 s au plus puis ferme automatiquement avec retour a l'accueil ; l'alerte reste active et continue
+ *   displays 30 s at most and closes automatically with return to reception; the alert remains active and continuous
  *   de sonner selon ses repetitions ;
- * - petit indicateur persistant dans le bandeau superieur : plein tant que l'alerte n'est pas acquittee (un appui
+ * - small persistent indicator in the upper headband: full until the alert is discharged (support
  *   rouvre le panneau), contour seul tant que la glycemie reste basse / tres basse / elevee / tres elevee ou que
- *   les donnees manquent apres OK ou RAPPEL.
+ *   data is missing after OK or RAPPEL.
  */
 /* Public interface / Interface publique
- * EN: LVGL alert overlays, acknowledgement and snooze controls.
- * FR: Panneaux LVGL des alertes et commandes d'acquittement.
+ * LVGL alert overlays, acknowledgement and snooze controls.
  */
 #pragma once
 
@@ -28,6 +26,6 @@ void ui_alert_update(void);
 void ui_alert_acknowledge(void);
 void ui_alert_snooze(void);
 
-/* Lecture seule (tache LVGL) : panneau plein ecran affiche et son apparence (type ou type simule) */
+/* Lecture seule (tache LVGL) : full screen panel displays and its appearance (type or type simulate) */
 bool ui_alert_panel_visible(void);
 alert_type_t ui_alert_panel_style(void);

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # Checks firmware build settings before any device flash.
-# FR: Contrôle la compilation avant tout flash matériel.
+#
 # Design note: Target revision and partition offsets must match the actual board.
-# EN: Checks board revision, partition layout and binary headers before flashing.
-# FR: Vérifie révision, partitions et binaires avant installation.
+# Checks board revision, partition layout and binary headers before flashing.
+#
 r"""Verifications automatiques AVANT tout flash de glycemie_display (ESP32-P4 rev1.3).
 
 Lecture seule : ce script n'accede pas a la carte. A lancer dans l'environnement ESP-IDF du projet :
@@ -26,7 +26,7 @@ PART_BIN = os.path.join(BUILD, 'partition_table', 'partition-table.bin')
 SECRETS = os.path.join(ROOT, 'private', 'device_secrets.h')
 
 # Disposition identique au firmware d'origine (backup_original/ANALYSE_PARTITIONS.txt), plus la partition "model"
-# des commandes vocales (ESP-SR) ajoutee le 2026-09-15 APRES les partitions d'origine (leurs offsets sont inchanges)
+# voice controls (ESP-SR) ajoutee le 2026-09-15 APRES original partitions (their offsets are interchanged)
 ORIGINAL_PARTITIONS = [
     ('nvs', 'data', 'nvs', 0x9000, 0x6000),
     ('phy_init', 'data', 'phy', 0xF000, 0x1000),
@@ -70,7 +70,7 @@ def size_to_int(text):
 
 # Read chip revision metadata from the built image, not the filename.
 def image_revisions(path):
-    # esptool 4.x (environnement ESP-IDF 5.5) : l'en-tete etendu n'est affiche qu'avec --version 2
+    # esptool 4.x (environnement ESP-IDF 5.5): the en-tete etendu is only displayed with --version 2
     out = subprocess.run([sys.executable, '-m', 'esptool', '--chip', 'esp32p4', 'image_info', '--version', '2', path],
                          capture_output=True, text=True)
     text = out.stdout + out.stderr
@@ -142,7 +142,7 @@ def main():
     check('Bootloader : revisions v1.0 a v1.99 (image_info)', mini == '1.0' and maxi == '1.99',
           'min v%s, max v%s' % (mini, maxi))
 
-    # 5. Aucun secret dans la configuration versionnable
+    # 5. No secrets in versionable configuration
     secrets = []
     if os.path.exists(SECRETS):
         for m in re.finditer(r'#define\s+(GLY_\w+)\s+"((?:[^"\\]|\\.)*)"', open(SECRETS, encoding='utf-8').read()):

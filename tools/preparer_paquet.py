@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # Assembles delivery resources and verifies their contents.
-# FR: Assemble et contrôle les ressources distribuées.
+#
 # Design note: Only documented public resources should enter a release.
-# EN: Builds the deliverable folders from clean sources, not from a personal device backup.
-# FR: Prépare le paquet complet sans reprendre une sauvegarde personnelle.
+# Builds the deliverable folders from clean sources, not from a personal device backup.
+#
 r"""Assemble le dossier a remettre : sources, application Windows, installation, microSD, tutoriels.
 
 Organisation produite :
@@ -48,7 +48,7 @@ SOURCES = os.path.join(ROOT, 'Razine')
 LIVRAISON = os.path.join(ROOT, 'livraison')
 BANQUES = os.path.join(ROOT, 'dist_voix')
 
-# Fichiers d'accompagnement presents dans les paquets vocaux : utiles a lire, inutiles sur la carte.
+# Accompaniment files in voice packages: useful to read, useless on the map.
 HORS_CARTE = ('manifest.csv', 'SHA256SUMS.txt', 'PROVENANCE.md', 'LISEZMOI_README.txt')
 
 
@@ -159,9 +159,9 @@ def main():
         print('ARRET : la copie publique contient des identifiants.')
         return 1
 
-    # Une compilation ancienne ne doit jamais etre prise pour celle de la derniere version.
-    # On compare le CONTENU des sources du firmware (pas leur date : regenerer la copie publique
-    # les rend toutes "recentes" sans rien changer) a l'empreinte enregistree a la compilation.
+    # An old compilation must never be taken for the last version.
+    # On compare le CONTENU firmware sources (not their date: regenerate public copy
+    # makes them all "recent" without changing anything) to the fingerprint recorded at the compilation.
     attendue = os.path.join(LIVRAISON, 'sources.sha256')
     actuelle = empreinte_sources(SOURCES)
     if not os.path.exists(attendue):
@@ -188,7 +188,7 @@ def main():
         shutil.rmtree(cible, ignore_errors=True)
     os.makedirs(cible)
 
-    # --- 1. code_source : export propre, sans historique ---------------------------------------
+    # --- 1. code_source : own export, without history ---------------------------------------
     shutil.copytree(SOURCES, os.path.join(cible, 'code_source'),
                     ignore=shutil.ignore_patterns('.git', 'build', '__pycache__', '*.pyc'))
 
@@ -213,7 +213,7 @@ def main():
             copier(source, os.path.join(cible, 'notices', nom))
     ecrire(os.path.join(cible, 'microSD', 'LISEZMOI.txt'), NOTICE_MICROSD)
 
-    # Provenance du programme livre : toujours ecrite, pour que l'on sache de quoi il vient.
+    # Origin of the book program: always written, so that we know what it comes from.
     provenance = [
         "PROVENANCE DU PROGRAMME DE L'ECRAN",
         '',
@@ -255,7 +255,7 @@ def main():
             copier(source, os.path.join(cible, nom))
     ecrire(os.path.join(cible, 'LISEZMOI.txt'), LISEZMOI)
 
-    # --- 6. Verification AVANT les archives -----------------------------------------------------
+    # --- 6. Verification AVANT archives -----------------------------------------------------
     secrets = cdp.secrets_reels()
     trouves, lus = [], 0
     for base, _, fichiers in os.walk(cible):
@@ -286,7 +286,7 @@ def main():
         print('\nRESULTAT : A CORRIGER - le paquet a ete efface.')
         return 1
 
-    # --- 7. telechargements : les memes elements en ZIP -----------------------------------------
+    # --- 7. telecommunications : the same elements in ZIP -----------------------------------------
     if not args.sans_zip:
         archives = os.path.join(cible, 'telechargements')
         os.makedirs(archives, exist_ok=True)

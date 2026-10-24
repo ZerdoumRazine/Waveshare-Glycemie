@@ -1,20 +1,11 @@
 /*
  * ui_settings.c: Settings controls and connection confirmation.
- * FR: Réglages et confirmations de connexion.
  * Design note: Never announce successful credential removal after an NVS failure.
  */
 
 /*
- * ui_settings.c: Builds settings controls and connection confirmation dialogs.
- * FR: Construit les réglages et les confirmations de connexion.
- * Design decision: A failed deletion must not be reported as successful.
- *
- * Experimental supplementary display; official monitoring remains authoritative.
- */
-
-/*
  * Presents user options and the touchscreen connection wizard without printing passwords.
- * Affiche les réglages et l'assistant de connexion sans révéler les mots de passe.
+ * Shows settings and login wizard without revealing passwords.
  */
 #include "i18n.h"
 #include "ui_main.h"
@@ -52,8 +43,8 @@ typedef enum {
     THR_COUNT,
 } thr_id_t;
 
-/* Intitules des niveaux de volume : remplis selon la langue ; LVGL conserve le pointeur,
- * le tableau doit donc rester statique. */
+/* Volume level headings: filled according to language; LVGL conserve le pointeur,
+ * the table must therefore remain static. */
 static const char *k_volume_map[6];
 static const str_id_t k_volume_ids[5] = {S_MUTE, S_LOW, S_MEDIUM, S_HIGH, S_MAX};
 
@@ -98,12 +89,12 @@ static bool s_updating;
 
 static const char *const k_interval_map[] = {"48 H", "72 H", ""};
 
-/* Les noms de langue ne sont jamais traduits : chacun s'ecrit dans sa propre langue.
- * L'ordre suit lang_t ; "\n" separe les deux rangees et ne compte pas comme un bouton. */
+/* Language names are never translated: everyone writes in their own language.
+ * L'ordre suit lang_t ; "\n" separates the two rows and does not count as a button. */
 static const char *const k_lang_map[] = {"Français", "English", "Español", "\n",
                                          "Deutsch", "Italiano", "Português", ""};
 
-/* Choix de la langue : on ne touche a rien ici. La tache LVGL reconstruit les pages hors de ce
+/* Choix de la langue : on ne touche a rien ici. La tache LVGL reconstruct pages out of this
  * callback, car l'objet qui le porte fait partie de ce qui sera detruit. */
 /* Assistant de configuration : meme ecran qu'a la premiere mise en route */
 static void on_connexion_modifier(lv_event_t *e)
@@ -136,7 +127,6 @@ static void on_effacer_annuler(lv_event_t *e)
 
 /* Confirm that NVS accepted an empty account before restarting the device. */
 /* Only restart the device when credential removal has actually succeeded.
- * FR: Ne redémarrer qu'après confirmation effective de l'effacement des accès.
  */
 static void on_effacer_confirmer(lv_event_t *e)
 {
@@ -145,7 +135,7 @@ static void on_effacer_confirmer(lv_event_t *e)
     fermer_modal();
     if (err != ESP_OK) {
         /* Ne pas redemarrer ni annoncer un effacement qui n'a pas ete
-         * confirme en memoire permanente. Les acces existants restent actifs. */
+         * confirms in permanent memory. Existing access remains active. */
         ESP_LOGE(TAG, "Effacement des acces impossible : %s", esp_err_to_name(err));
         lv_label_set_text(s_conn_aide, tr(S_SETUP_FAIL_OTHER));
         return;
@@ -153,7 +143,7 @@ static void on_effacer_confirmer(lv_event_t *e)
     esp_restart(); /* la configuration vide est enregistree : ouvrir l'assistant */
 }
 
-/* Confirmation avant d'effacer : rien n'est efface sans ce deuxieme appui */
+/* Confirmation before erasing: nothing is erased without this second support */
 static void on_effacer(lv_event_t *e)
 {
     (void)e;
@@ -302,8 +292,8 @@ static void show_thresholds(const settings_t *s)
     }
 }
 
-/* Boutons + / - des seuils : valeur mise a jour a l'ecran immediatement ; l'ecriture NVS est faite plus tard
- * par la tache "reglages" (jamais dans ce callback). */
+/* Buttons + / - thresholds: value updated immediately on screen; the writing NVS est faite plus tard
+ * by the spot "reglages" (never in this callback). */
 static void on_threshold(lv_event_t *e)
 {
     const intptr_t code = (intptr_t)lv_event_get_user_data(e);
@@ -313,8 +303,8 @@ static void on_threshold(lv_event_t *e)
     settings_get(&s);
     uint16_t *const values[THR_COUNT] = {&s.thr_very_low, &s.thr_low, &s.thr_high, &s.thr_very_high};
     *values[id] = (uint16_t)(*values[id] + (plus ? 5 : -5));
-    apply(&s); /* memoire + notification de la tache de sauvegarde, sans attente */
-    settings_get(&s); /* valeurs apres controle de coherence */
+    apply(&s); /* memory + notification of the backup spot, without waiting */
+    settings_get(&s); /* values after consistency control */
     show_thresholds(&s);
 }
 
@@ -388,7 +378,7 @@ static void on_night_brightness(lv_event_t *e)
     apply_night(&n);
 }
 
-/* Intervalle de rappel du catheter (rappel configure par l'utilisateur, pas une recommandation) */
+/* Catheter recall interval (recall configures by user, not a recommendation) */
 static void on_interval(lv_event_t *e)
 {
     if (s_updating) {
@@ -483,7 +473,7 @@ static void threshold_row(lv_obj_t *page, int col, int row, thr_id_t id, const c
 void ui_settings_create(lv_obj_t *page)
 {
     /* Page defilable verticalement. CLICKABLE : un appui sur du texte ou un espace vide cible la page (et non
-     * l'ecran, qui ne defile pas), donc un glissement fait defiler depuis n'importe quel point. Les boutons,
+     * the screen, which does not slip), so a slip makes to slip from any point. The buttons,
      * curseurs et interrupteurs restent prioritaires sous le doigt. La barre de navigation est hors de la page. */
     lv_obj_add_flag(page, LV_OBJ_FLAG_SCROLLABLE | LV_OBJ_FLAG_CLICKABLE);
     lv_obj_set_scroll_dir(page, LV_DIR_VER);
@@ -582,7 +572,7 @@ void ui_settings_create(lv_obj_t *page)
     lv_obj_set_width(interval_hint, 976);
     lv_obj_set_pos(interval_hint, 24, 1432);
 
-    /* --- CONNEXION : reseau Wi-Fi et compte Dexcom, modifiables sans recompiler --------- */
+    /* --- CONNEXION : Wi-Fi network and Dexcom account, editable without recompiling -------- */
     section_title(page, 1510, tr(S_CONN_TITLE));
     s_conn_wifi = ui_label(page, g_fonts.m, UI_COL_TEXT, "");
     lv_obj_set_width(s_conn_wifi, 620);
@@ -688,8 +678,8 @@ void ui_settings_update(const ui_data_t *d, bool force)
                                         LV_BUTTONMATRIX_CTRL_CHECKED);
         s_updating = false;
     }
-    /* CONNEXION : noms visibles seulement, jamais un mot de passe. Cette section ne depend ni du
-     * reseau ni de Dexcom : elle reste consultable sans Wi-Fi, sans Internet ou compte refuse. */
+    /* CONNEXION : visible names only, never a password. This section does not depend on
+     * network or Dexcom: it remains searchable without Wi-Fi, without Internet or account refuses. */
     static bool essai_affiche;
     const bool essai = credentials_trial_active();
     if (force || settings_changed || essai != essai_affiche) {

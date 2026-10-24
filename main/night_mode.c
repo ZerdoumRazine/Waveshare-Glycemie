@@ -1,12 +1,11 @@
 /*
  * night_mode.c: Scheduled dim display and temporary wake-up.
- * FR: Écran atténué la nuit et réveil temporaire.
  * Design note: Urgent alerts still take priority in night mode.
  */
 
 /*
  * Controls the night display, brightness transitions and temporary touch previews.
- * Pilote le mode nuit, la luminosité et les aperçus tactiles.
+ * Pilot night mode, brightness and touch previews.
  */
 #include "night_mode.h"
 
@@ -26,8 +25,8 @@ static const char *TAG = "nuit";
 
 #define FADE_PERIOD_MS 40
 #define FADE_MS        1500                  /* transition douce du retroeclairage */
-#define TOUCH_AWAKE_US (30 * 1000000LL)      /* interface normale 30 s apres la derniere interaction */
-#define ALERT_AWAKE_US (45 * 1000000LL)      /* retour a l'ecran nuit 45 s apres la disparition du panneau d'alerte */
+#define TOUCH_AWAKE_US (30 * 1000000LL)      /* normal interface 30 s after the last interaction */
+#define ALERT_AWAKE_US (45 * 1000000LL)      /* return to the screen night 45 s after the disappearance of the warning sign */
 #define PREVIEW_US     (60 * 1000000LL)      /* apercu TEST MODE NUIT : 60 s au plus */
 
 #define NIGHT_COL_TIME lv_color_hex(0xAAB7CE)
@@ -82,8 +81,8 @@ static void set_level(int level)
     static bool s_bsp_quiet;
     if (level != s_level) {
         if (s_level >= 0 && !s_bsp_quiet) {
-            /* bsp_display_brightness_set journalise chaque appel : traces d'information du BSP masquees des le premier
-             * changement apres le demarrage (les transitions en font plusieurs ; le mode nuit journalise ses etats) */
+            /* bsp_display_brightness_set journalise chaque appel : traces d'information du BSP masks of the first
+             * change after the start (transitions make several; night mode logs its states) */
             esp_log_level_set("ESP32_P4_EV", ESP_LOG_WARN);
             s_bsp_quiet = true;
         }
@@ -272,7 +271,7 @@ static void evaluate(const ui_data_t *d, bool immediate)
         }
     }
 
-    /* Panneau d'alerte importante prioritaire : luminosite jour, retour a l'ecran nuit 45 s apres sa disparition */
+    /* High priority alert sign: luminosite day, back to the screen night 45 s after its disappearance */
     if (ui_alert_panel_visible() && wakes_screen(ui_alert_panel_style())) {
         if (s_preview) {
             s_preview = false;
@@ -287,7 +286,7 @@ static void evaluate(const ui_data_t *d, bool immediate)
             woke = true;
         }
     }
-    /* Interface normale visible la nuit (apres un toucher ou une alerte) : prolongee 30 s apres chaque interaction */
+    /* Normal interface visible at night (after touch or alert): prolongs 30 s after each interaction */
     if (night && (s_touch_until_us > now || s_alert_until_us > now)) {
         const int64_t last_touch_us = now - (int64_t)lv_display_get_inactive_time(NULL) * 1000;
         if (last_touch_us + TOUCH_AWAKE_US > s_touch_until_us) {
@@ -401,9 +400,9 @@ static void create_screen(void)
     s_dot_color = UI_COL_DIM;
 }
 
-/* Changement de langue : les textes de l'ecran nuit sont poses par set_text(), qui compare avec
- * une copie en cache. Vider ces caches suffit : le prochain rafraichissement les reecrit dans la
- * nouvelle langue. L'ecran nuit lui-meme n'est jamais detruit. */
+/* Language change: the texts of the night screen are posed by set_text(), which compares with
+ * A copy in cache. Clearing these caches is enough: the next refreshment rewrites them in the
+ * New language. The night screen itself is never destroyed. */
 void night_mode_relang(void)
 {
     s_time_text[0] = '\0';

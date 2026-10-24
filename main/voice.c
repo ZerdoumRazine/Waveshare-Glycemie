@@ -1,20 +1,11 @@
 /*
  * voice.c: Playback of prerecorded WAV announcements by language.
- * FR: Lecture des annonces WAV selon la langue.
  * Design note: Without the voice bank, the alert beeps remain available.
  */
 
 /*
- * voice.c: Plays prerecorded announcements from the microSD.
- * FR: Lit les annonces préenregistrées sur microSD.
- * Design decision: Alert beeps must remain available without language files.
- *
- * Experimental supplementary display; official monitoring remains authoritative.
- */
-
-/*
  * Combines stored PCM WAV clips for six languages with a French and then beep fallback.
- * Assemble les annonces WAV des six langues avec un repli audio.
+ * Assemble announcements WAV of the six languages with an audio fold.
  */
 #include "voice.h"
 
@@ -47,7 +38,7 @@ extern const uint8_t voice_pcm_end[] asm("_binary_voice_fr_pcm_end");
 /* ------------------------------------------------------------------------- */
 /* Banque microSD (voix Google Chirp 3 HD) */
 
-#define VOICE_FILE_MAX (256 * 1024) /* 8 s a 16 kHz : les phrases durent moins de 4 s */
+#define VOICE_FILE_MAX (256 * 1024) /* 8 s at 16 kHz: sentences last less than 4 s */
 #define VOICE_LEAD_MS  150          /* pause entre le bip d'alerte et la voix */
 #define VOICE_GAP_MS   300          /* pause entre la phrase d'alerte et la valeur */
 
@@ -68,7 +59,7 @@ static uint32_t rd32(const uint8_t *p)
     return rd16(p) | (rd16(p + 2) << 16);
 }
 
-/* WAV PCM 16 bits mono 16 kHz : echantillons du bloc "data" (alignes : les blocs RIFF ont une taille paire) */
+/* WAV PCM 16 bits mono 16 kHz: samples of the data block (allines: blocks RIFF have a pair size) */
 static bool parse_wav(const uint8_t *buf, size_t len, voice_pcm_t *out)
 {
     if (len < 12 || memcmp(buf, "RIFF", 4) != 0 || memcmp(buf + 8, "WAVE", 4) != 0) {
@@ -98,7 +89,7 @@ static bool parse_wav(const uint8_t *buf, size_t len, voice_pcm_t *out)
     return false;
 }
 
-/* Tache audio : charge un fichier de la banque dans le tampon slot (0 ou 1) */
+/* Audio cache: load a file from the bank into the slot buffer (0 or 1) */
 /* Un seul avertissement par changement de langue si la banque correspondante manque */
 static bool s_lang_missing_logged;
 
@@ -122,9 +113,9 @@ static bool load_voice_file(const char *name, int slot, voice_pcm_t *out)
     size_t len = 0;
     esp_err_t err = ESP_ERR_NOT_FOUND;
 
-    /* Banque de la langue choisie : /glycemie/audio/voice/<code>/<fichier> (en, es, de, it, pt).
-     * Le francais reste a la racine, ou il a toujours ete : aucune recopie de la banque d'origine.
-     * Si la banque d'une langue n'est pas installee sur la carte, on retombe sur le francais plutot
+    /* Banque de la langue choisie : /glycemie/audio/voice/<code>/<file> (in, es, de, it, pt).
+     * The francais remains at the root, or it has always been: no copy of the original bank.
+     * If the bank of a language is not installed on the map, we fall back on the French rather
      * que de rester muet ; si le francais manque aussi, le bip d'alerte sert de secours. */
     const lang_t lang = i18n_lang();
     if (lang != LANG_FR) {
@@ -166,7 +157,7 @@ static void glucose_file_name(int value, char *name, size_t size)
 /* Tache audio : phrase d'alerte puis valeur */
 static void render_alert(int type, int value)
 {
-    /* "Rappel. Le capteur doit etre change demain." / "... dans deux heures." / "Rappel. Le catheter doit ..." */
+    /* "Call back. The sensor must be changed tomorrow." / "... in two hours." / "Recall. The catheter must..." */
     static const char *const k_sensor[SENSOR_REMIND_COUNT] = {
         [SENSOR_REMIND_24H] = "sensor_rappel_24h.wav",
         [SENSOR_REMIND_2H] = "sensor_rappel_2h.wav",
@@ -239,7 +230,7 @@ static void render_test(int number, int unused)
     }
 }
 
-/* Tache audio : reponse d'une commande vocale (bip de test si le fichier manque) */
+/* Audio cache: response of a voice command (test beep if the file is missing) */
 static void render_reply(int reply, int unused)
 {
     static const char *const k_files[VOICE_REPLY_COUNT] = {
@@ -288,7 +279,7 @@ static void render_glucose(int value, int b)
     char name[24];
     glucose_file_name(value, name, sizeof(name));
     if (stale) {
-        /* jamais presentee comme actuelle : "Donnees anciennes. Derniere mesure :" puis la valeur */
+        /* Never presented as current: "Old data. Last measure:" then the value */
         if (!load_voice_file("vc_data_old.wav", 0, &first) || !load_voice_file(name, 1, &second)) {
             audio_out_render_pattern(AUDIO_PATTERN_TEST);
             return;

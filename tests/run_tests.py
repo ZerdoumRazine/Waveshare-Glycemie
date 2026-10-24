@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # Compiles and runs hardware-independent C regression tests.
-# FR: Compile et lance les tests C sans matériel.
+#
 # Design note: Simulated components are not a substitute for hardware validation.
-# EN: Compile actual firmware C modules against host stubs before executing their tests.
-# FR: Compile les modules C réels avec des remplacements pour les tester sur PC.
+# Compile actual firmware C modules against host stubs before executing their tests.
+#
 r"""Compile et execute les tests unitaires du firmware sur le PC (sans carte ESP32).
 
 Les tests compilent le VRAI code C de main/ : glucose_math.c, app_state.c, sensor_session.c,
@@ -77,10 +77,10 @@ def trouver_msvc():
     for entry in entries:
         vcvars = os.path.join(entry['installationPath'], 'VC', 'Auxiliary', 'Build', 'vcvars64.bat')
         if os.path.exists(vcvars):
-            # shell=True : cmd.exe conserve les guillemets du chemin (liste d'arguments : il les retire)
+            # shell=True: cmd.exe keeps quotes from the path (list of arguments: it removes them)
             dump = subprocess.run(f'"{vcvars}" >nul 2>&1 && set',
                                   capture_output=True, text=True, shell=True)
-            # Les noms de variables Windows ne sont pas sensibles a la casse : on normalise
+            # Variable Names Windows are not case-sensitive: normalize
             # (sinon "Path" du vidage et "PATH" d'os.environ coexistent et cl.exe reste introuvable).
             env = {k.upper(): v for k, v in os.environ.items()}
             for line in dump.stdout.splitlines():

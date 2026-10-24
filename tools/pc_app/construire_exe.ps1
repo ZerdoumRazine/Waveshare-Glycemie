@@ -1,26 +1,26 @@
 # Builds the distributable Windows setup application.
-# FR: Construit l'application Windows à distribuer.
+#
 # Design note: Always test the compiled executable before sharing it.
-# EN: Package the tested Windows USB assistant into a standalone executable.
-# FR: Construit l'application Windows autonome de configuration USB.
+# Package the tested Windows USB assistant into a standalone executable.
+#
 <#
 .SYNOPSIS
-    Fabrique l'application Windows « WaveShare Glycemie — connexion » (un seul fichier .exe).
+    Manufactures the Windows application "WaveShare Glycemie — connection" (one .exe file).
 
 .DESCRIPTION
-    Le resultat, dist\GlycemieConnexion.exe, s'ouvre par double-clic : l'utilisateur final n'a
+    The result, dist\GlycemieLogin.exe, opens by double-click: the end user has
     besoin NI de Python NI d'aucune bibliotheque. L'executable embarque l'interprete, tkinter et
     tools\assistant_config.py (le meme dialogue serie que l'assistant en ligne de commande).
 
-    A executer une fois apres chaque modification de l'application ou de l'assistant :
+    To execute once after each modification of the application or assistant:
         powershell -ExecutionPolicy Bypass -File tools\pc_app\construire_exe.ps1
 
     Prerequis sur le PC de developpement seulement : Python 3 et PyInstaller
         py -3 -m pip install pyinstaller
 
 .NOTES
-    L'executable n'est PAS signe : Windows peut afficher « Editeur inconnu » au premier lancement
-    (SmartScreen). C'est explique dans le tutoriel. Rien n'est envoye sur Internet par l'application.
+    The executable is PAS signe : Windows peut afficher « Editeur inconnu » au premier lancement
+    (SmartScreen). This is explained in the tutorial. Nothing is sent over the Internet by the app.
 #>
 param(
     [switch]$Propre   # repart de zero (supprime build\ et dist\)
@@ -54,8 +54,8 @@ if ($Propre) {
 }
 
 Write-Host "Construction de l'application Windows..." -ForegroundColor Cyan
-# --noconsole : aucune fenetre noire ; --onefile : un seul .exe a donner a l'utilisateur
-# --paths + --hidden-import : assistant_config.py est embarque comme MODULE, pour que PyInstaller
+# --noconsole: no black windows; --onefile: one .exe to give to the user
+# --paths + --hidden-import : assistant_config.py est embarque comme MODULE, so that PyInstiller
 # analyse aussi ses propres imports (getpass, re, argparse, winreg...). Embarque en simple donnee,
 # il manquerait ces modules et l'application ne s'ouvrirait pas.
 & $python @argsPy -m PyInstaller `

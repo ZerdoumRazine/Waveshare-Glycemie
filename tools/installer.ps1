@@ -1,22 +1,22 @@
 # Checks hashes and hardware before USB firmware installation.
-# FR: Vérifie les empreintes et le matériel avant installation USB.
+#
 # Design note: Do not flash until the user explicitly confirms.
-# EN: Before USB flash, verify the firmware checksums, board revision and user confirmation.
-# FR: Vérifie les empreintes, la puce et l'accord de l'utilisateur avant installation.
+# Before USB flash, verify the firmware checksums, board revision and user confirmation.
+#
 <#
 .SYNOPSIS
     Installe la version publique sur le Waveshare ESP32-P4-WIFI6-Touch-LCD-7B.
 .DESCRIPTION
-    Ne fonctionne qu'avec les trois fichiers binaires fournis dans la meme archive.
-    Ne formate ni la microSD ni la partition NVS. Ne pas utiliser sur une autre carte.
-    Aucune installation n'est effectuee sans verification et confirmation manuelle.
+    Only works with the three binary files provided in the same archive.
+    Ne formate ni la microSD ni la partition NVS. Do not use on another card.
+    No installation is performed without verification and manual confirmation.
 #>
 param([string]$Port = "")
 $ErrorActionPreference = 'Stop'
 $dir = Split-Path -Parent $MyInvocation.MyCommand.Path
 
-# La version publique ne contient aucun identifiant. Les acces sont saisis
-# apres installation par l'assistant tactile ou GlycemieConnexion.exe.
+# The public version contains no identifiers. Accesses are seized
+# After installation by the touch assistant or GlycemieLogin.exe.
 $required = @('glycemie_display.bin', 'bootloader.bin', 'partition-table.bin')
 foreach ($name in $required) {
     if (-not (Test-Path (Join-Path $dir $name))) {
@@ -24,7 +24,7 @@ foreach ($name in $required) {
     }
 }
 
-# Verifier les empreintes des fichiers AVANT tout flash.
+# Checking file prints AVANT tout flash.
 $hashFile = Join-Path $dir 'SHA256SUMS.txt'
 if (-not (Test-Path $hashFile)) {
     throw "SHA256SUMS.txt absent. L'archive doit etre extraite en entier."

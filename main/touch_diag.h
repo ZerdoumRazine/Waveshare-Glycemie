@@ -1,5 +1,4 @@
 /* touch_diag.h: Touch diagnostics and visual hit-area markers.
- * FR: Diagnostics tactiles et repères de zones.
  * The declarations below are shared with other firmware modules.
  */
 /*
@@ -9,8 +8,7 @@
  * Journal uniquement sur changement d'etat (appui, relachement, clic), active par la console.
  */
 /* Public interface / Interface publique
- * EN: Touchscreen diagnostics, event mapping and synthetic input testing.
- * FR: Diagnostics des appuis et essais tactiles simulés.
+ * Touchscreen diagnostics, event mapping and synthetic input testing.
  */
 #pragma once
 
@@ -18,10 +16,10 @@
 #include <stdint.h>
 #include "lvgl.h"
 
-/* A appeler une fois apres bsp_display_start_with_config ; rotation_deg = rotation de l'adaptateur */
+/* To call once after bsp_display_start_with_config ; rotation_deg = rotation de l'adaptateur */
 void touch_diag_init(lv_indev_t *indev, int rotation_deg);
 
-/* Nom lisible d'un objet dans le journal (tache LVGL, chaine persistante) */
+/* Readable name of an object in the journal (tache LVGL, chaine persistante) */
 void touch_diag_name(lv_obj_t *obj, const char *name);
 
 /* Console (toute tache) */
@@ -30,7 +28,7 @@ bool touch_diag_log_enabled(void); /* traces de diagnostic actives (touch_log 1)
 void touch_diag_request_info(void);
 void touch_diag_request_mapping(bool swap_xy, bool mirror_x, bool mirror_y);
 
-/* Test : appui synthetique injecte dans la lecture tactile (meme chemin LVGL qu'un doigt).
+/* Test: Synthetic support injects into tactile reading (the same path) LVGL qu'un doigt).
  * De (x1, y1) a (x2, y2) pendant ms millisecondes, puis relachement. Retourne false si la file est pleine. */
 bool touch_diag_inject(int x1, int y1, int x2, int y2, int ms);
 

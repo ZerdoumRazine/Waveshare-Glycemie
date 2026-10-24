@@ -1,14 +1,12 @@
 /* ui_common.h: Shared LVGL widgets, fonts and colors.
- * FR: Éléments LVGL, polices et couleurs communs.
  * Shared definitions for the firmware implementation.
  */
 /*
- * Elements communs de l'interface : dimensions, couleurs, polices, donnees calculees
- * une fois par seconde et partagees entre les pages.
+ * Common interface elements: dimensions, colors, fonts, calculated data
+ * once a second and shared between pages.
  */
 /* Public interface / Interface publique
- * EN: Shared LVGL colours, fonts and formatting helpers for all pages.
- * FR: Couleurs, polices et formats partagés entre pages.
+ * Shared LVGL colours, fonts and formatting helpers for all pages.
  */
 #pragma once
 
@@ -48,7 +46,7 @@
 #define UI_COL_FAINT     lv_color_hex(0x5F6B82) /* texte tertiaire */
 #define UI_COL_SOFT      lv_color_hex(0xDDE3EE) /* texte clair attenue */
 #define UI_COL_DATE      lv_color_hex(0xAFBACD)
-#define UI_COL_TRACK     lv_color_hex(0x1C2940) /* fond des barres de progression */
+#define UI_COL_TRACK     lv_color_hex(0x1C2940) /* bottom of the progression bars */
 
 /* Style 2.5D "dark glass" (refonte visuelle) : fond bleu nuit vers noir, cartes translucides a bord fin et ombre douce.
  * Couleurs d'accent de la glycemie plus douces ; le panneau d'alerte garde ses couleurs (UI_COL_RED, _ORANGE...). */
@@ -80,9 +78,9 @@ typedef struct {
     lv_font_t *s;
     lv_font_t *nav;
     lv_font_t *clock;  /* heure du bandeau */
-    lv_font_t *card;   /* valeurs des cartes */
+    lv_font_t *card;   /* card values */
     lv_font_t *xs;     /* petites mentions */
-    lv_font_t *label;  /* titres des cartes (gras) */
+    lv_font_t *label;  /* card titles (gras) */
     lv_font_t *navbar; /* barre de navigation (6 pages) */
 } ui_fonts_t;
 
@@ -149,7 +147,7 @@ lv_obj_t *ui_progress(lv_obj_t *parent, int32_t x, int32_t y, int32_t w, int32_t
 void ui_set_text(lv_obj_t *label, const char *text);
 void ui_set_text_color(lv_obj_t *obj, lv_color_t color);
 
-/* "Mardi 15 septembre", "15/09 à 16:42", duree "2 j 8 h" / "17 h 05" (compact : "17 h") */
+/* "Tuesday 15 September", "15/09 at 16:42", duration "2 days 8 hours" / "17:05" (compact: "17 hours") */
 void ui_format_date_long(const struct tm *tm_local, char *buf, size_t size);
 void ui_format_day_hm(int64_t epoch_s, char *buf, size_t size);
 void ui_format_duration(int64_t seconds, bool compact, char *buf, size_t size);

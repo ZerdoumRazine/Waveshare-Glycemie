@@ -4,6 +4,6 @@ nvs,      data, nvs,     0x9000,  0x6000,
 phy_init, data, phy,     0xf000,  0x1000,
 factory,  app,  factory, ,        8M,
 storage,  data, spiffs,  ,        7M,
-# Ajout 2026-09-15 apres les partitions d'origine (offsets ci-dessus inchanges) : modeles ESP-SR des commandes
+# Added 2026-09-15 after the original partitions (offset above inchanges): models ESP-SR commands
 # vocales (srmodels.bin genere et flashe par le composant espressif/esp-sr : WakeNet9L "Bonjour ESP" + MultiNet7).
 model,    data, spiffs,  0xF10000, 4M,

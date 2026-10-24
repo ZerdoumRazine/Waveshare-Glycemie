@@ -22,10 +22,10 @@ format the display reads (WAV, 16-bit PCM, mono, 16 kHz) and copied to the micro
 then plays those files on its own: **no connection is needed to speak**.
 
 Fetching glucose values is a separate matter, over Wi‑Fi and your Dexcom account
-([docs/CONFIGURATION_DEXCOM_FR.md](CONFIGURATION_DEXCOM_FR.md), in French).
+([docs/DEXCOM_SETUP_EN.md](DEXCOM_SETUP_EN.md), in French).
 
 **ESP‑IDF is not required** to install or build audio: it only builds the firmware
-([docs/INSTALLATION_FR.md](INSTALLATION_FR.md)).
+([docs/INSTALLATION_EN.md](INSTALLATION_EN.md)).
 
 ### The six languages
 
@@ -68,7 +68,7 @@ checksum does not match.
 `glycemie/audio/voice/` ready to copy to the microSD card and a
 `PROVENANCE_VOIX.txt` notice. The audio was generated with Google Cloud
 Text-to-Speech and is not licensed under the project's MIT code licence:
-[credits and third-party rights](LICENCES_TIERCES_FR.md).
+[credits and third-party rights](THIRD_PARTY_LICENSES_EN.md).
 
 ### 2.2 Back the card up BEFORE changing anything
 
@@ -77,7 +77,7 @@ Text-to-Speech and is not licensed under the project's MIT code licence:
    your measurement history; it must not be lost.
 3. If Windows offers to **format** the card, say **no** and check the drive letter: formatting would
    erase everything. A brand-new card is prepared as FAT32 (see
-   [docs/INSTALLATION_FR.md](INSTALLATION_FR.md), microSD section).
+   [docs/INSTALLATION_EN.md](INSTALLATION_EN.md), microSD section).
 
 ### 2.3 Copy the files
 
@@ -146,7 +146,7 @@ enough for normal use.
 
 ### 3.1 Go to the project folder
 
-The folder holding `main`, `tools` and `README_FR.md`. Example (adapt the path):
+The folder holding `main`, `tools` and `README.md`. Example (adapt the path):
 
 ```powershell
 Set-Location 'E:\wsg-public'
@@ -248,7 +248,7 @@ become obsolete.
 | `tools/voice/bank/` | final WAV files + manifests | as Release attachments, not in Git |
 | `tools/voice/google_raw/` | cache of Google's answers | no (private backup) |
 | `tools/voice/.venv_tts/` | installed Python and libraries | no (reinstallable) |
-| `main/voice/voice_fr.pcm` | legacy embedded Windows voice (console `voice_old`) | no: redistribution rights not established, see [docs/LICENCES_TIERCES_FR.md](LICENCES_TIERCES_FR.md) |
+| `main/voice/voice_fr.pcm` | legacy embedded Windows voice (console `voice_old`) | no: redistribution rights not established, see [docs/THIRD_PARTY_LICENSES_EN.md](THIRD_PARTY_LICENSES_EN.md) |
 
 The firmware builds **with or without** `main/voice/voice_fr.pcm`. Without it, only the legacy
 `voice_old` console command becomes unavailable; normal announcements (microSD bank) and the fallback
@@ -266,7 +266,7 @@ beep are unchanged.
 | `--verify-only` refuses for a language | firmware older than the `vrx_dir … lecture` command: rebuild and reflash, or check the card on the PC |
 | `Acces API refuse` when generating | billing or API not enabled, or quota project not set (§ 3.4) |
 
-Full troubleshooting (French): [docs/DEPANNAGE_FR.md](DEPANNAGE_FR.md).
+Full troubleshooting (French): [docs/TROUBLESHOOTING_EN.md](TROUBLESHOOTING_EN.md).
 
 ---
 

@@ -1,17 +1,15 @@
 /* audio_out.h: Audio playback settings and alert tone API.
- * FR: API audio, volume et bips d'alerte.
  * Keep this header focused on the contracts used by other modules.
  */
 /*
  * Sortie audio : codec ES8311 + I2S + amplificateur de la carte, exclusivement via le BSP Waveshare
  * (bsp_audio_codec_speaker_init) et esp_codec_dev. Aucune broche definie ici.
  *
- * Une tache dediee joue des sequences (tonalites synthetisees, extraits PCM) sans bloquer l'appelant.
- * Le codec n'est ouvert que pendant la lecture (amplificateur coupe au repos).
+ * A dediee spot plays sequence (tonalites synthetises, extracts) PCM) without blocking the caller.
+ * The codec is only opened during the reading (absorbing amplifier).
  */
 /* Public interface / Interface publique
- * EN: Non-blocking audio requests and codec diagnostic controls.
- * FR: Requêtes audio et contrôles du codec.
+ * Non-blocking audio requests and codec diagnostic controls.
  */
 #pragma once
 
@@ -41,12 +39,12 @@ esp_err_t audio_out_play_pattern(audio_pattern_t pattern, int volume_pct);
 esp_err_t audio_out_play_tone(int freq_hz, int duration_ms, int volume_pct);
 esp_err_t audio_out_play_pcm(const int16_t *samples, size_t count, int volume_pct); /* mono 16 kHz, memoire persistante */
 
-/* Lecture preparee dans la tache audio (acces microSD permis, jamais dans l'interface ni sous un verrou d'alerte) :
- * fn(a, b) est appelee a son tour dans la file et joue ses sons avec les fonctions audio_out_render_*. */
+/* Reading prepared in the audio spot (microSD accesses allowed, never in the interface or under an alert lock):
+ * fn(a, b) is called in turn in the queue and plays its sounds with the functions audio_out_render_*. */
 typedef void (*audio_render_fn_t)(int a, int b);
 esp_err_t audio_out_play_render(audio_render_fn_t fn, int a, int b, int volume_pct);
 
-/* Uniquement depuis une fonction de rendu : false si la lecture a ete arretee (acquittement, rappel) */
+/* Only from a rendering function: false if the reading has been stopped (acquittal, reminder) */
 bool audio_out_render_pcm(const int16_t *samples, size_t count); /* mono 16 kHz */
 bool audio_out_render_silence(int ms);
 bool audio_out_render_pattern(audio_pattern_t pattern);
@@ -59,16 +57,16 @@ bool audio_out_busy(void);
 float audio_out_volume_db(int volume_pct);
 void audio_out_print_info(void); /* console */
 
-/* Micros ES7210 (BSP) reserves par les commandes vocales : NULL si deja reserves ou indisponibles. Pendant la
+/* Micros ES7210 (BSP) reserved by voice commands : NULL si deja reserves ou indisponibles. Pendant la
  * reservation, l'autotest et la mesure au micro sont refuses. */
 void *audio_out_mic_acquire(void); /* esp_codec_dev_handle_t */
 void audio_out_mic_release(void);
 
-/* Autotest : joue une tonalite et verifie sa presence avec les micros de la carte (ES7210 via le BSP) */
+/* Autotest : plays a tonalite and verifies its presence with the microphones of the map (ES7210 via le BSP) */
 esp_err_t audio_out_selftest(int volume_pct, bool *detected, float *gain_db);
 
 /* Mesure comparative au micro de la carte (instrument relatif, meme position) : bip 1 kHz si play_voice est NULL,
- * sinon la lecture lancee par play_voice (TEST VOIX). Gain micro fixe pour comparer les volumes entre eux. */
+ * sinon la lecture lancee par play_voice (TEST VOIX). Fixed micro gain to compare volumes between them. */
 typedef void (*audio_playback_fn_t)(int volume_pct);
 esp_err_t audio_out_measure(int volume_pct, audio_playback_fn_t play_voice, float mic_gain_db);
 

@@ -1,12 +1,11 @@
 /*
  * ui_chart.c: Chart rendering for the selected glucose time window.
- * FR: Tracé de la courbe selon la période.
  * Design note: Missing readings must not be presented as measured values.
  */
 
 /*
  * Draws historical glucose curves with touch exploration and variable time windows.
- * Trace les courbes de glycémie et gère l'exploration tactile.
+ * Trace blood glucose curves and manage tactile exploration.
  */
 #include "ui_chart.h"
 
@@ -97,7 +96,7 @@ void ui_chart_create(ui_chart_t *c, lv_obj_t *parent, int32_t x, int32_t y, int3
     c->time_labels = time_labels;
     c->y_max = 300;
 
-    /* Verre englobant les valeurs de l'axe (a gauche) et les heures (en dessous) */
+    /* Glass incorporating the values of the axis (left) and the hours (below) */
     c->card = ui_card(parent, x - 72, y - 16, w + 88, h + (time_labels ? 60 : 32), 22);
 
     c->box = ui_box(parent, x, y, w, h, UI_COL_CHART_BG);
@@ -156,7 +155,7 @@ void ui_chart_create(ui_chart_t *c, lv_obj_t *parent, int32_t x, int32_t y, int3
 }
 
 /* ------------------------------------------------------------------------- */
-/* Exploration tactile : curseur, point et bulle deplaces (jamais recrees) sur la mesure reelle la plus proche */
+/* Touch exploration: cursor, point and bubble places (never recrees) on the nearest real measure */
 
 static const char *trend_arrow_text(uint8_t trend)
 {
@@ -200,7 +199,7 @@ static void explore_show(ui_chart_t *c, bool visible)
     }
 }
 
-/* Selection d'un point deja trace (index dans pt_*) : aucune valeur interpolee, aucune allocation */
+/* Selection of a trace point (index in pt *): no interpole value, no allocation */
 static void explore_select(ui_chart_t *c, int n)
 {
     if (n < 0 || n >= c->pt_count || g_ui.hist == NULL) {
@@ -228,7 +227,7 @@ static void explore_select(ui_chart_t *c, int n)
     ui_set_text(c->bubble_value, buf);
     ui_set_text_color(c->bubble_value, ui_glucose_color(p->mgdl));
 
-    /* Tendance et variation seulement si l'historique les contient reellement pour ce point */
+    /* Trend and variation only if the history actually contains them for this point */
     const char *arrow = trend_arrow_text(p->trend);
     int delta = 0;
     const bool has_delta = hist_index + 1 < g_ui.count &&
@@ -244,7 +243,7 @@ static void explore_select(ui_chart_t *c, int n)
     }
     ui_set_text(c->bubble_trend, buf);
 
-    /* Bulle du cote ou il reste de la place, jamais hors de la zone de trace */
+    /* Bull from the side where there's still room, never out of the trace area */
     int32_t bx = px + 20;
     if (bx + BUBBLE_W > c->w) {
         bx = px - 20 - BUBBLE_W;
@@ -335,7 +334,7 @@ void ui_chart_enable_explore(ui_chart_t *c)
         free(c->pt_y);
         free(c->pt_index);
         c->pt_x = c->pt_y = c->pt_index = NULL;
-        return; /* sans memoire : graphique normal, sans exploration */
+        return; /* without memory: normal graph, without exploration */
     }
     c->selected = -1;
 
@@ -414,7 +413,7 @@ void ui_chart_update(ui_chart_t *c, const ui_data_t *d, int hours)
     lv_chart_set_all_values(c->chart, c->series, LV_CHART_POINT_NONE);
     lv_chart_set_point_count(c->glow, (uint32_t)slots);
     lv_chart_set_all_values(c->glow, c->glow_series, LV_CHART_POINT_NONE);
-    /* Courbe fine, petits points seulement sur les durees courtes ; lueur a la couleur de la derniere valeur */
+    /* Fine curve, small points only on short lengths; glow has the last value color */
     const int32_t dot = hours <= 3 ? 6 : (hours <= 6 ? 4 : 0);
     lv_obj_set_style_width(c->chart, dot, LV_PART_INDICATOR);
     lv_obj_set_style_height(c->chart, dot, LV_PART_INDICATOR);
@@ -441,7 +440,7 @@ void ui_chart_update(ui_chart_t *c, const ui_data_t *d, int hours)
             }
             slot_from_end = (int)((ago_ms + SLOT_MS / 2) / SLOT_MS);
         } else {
-            /* Placement d'une mesure a l'autre : quelques secondes de decalage entre mesures
+            /* Placement from one measure to another: a few seconds of decalage between measurements
              * ne creent ni faux trou ni chevauchement ; un vrai trou reste visible */
             const int step = (int)((anchor_ms - wt_ms + SLOT_MS / 2) / SLOT_MS);
             if (step <= 0) {
@@ -492,7 +491,7 @@ void ui_chart_update(ui_chart_t *c, const ui_data_t *d, int hours)
         }
     }
 
-    /* Derniere valeur au bout de la courbe (graphique complet ; l'accueil l'affiche deja en grand) */
+    /* Last value at the end of the curve (complete graph ; the reception the poster already in large) */
     if (newest_slot >= 0 && c->time_labels) {
         lv_label_set_text_fmt(c->last_value, "%d", newest_value);
         lv_obj_set_style_text_color(c->last_value,

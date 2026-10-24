@@ -1,23 +1,21 @@
 /* stock.h: Stock counts and replacement bookkeeping interface.
- * FR: Interface de comptage et gestion des stocks.
  * The declarations below are shared with other firmware modules.
  */
 /*
- * Stock local des consommables : capteurs Dexcom G7 et catheters (sites de perfusion).
+ * Local consumable stock: Dexcom G7 sensors and catheters (infusion sites).
  *
- * Logique pure (NVS + evenements), sans LVGL : l'interface (ui_consumables.c), la console et une future couche
- * Nova appellent exactement les memes fonctions.
- *  - quantite INCONNUE tant que l'utilisateur ne l'a pas renseignee (STOCK_UNKNOWN) : aucune decrementation ne la
+ * Logique pure (NVS + events), without LVGL : l'interface (ui_consumables.c), the console and a future layer
+ * Nova calls exactly the same functions.
+ *  - quantite INCONNUE until the user has provided information (STOCK_UNKNOWN) : aucune decrementation ne la
  *    transforme en 0 ;
- *  - jamais negative, bornee a STOCK_MAX ;
- *  - une seule decrementation par changement reellement enregistre : l'heure du changement sert de marqueur en NVS
- *    (un redemarrage, une double confirmation ou un rejeu ne consomment jamais deux unites) ;
+ *  - Never negative, limit to STOCK_MAX ;
+ *  - a single decrementation by real change recorded: the time of change serves as a marker in NVS
+ *    (a restart, double confirmation or replay never consume two units);
  *  - seuil de stock faible par consommable (2 et 3 par defaut, modifiables) : etat consultable + evenement local
  *    STOCK_LOW (file en memoire, aucun reseau).
  */
 /* Public interface / Interface publique
- * EN: Inventory counts and item-level low-stock notifications.
- * FR: Quantités locales et avertissements de stock faible.
+ * Inventory counts and item-level low-stock notifications.
  */
 #pragma once
 
@@ -38,17 +36,17 @@ typedef struct {
     stock_item_t item;
     int remaining;      /* quantite restante au moment de l'evenement */
     int threshold;      /* seuil qui a declenche l'evenement */
-    int64_t time_s;     /* epoch UTC, 0 si l'heure n'est pas synchronisee */
+    int64_t time_s;     /* epoch UTC, 0 if the time is not synchronized */
 } stock_event_t;
 
 esp_err_t stock_init(void);
 
 int stock_get(stock_item_t item);                       /* STOCK_UNKNOWN si non renseigne */
-esp_err_t stock_set(stock_item_t item, int value);      /* 0..STOCK_MAX, ou STOCK_UNKNOWN pour effacer */
-esp_err_t stock_add(stock_item_t item, int delta);      /* borne 0..STOCK_MAX ; sans effet si non renseigne */
+esp_err_t stock_set(stock_item_t item, int value);      /* 0..STOCK_MAX, ou STOCK_UNKNOWN to erase */
+esp_err_t stock_add(stock_item_t item, int delta);      /* borne 0..STOCK_MAX ; no effect if not given */
 
-/* Changement reellement enregistre (heure de depart du consommable) : retire une unite, une seule fois pour un meme
- * changement. Sans effet si le stock n'est pas renseigne ou est deja a zero. true = une unite retiree. */
+/* Change actually recorded (time of departure of consumable): remove one unit, only once for the same
+ * change. No effect if the stock is not informative or already zero. True = a unit removed. */
 bool stock_consume(stock_item_t item, int64_t change_s);
 
 int stock_low_threshold(stock_item_t item);
@@ -56,9 +54,9 @@ esp_err_t stock_set_low_threshold(stock_item_t item, int value); /* 0..STOCK_MAX
 bool stock_is_low(stock_item_t item);                   /* renseigne et <= seuil */
 
 uint32_t stock_revision(void);                          /* incremente a chaque changement (rafraichissement) */
-const char *stock_name(stock_item_t item);              /* "capteurs G7", "cathéters" */
+const char *stock_name(stock_item_t item);              /* "G7 sensors", "catheters" */
 
-/* Evenement local STOCK_LOW (file courte) : destine a une future couche Nova, jamais envoye par le firmware */
+/* Evenement local STOCK_LOW (short line): Destiny has a future Nova layer, never sent by firmware */
 bool stock_take_event(stock_event_t *out);
 
 void stock_print(void); /* console */

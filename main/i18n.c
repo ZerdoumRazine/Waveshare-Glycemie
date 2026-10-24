@@ -1,19 +1,18 @@
 /*
  * i18n.c: Six-language interface text catalog.
- * FR: Catalogue des textes d'interface en six langues.
  * Design note: String IDs must remain stable even when translations change.
  */
 
 /*
  * Maps stable text IDs to French, English, Spanish, German, Italian and Portuguese.
- * Associe des identifiants de texte aux six langues de l'interface.
+ * Associates text identifiers with the six languages of the interface.
  */
 #include "i18n.h"
 
 #include <stdio.h>
 #include <string.h>
 
-/* Langue courante : lue depuis la NVS au demarrage (settings.c), francais avant cela. */
+/* Langue courante : lue depuis la NVS at the start (settings.c), French before that. */
 static lang_t s_lang = LANG_FR;
 
 lang_t i18n_lang(void)
@@ -46,9 +45,9 @@ const char *lang_code(lang_t lang)
 }
 
 /* ------------------------------------------------------------------------------------------------
- * Table des traductions : une ligne par texte, dans l'ordre de str_id_t.
- * Ordre des colonnes : francais, anglais, espagnol, allemand, italien, portugais.
- * Les specificateurs de format (%d, %s, %%) doivent etre identiques et dans le meme ordre
+ * Translation table: one line per text, in the order of str_id_t.
+ * Order of columns: French, English, Spanish, German, Italian, Portuguese.
+ * The format specifiers (%d, %s, %%) must be identical and in the same order
  * sur toute la ligne : i18n_check() le verifie au demarrage.
  * ---------------------------------------------------------------------------------------------- */
 static const char *const k_tr[S_COUNT][LANG_COUNT] = {
@@ -549,7 +548,7 @@ static const char *const k_tr[S_COUNT][LANG_COUNT] = {
                              "Modalità dimostrativa: i valori sono fittizi, nessun account viene usato.",
                              "Modo demonstração: os valores são fictícios, nenhuma conta é usada."},
 [S_SETUP_EMPTY] = {"À renseigner", "Required", "Falta rellenar", "Bitte ausfüllen", "Da compilare", "Por preencher"},
-/* --- Section CONNEXION des reglages ----------------------------------------------------------- */
+/* --- Section CONNEXION adjustments ---------------------------------------------------------------------------- */
 [S_CONN_TITLE] = {"CONNEXION", "CONNECTION", "CONEXIÓN", "VERBINDUNG", "CONNESSIONE", "LIGAÇÃO"},
 [S_CONN_WIFI] = {"Réseau Wi-Fi", "Wi-Fi network", "Red Wi-Fi", "WLAN-Netz", "Rete Wi-Fi", "Rede Wi-Fi"},
 [S_CONN_DEXCOM] = {"Compte Dexcom", "Dexcom account", "Cuenta Dexcom", "Dexcom-Konto", "Account Dexcom", "Conta Dexcom"},
@@ -600,7 +599,7 @@ const char *tr(str_id_t id)
         return "";
     }
     const char *s = k_tr[id][s_lang];
-    /* Repli sur le francais si une traduction venait a manquer : jamais de texte vide a l'ecran. */
+    /* Replies to the French if a translation is missing: never empty text on screen. */
     return (s != NULL && s[0] != '\0') ? s : k_tr[id][LANG_FR];
 }
 
@@ -639,7 +638,7 @@ static const char *const k_months[LANG_COUNT][12] = {
 
 /* Mise en forme propre a chaque langue : "Jeudi 15 octobre", "Thursday 15 October",
  * "jueves, 15 de octubre", "Donnerstag, 15. Oktober", "giovedì 15 ottobre",
- * "quinta-feira, 15 de outubro". Le francais garde "1er" pour le premier du mois. */
+ * "quinta-feira, 15 de outubro." The French keep "1er" for the first of the month. */
 const char *i18n_day_name(int wday)
 {
     return k_days[s_lang][(wday >= 0 && wday < 7) ? wday : 0];
@@ -679,7 +678,7 @@ void i18n_format_date_long(const struct tm *tm_local, char *buf, size_t size)
         }
         break;
     }
-    /* Espagnol, italien et portugais : majuscule en tete de bandeau, comme les autres langues. */
+    /* Spanish, Italian and Portuguese: capital in headband, like other languages. */
     if (buf[0] >= 'a' && buf[0] <= 'z') {
         buf[0] = (char)(buf[0] - 'a' + 'A');
     }

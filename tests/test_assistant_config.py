@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # Simulates serial configuration and credential failures.
-# FR: Simule la configuration série et ses échecs.
+#
 # These tests use simulations; they do not connect to a patient's device.
-# EN: Simulate USB setup to prove passwords never appear in logs and failed trials are reversible.
-# FR: Simule l'assistant USB pour vérifier les secrets et l'annulation des essais.
+# Simulate USB setup to prove passwords never appear in logs and failed trials are reversible.
+#
 """Controles de l'assistant de configuration par USB (tools/assistant_config.py).
 
 Deux proprietes comptent plus que les autres :
@@ -24,7 +24,7 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 SOURCE = os.path.join(ROOT, 'tools', 'assistant_config.py')
 sys.path.insert(0, os.path.join(ROOT, 'tools'))
 
-import assistant_config as ac  # noqa: E402  (le chemin doit etre ajoute avant l'import)
+import assistant_config as ac  # noqa: E402  (the path must be added before the import)
 
 SSID = 'BoxSalon'
 MDP_WIFI = 'mot-de-passe-du-wifi-2024'
@@ -82,7 +82,7 @@ class AppareilSimule(object):
     def close(self):
         self.ferme = True
 
-    # --- vues pratiques pour les controles ---
+    # --- practical views for controls ---
     @property
     def essai_actif(self):
         return self.essai_wifi is not None or self.essai_dexcom is not None
@@ -242,7 +242,7 @@ def main():
     for etape in ('connexion au Wi-Fi', 'acces a Internet', 'compte Dexcom'):
         check('etape affichee pendant la verification : %s' % etape, etape in texte)
 
-    # --- 2. Aucun mot de passe affiche ---------------------------------------------------------
+    # --- 2. No password displays ---------------------------------------------------------
     check("le mot de passe du Wi-Fi n'est jamais affiche", MDP_WIFI not in texte)
     check("le mot de passe Dexcom n'est jamais affiche", MDP_DEX not in texte)
     envoye = '\n'.join(simule.recu)
@@ -251,7 +251,7 @@ def main():
     check('le mot de passe Dexcom part une seule fois, dans ident_dexcom',
           envoye.count(MDP_DEX) == 1 and ('ident_dexcom %s|%s|ous' % (USER, MDP_DEX)) in envoye)
 
-    # --- 3. Des acces qui fonctionnent ne sont jamais perdus -----------------------------------
+    # --- 3. Accesses that work are never lost -----------------------------------
     code, simule, texte = scenario([(ac.ETAT_ECHEC, 'dexcom_refuse')])
     check('essai refuse : les anciens acces restent enregistres', anciens_intacts(simule))
     check('essai refuse : annulation envoyee a l\'appareil', 'ident_annuler' in simule.recu)
@@ -305,7 +305,7 @@ def main():
     check("aucun resultat d'essai : code 1, renvoi vers l'ecran, anciens acces conserves",
           code == 1 and "l'ecran" in texte and anciens_intacts(simule))
 
-    # --- 6. Saisies refusees avant tout envoi --------------------------------------------------
+    # --- 6. Seizures refused before sending --------------------------------------------------
     mdp_barre = 'mot|de|passe'
     code, simule, texte = scenario([(ac.ETAT_REUSSI, 'ok')], mdp_wifi=mdp_barre)
     check('mot de passe contenant | : refuse sans rien envoyer',
@@ -316,7 +316,7 @@ def main():
         check('%s "%s" : refuse, anciens acces conserves' % (champ, valeur or 'vide'),
               code == 1 and anciens_intacts(simule))
 
-    # --- 7. Lecture de l'etat : rien n'est modifie ---------------------------------------------
+    # --- 7. Reading the state: nothing changes ----------------------------------------------
     simule = AppareilSimule(deja=((SSID, MDP_WIFI), (USER, MDP_DEX, 'ous')))
     app = ac.Appareil(simule)
     etat = app.etat()

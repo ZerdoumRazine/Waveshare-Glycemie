@@ -1,12 +1,11 @@
 /*
  * ui_today.c: Daily statistics starting at local midnight.
- * FR: Statistiques quotidiennes depuis minuit.
  * Design note: Show incomplete coverage honestly in daily summaries.
  */
 
 /*
  * Calculates and renders today's statistics using local midnight and available readings.
- * Calcule les statistiques du jour à partir de minuit local.
+ * Calculate daily statistics from midnight local.
  */
 #include "i18n.h"
 #include "ui_pages.h"
@@ -81,7 +80,7 @@ static tile_t s_tiles[T_COUNT];
 static lv_obj_t *s_subtitle;
 static lv_obj_t *s_timeline;
 static uint8_t s_slots[SLOTS];
-static int32_t s_now_pos = -1; /* 0..1000 : position de l'heure actuelle dans la journee */
+static int32_t s_now_pos = -1; /* 0..1000: current position in the day */
 
 static void tile_create(tile_t *t, lv_obj_t *page, int32_t x, int32_t y, int32_t w, const char *title, bool icon_low,
                         bool icon_high, const char *sub)
@@ -334,7 +333,7 @@ static void compute_today(const ui_data_t *d, int64_t midnight_ms, today_t *t, u
         const int slot = (int)((p->wt_ms - midnight_ms) / SLOT_MS);
         if (slot >= 0 && slot < SLOTS) {
             const uint8_t cur = slots[slot];
-            /* priorite : bas > haut > cible > sans donnee */
+            /* priority: bottom > top > target > without data */
             if (state == SLOT_LOW || (state == SLOT_HIGH && cur != SLOT_LOW) || (state == SLOT_OK && cur < SLOT_OK)) {
                 slots[slot] = state;
             }
@@ -382,7 +381,7 @@ void ui_today_update(const ui_data_t *d, bool force)
         lv_obj_invalidate(s_timeline);
     }
 
-    ui_set_text(s_subtitle, tr(S_SINCE_MIDNIGHT)); /* la date complete est dans le bandeau : aucun doublon */
+    ui_set_text(s_subtitle, tr(S_SINCE_MIDNIGHT)); /* the full date is in the banner: no duplicate */
 
     if (t.n == 0) {
         for (int i = 0; i < T_COUNT; i++) {

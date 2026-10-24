@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # Repackages validated speech WAVs and their provenance.
-# FR: Reconditionne les WAV vérifiés et leur provenance.
+#
 # Design note: Reject unrelated files such as logs or personal histories.
-# EN: Validates original six-language WAVs and writes an audio-only release ZIP.
-# FR: Vérifie les six banques WAV et crée une archive sans données privées.
+# Validates original six-language WAVs and writes an audio-only release ZIP.
+#
 """Controle et repaquette uniquement les WAV nécessaires à la microSD du projet.
 
 Entrée : paquet microSD historique v0.1.0, téléchargé depuis la Release PRIVÉE.
@@ -130,9 +130,9 @@ def main() -> None:
         for info in source.infolist():
             if info.is_dir():
                 continue
-            # L'ancien ZIP comporte aussi une notice de téléchargement créée
-            # localement. Ne jamais la réutiliser dans le paquet publiable :
-            # une notice de provenance neutre est régénérée ci-dessous.
+            # L'ancien ZIP also includes a download package created
+            # local. Never reuse it in the published package:
+            # a neutral provenance statement is regenerated below.
             if info.filename in ("LISEZMOI.txt",):
                 continue
             path = PurePosixPath(info.filename)
@@ -154,7 +154,7 @@ def main() -> None:
             counts[lang].add(filename)
             if info.file_size > 500_000 or info.file_size < 44:
                 raise ValueError("Taille WAV anormale : " + info.filename)
-            data = source.read(info)  # zipfile vérifie CRC32 durant la lecture
+            data = source.read(info)  # zipfile checks CRC32 durant la lecture
             check_wav(data, info.filename)
             dest.writestr(info.filename, data)
         for lang in LANGUAGES:

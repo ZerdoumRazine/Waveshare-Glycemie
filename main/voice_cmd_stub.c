@@ -1,26 +1,25 @@
 /*
  * voice_cmd_stub.c: Inactive voice-command implementation for the public build.
- * FR: Module vocal inactif de la version publique.
  * Design note: This stub must not activate microphone listening.
  */
 
 /*
  * Commandes vocales ABSENTES de cette compilation (GLY_VOICE_CMD=OFF).
  *
- * Raison : la reconnaissance locale (ESP-SR MultiNet) n'existe qu'en anglais et en chinois. Les phrases
- * francaises etaient approchees avec des phonemes anglais, ce qui donnait des scores a peine au-dessus du
- * plancher et de vrais declenchements intempestifs ("New sensor" reconnu dans une phrase anglaise de la
+ * Raison : la reconnaissance locale (ESP-SR MultiNet) exists only in English and Chinese. The sentences
+ * French were approached with English phones, which gave scores barely above the
+ * "New sensor" recognized in an English sentence of the
  * television). Aucun modele espagnol, allemand, italien ou portugais n'existe : la promesse "six langues"
- * ne pouvait pas etre tenue proprement sans service distant payant. Voir docs/LIMITATIONS_FR.md.
+ * could not be held properly without paid remote service. See docs/LIMITATIONS_FR.md.
  *
- * Les ANNONCES PARLEES (banque vocale microSD, six langues) et les ALERTES SONORES ne sont pas concernees :
- * elles continuent de fonctionner. Toutes les actions sont accessibles au toucher.
+ * The ANNONCES PARLEES (microSD voice bank, six languages) and ALERTES SONORES ne sont pas concernees :
+ * they continue to work. All actions are accessible to the touch.
  *
- * Ce fichier remplace voice_cmd.c : meme interface, aucune ecoute, aucun micro ouvert, aucun modele charge.
+ * This file replaces voice_cmd.c : meme interface, aucune ecoute, aucun micro ouvert, aucun modele charge.
  */
 /*
  * Public-build stubs keep touch and audio features while disabling voice-command listening.
- * Remplacements de compilation publique : pas d'écoute des commandes vocales.
+ * Public compilation replacements: no listening to voice commands.
  */
 #include "voice_cmd.h"
 

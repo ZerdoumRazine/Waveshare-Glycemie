@@ -1,27 +1,18 @@
 /*
  * app_main.c: Startup of the ESP32-P4 and service initialization.
- * FR: Démarrage ESP32-P4 et initialisation des services.
  * Design note: Load persistent settings before starting the user interface.
- */
-
-/*
- * app_main.c: Initializes the ESP32-P4 and starts services in dependency order.
- * FR: Initialise l'ESP32-P4 et démarre les services dans l'ordre requis.
- * Design decision: Persistent settings must be loaded before the interface is started.
- *
- * Experimental supplementary display; official monitoring remains authoritative.
  */
 
 /*
  * glycemie_display - afficheur familial de glycemie Dexcom G7
  * Waveshare ESP32-P4-WIFI6-Touch-LCD-7B (ESP32-P4 rev1.3), ESP-IDF v5.5.5.
  *
- * AVERTISSEMENT : afficheur familial complementaire. Ce n'est pas un dispositif medical ;
- * il ne doit pas servir a prendre des decisions therapeutiques.
+ * AVERTISSEMENT : complementary family display. It's not a medical device;
+ * It must not be used to make therapeutic decisions.
  */
 /*
  * Brings up the board, background services and USB maintenance console in a defined order.
- * Démarre les services matériels et la console de maintenance USB.
+ * Starts hardware services and maintenance console USB.
  */
 #include <inttypes.h>
 #include <stdio.h>
@@ -64,7 +55,7 @@
 #include "ui_main.h"
 #include "wifi_manager.h"
 
-/* Garde-fou : ce firmware ne doit jamais etre compile pour les seules puces rev3.x */
+/* Safeguard: This firmware must never be compiled for the only rev3.x chips */
 #if !CONFIG_ESP32P4_SELECTS_REV_LESS_V3 || CONFIG_ESP32P4_REV_MIN_FULL >= 300
 #error "Configuration incompatible avec l'ESP32-P4 rev1.3 : profil pre-v3 (REV_MIN_100) obligatoire"
 #endif
@@ -112,7 +103,7 @@ static void play_test_voice(int volume_pct)
     voice_test(120, volume_pct);
 }
 
-/* Interface figee : etat des taches utiles (le watchdog de taches produira ensuite le core dump) */
+/* Fixed interface: and useful stains (the spot watchdog will then produce the core dump) */
 /* Record display stalls so a UI fault can be diagnosed separately from glucose polling. */
 static void report_ui_freeze(int64_t age_ms)
 {
@@ -158,7 +149,7 @@ static consumable_t parse_consumable(const char *word)
                                          : (strncmp(word, "capt", 4) == 0 ? CONSUMABLE_SENSOR : CONSUMABLE_COUNT);
 }
 
-/* Console de developpement : "snap" (capture d'ecran), "info" (etat, sans secret),
+/* Development console: "snap", "info" (state, without secret),
  * "dexcom_status" (verrou d'authentification), "dexcom_auth" (autorise la tentative unique),
  * "page <0-4>", "range <3|6|12|24>", "demo <off|normal|low|verylow|high|veryhigh|gap|stale>",
  * langue de l'interface : "lang" (langue courante), "lang fr|en|es|de|it|pt",
@@ -168,20 +159,20 @@ static consumable_t parse_consumable(const char *word)
  * son : "volume <0-100>", "test_sound", "test_voice", "audio_info", "voice_old <type> <valeur>" (ancienne voix),
  * alerte de test : "alert_test", "alert_sim <type> <valeur>", "alert_test off", "alert_ok", "alert_snooze", "alert_info",
  * banque vocale par le cable USB-serie : "vrx_begin", "vrx_put", "vrx_list", "vrx_end" (voir voice_rx.h),
- * mode nuit (tests sans changer l'heure) : "night_test" (apercu), "night_on", "night_wake", "night_off", "night_info",
- * "night_schedule HH:MM HH:MM" et "night_enable 0|1" (reglages enregistres, comme dans RÉGLAGES),
+ * night mode (tests without changing the time): "night_test" (apercu), "night_on", "night_wake", "night_off", "night_info",
+ * "night_schedule HH:MM HH:MM" et "night_enable (regs recorded, as in LOGIES),
  * stock : "stock_info", "stock_set|stock_add|stock_seuil capteur|catheter <valeur>" (-1 = non renseigne),
- * "stock_consume capteur|catheter <epoch>" (meme chemin qu'un changement reel : une seule fois par epoch),
+ * "stock_consume (the same path as a real change: once per epoch),
  * consommables : "conso_info", "conso_dialog capteur|catheter", "dialog_close", "catheter_interval 48|72",
- * "catheter_reminders_reset", "conso_restore capteur|catheter <epoch> <rappels>" (restauration exacte apres un test,
- * sans ligne CSV), "conso_csv_purge <epoch>" (retire de consumables.csv les lignes de test datees de epoch ou apres),
+ * "catheter_reminders_reset", "conso_restore <epoch> <recalls>" sensor
+ * without line CSV), "conso_csv_purge <epoch>" (retirement of consumables.csv the test lines date from epoch or after),
  * identifiants (assistant par USB, aucune valeur affichee) : "ident_info", "ident_wifi <reseau>|<mot de passe>",
  * "ident_dexcom <compte>|<mot de passe>|<ous|us|jp>" (mises a l'essai), "ident_test", "ident_etat",
- * "ident_enregistrer" (apres un essai reussi), "ident_annuler", "ident_effacer", "ident_demo 0|1",
+ * "ident_enregistrer" (after a successful test), "ident_annuler", "ident_effacer", "ident_demo 0|1",
  * commandes vocales : "vcmd_on", "vcmd_off", "vcmd_eveil 0|1", "vcmd_gain <dB>", "vcmd_info",
  * "vcmd_sim <id> [probabilite]" (1 glycemie, 3 catheter, 4 glucose, 5 enregistrer nouveau capteur, 6 confirmer
- * capteur : meme chemin qu'une vraie detection), "vcmd_niveaux 0|1", "voice_glucose", "voice_reply <n>",
- * "vrx_inject" (son de test ajoute aux micros, voir voice_rx.h), journaux microSD : "sd_lire <fichier de logs>", sauvegarde d'un fichier : "sd_dump <chemin sous /glycemie>" */
+ * sensor: same path as a true detection), "vcmd_niveaux 0|1", "voice_glucose", "voice_reply <n>",
+ * "vrx_inject" (son de test ajoute aux micros, voir voice_rx.h), journaux microSD : "sd_lire <logs file>", saving a file: "sd_dump <chemin sous /glycemie>" */
 static void console_task(void *arg)
 {
     (void)arg;
@@ -223,7 +214,7 @@ static void console_task(void *arg)
                 ui_test_set_age_offset(minutes);
                 printf("UI_AGE_OFFSET %d min\n", minutes);
             } else if (strncmp(line, "lang", 4) == 0) {
-                /* "lang" affiche la langue courante ; "lang <code>" la change (comme dans REGLAGES) */
+                /* "lang" displays the current language; "lang <code>" changes it (as in REGLAGES) */
                 const char *arg = line[4] == ' ' ? line + 5 : "";
                 if (arg[0] == '\0') {
                     printf("LANG %s (%s)\n", lang_code(i18n_lang()), lang_name(i18n_lang()));
@@ -289,7 +280,7 @@ static void console_task(void *arg)
                 settings_get(&s);
                 const int pct = atoi(line + 7);
                 s.volume_pct = (uint8_t)(pct < 0 ? 0 : (pct > 100 ? 100 : pct));
-                s.volume_level = VOLUME_CUSTOM; /* recalcule d'apres le pourcentage (MUTE, FAIBLE...) */
+                s.volume_level = VOLUME_CUSTOM; /* recalculated after the percentage (MUTE, FAIBLE...) */
                 settings_set(&s);
                 printf("VOLUME %u %% (codec %.1f dB)\n", s.volume_pct, audio_out_volume_db(s.volume_pct));
             } else if (strcmp(line, "test_sound") == 0) {
@@ -360,7 +351,7 @@ static void console_task(void *arg)
             } else if (strncmp(line, "alert_sim ", 10) == 0) {
                 /* alerte de test simulant un vrai type : 0 tres basse, 1 basse, 2 aucune donnee, 3 tres elevee,
                  * 4 elevee, 5 capteur (valeur = rappel 0 : 24 h, 1 : 2 h), 6 catheter (valeur = rappel 0 : 2 h) ;
-                 * donnees Dexcom et vraies alertes inchangees */
+                 * Dexcom data and real inchanged alerts */
                 int type = 0;
                 int value = 0;
                 if (sscanf(line + 10, "%d %d", &type, &value) == 2) {
@@ -523,7 +514,7 @@ static void console_task(void *arg)
             } else if (strncmp(line, "vcmd_debug ", 11) == 0) {
                 voice_cmd_set_decode_log(atoi(line + 11) != 0);
             } else if (strncmp(line, "vcmd_ajout ", 11) == 0) {
-                /* vcmd_ajout <1|2|3> <phonemes MultiNet> : variante temporaire pour regler la reconnaissance */
+                /* vcmd_ajout <1 */
                 const int cmd = atoi(line + 11);
                 const char *phonemes = strchr(line + 11, ' ');
                 if (phonemes != NULL) {
@@ -550,8 +541,8 @@ static void console_task(void *arg)
             } else if (strcmp(line, "ident_info") == 0) {
                 credentials_print();
             } else if (strncmp(line, "ident_wifi ", 11) == 0) {
-                /* ident_wifi <nom du reseau>|<mot de passe> : la barre verticale separe les deux.
-                 * Les valeurs sont mises A L'ESSAI : les acces precedents restent enregistres. */
+                /* ident_wifi The vertical bar separates both.
+                 * Values are setESSAI : previous accesses remain recorded. */
                 char *sep = strchr(line + 11, '|');
                 if (sep == NULL) {
                     printf("IDENT usage : ident_wifi <reseau>|<mot de passe>\n");
@@ -574,7 +565,7 @@ static void console_task(void *arg)
                     printf("IDENT dexcom %s\n", e == ESP_OK ? "a l'essai" : esp_err_to_name(e));
                 }
             } else if (strcmp(line, "ident_enregistrer") == 0) {
-                /* Enregistrement uniquement apres un test de connexion reussi : aucun contournement console. */
+                /* Recording only after a successful connection test: no console bypass. */
                 char msg[96];
                 if (!credentials_trial_active()) {
                     printf("IDENT enregistrer : aucun essai en cours\n");
@@ -605,7 +596,7 @@ static void console_task(void *arg)
             } else if (strncmp(line, "sd_lire ", 8) == 0) {
                 sd_storage_print_log(line + 8);
             } else if (strncmp(line, "sd_dump ", 8) == 0) {
-                /* sauvegarde d'un fichier de la carte par le cable, sans la sortir de l'appareil */
+                /* saving a card file by the cable, without removing it from the device */
                 sd_storage_dump_file(line + 8);
             } else if (strcmp(line, "sd_check") == 0) {
                 sd_storage_request_check();
@@ -632,9 +623,9 @@ void app_main(void)
 
     esp_err_t err = nvs_flash_init();
     if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND) {
-        /* Ne jamais effacer automatiquement NVS : cette partition contient les
-         * acces, les dates de pose et les reglages de l'utilisateur. Une
-         * restauration/maintenance doit etre decidee a partir d'une sauvegarde. */
+        /* Never erase automatically NVS : this partition contains the
+         * access, installation dates and user settings. One
+         * restauration/maintenance must be decided from a backup. */
         ESP_LOGE(TAG, "NVS incompatible ou pleine (%s) : donnees conservees ; intervention necessaire",
                  esp_err_to_name(err));
     }
@@ -646,14 +637,14 @@ void app_main(void)
     sensor_session_init();
     consumables_init();
     stock_init();
-    /* Pas de trace HTTP detaillee : les URL Dexcom contiennent l'identifiant de session */
+    /* Pas de trace HTTP scale: URL Dexcom contiennent l'identifiant de session */
     esp_log_level_set("HTTP_CLIENT", ESP_LOG_WARN);
 
     /* Ecran, tactile et LVGL : bloc repris de l'exemple officiel Waveshare 09_lvgl_demo_v9
      * (examples/esp-idf/09_lvgl_demo_v9/main/main.c, SPDX-FileCopyrightText: 2025 Espressif
      * Systems (Shanghai) CO LTD, SPDX-License-Identifier: Apache-2.0), sauf le tactile.
-     * L'adaptateur tourne l'image de 180 degres, mais le GT911 de cette carte donne deja des coordonnees dans
-     * l'orientation affichee : les miroirs X/Y de l'exemple inversaient le toucher (constat physique 2026-09-14). */
+     * L'adaptateur tourne l'image de 180 degres, mais le GT911 of this map already gives coordinates in
+     * orientation displays: mirrors X/Y de l'exemple inversaient le toucher (constat physique 2026-09-14). */
     bsp_display_cfg_t cfg = {
         .lv_adapter_cfg = ESP_LV_ADAPTER_DEFAULT_CONFIG(),
         .rotation = ESP_LV_ADAPTER_ROTATE_180,
@@ -689,25 +680,25 @@ void app_main(void)
         ESP_LOGW(TAG, "Audio indisponible : alertes visuelles uniquement");
     }
 
-    /* Wi-Fi apres l'ecran (ordre valide sur cette carte), puis heure/Internet et Dexcom */
+    /* Wi-Fi after the screen (order valid on this card), then heure/Internet et Dexcom */
     err = wifi_manager_start();
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "Wi-Fi heberge : demarrage impossible (%s)", esp_err_to_name(err));
     }
-    /* microSD apres le Wi-Fi heberge (controleur SDMMC partage) ; jamais bloquante pour le reste */
+    /* microSD after the Wi-Fi heberge (controversy SDMMC sharing); Never blocker for the rest */
     if (sd_storage_start() == ESP_OK) {
         glucose_service_set_new_readings_cb(sd_storage_record_readings);
     }
     ESP_ERROR_CHECK(net_services_start());
     ESP_ERROR_CHECK(glucose_service_start());
     if (credentials_demo()) {
-        /* Mode demonstration choisi par l'utilisateur : donnees simulees, aucun compte, bandeau MODE DEMO */
+        /* User-selected demonstration mode: Simulated data, no account, banner MODE DEMO */
         glucose_service_set_demo("normal");
     }
     if (alerts_start() != ESP_OK) {
         ESP_LOGE(TAG, "Gestionnaire d'alertes indisponible");
     }
-    /* Commandes vocales locales (micros ES7210, ESP-SR) : ecoute seulement si activee dans RÉGLAGES */
+    /* Commandes vocales locales (micros ES7210, ESP-SR) : Listens only so active in REGALS */
     voice_cmd_init();
     xTaskCreate(console_task, "console", 8192, NULL, 2, NULL);
 

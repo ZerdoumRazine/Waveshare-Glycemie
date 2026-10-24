@@ -1,23 +1,21 @@
 /* credentials.h: Contracts for Wi-Fi/Dexcom trials and NVS persistence.
- * FR: Contrats d'essai et de persistance des accès.
  * The declarations below are shared with other firmware modules.
  */
 /*
- * Identifiants de l'utilisateur (Wi-Fi et compte Dexcom Share) saisis SUR L'APPAREIL.
+ * User IDs (Wi-Fi and Dexcom Share account) entered SUR L'APPAREIL.
  *
- * Objectif : personne n'a besoin de recompiler le firmware pour mettre ses propres acces.
- * - Stockage : espace NVS "ident", separe des reglages ("settings") et du verrou Dexcom.
- *   Le bloc est brouille par un OU exclusif avec une cle derivee de l'adresse MAC de la carte :
- *   ce n'est PAS un chiffrement (le Flash Encryption n'est pas active sur ce projet), seulement
- *   de quoi eviter qu'un mot de passe se lise en clair dans une copie brute de la memoire.
- * - Les mots de passe ne sont JAMAIS journalises ni affiches : seules des formes masquees sortent
+ * Purpose: No one needs to recompile the firmware to put their own accesses.
+ * - Storage: space NVS "ident", separates settings and Dexcom lock.
+ *   The block is blurred by an OR exclusive with a key drive of the address MAC de la carte :
+ *   It's not PAS encryption (the Flash Encryption is not active on this project), only
+ *   to avoid a password reading plain in a rough copy of the memory.
+ * - Passwords are not JAMAIS Journals and posters: only masked shapes come out
  *   d'ici (credentials_masked_*).
- * - Compatibilite : si la NVS est vide et que le firmware a ete compile avec private/device_secrets.h,
- *   ces valeurs servent de depart (l'appareil d'origine continue de fonctionner sans rien saisir).
+ * - Compatibilite : si la NVS is empty and that firmware has been compiled with private/device_secrets.h,
+ *   These values serve as departure (the original device continues to operate without entering anything).
  */
 /* Public interface / Interface publique
- * EN: Read, mask, trial, confirm and erase user credentials with explicit error results.
- * FR: Lecture, essai, validation et effacement contrôlé des accès.
+ * Read, mask, trial, confirm and erase user credentials with explicit error results.
  */
 #pragma once
 
@@ -38,10 +36,10 @@ typedef struct {
     char dexcom_region[CRED_REGION_MAX];
 } credentials_t;
 
-/* A appeler juste apres settings_init() */
+/* To call just after settings_init() */
 esp_err_t credentials_init(void);
 
-/* Copie complete : reservee aux modules qui se connectent (Wi-Fi, Dexcom). Jamais affichee. */
+/* Complete copy: only for plug-in modules (Wi-Fi, Dexcom). Never show. */
 void credentials_get(credentials_t *out);
 
 bool credentials_has_wifi(void);
@@ -49,35 +47,35 @@ bool credentials_has_dexcom(void);
 bool credentials_configured(void);   /* Wi-Fi ET Dexcom renseignes */
 bool credentials_from_build(void);   /* valeurs heritees de private/device_secrets.h */
 
-/* Enregistrement immediat (apres un essai reussi, ou pour une reprise en console). */
+/* Record immediately (after a successful test, or for a console resumption). */
 esp_err_t credentials_set_wifi(const char *ssid, const char *password);
 esp_err_t credentials_set_dexcom(const char *user, const char *password, const char *region);
 esp_err_t credentials_clear(void);   /* efface tout : NVS, memoire et verrou d'authentification */
 
 /*
- * ESSAI DE NOUVEAUX ACCES, sans perdre les anciens.
+ * ESSAI DE NOUVEAUX ACCES, without losing the elders.
  *
  * Regle appliquee partout (ecran tactile, console, assistant PC) :
- *   garder les anciens acces -> essayer les nouveaux -> enregistrer seulement apres reussite
+ *   keep old accesses -> try new -> save only after success
  *   ET confirmation.
  *
- * Pendant un essai, les nouvelles valeurs sont utilisees en memoire vive (le test de connexion
- * porte donc bien sur elles) mais RIEN n'est ecrit dans la memoire permanente. Une annulation,
- * une erreur, une coupure de courant ou un redemarrage ramene donc les anciens acces : il n'y a
- * aucun etat intermediaire ou l'appareil se retrouverait sans ses acces precedents.
+ * During a trial, the new values are used as a living memory (the connection test).
+ * porte donc bien sur elles) mais RIEN is written in the permanent memory. A cancellation,
+ * an error, a power outage or a restart therefore brings back the old accesses: there is no
+ * no intermediate state or device would end up without previous access.
  */
 bool credentials_trial_active(void);
-void credentials_trial_begin(void);  /* photographie les acces actuels ; sans effet si deja en cours */
+void credentials_trial_begin(void);  /* photograph current accesses; no effect if already in progress */
 esp_err_t credentials_trial_set_wifi(const char *ssid, const char *password);
 esp_err_t credentials_trial_set_dexcom(const char *user, const char *password, const char *region);
-esp_err_t credentials_trial_commit(void);  /* enregistre l'essai (apres reussite et confirmation) */
+esp_err_t credentials_trial_commit(void);  /* record the test (after success and confirmation) */
 void credentials_trial_cancel(void);       /* revient aux acces precedents, y compris en memoire */
 
-/* Mode demonstration : donnees simulees, aucun compte. Memorise d'un demarrage a l'autre. */
+/* Mode of demonstration: Simulated data, no account. Remember from start to start. */
 bool credentials_demo(void);
 esp_err_t credentials_set_demo(bool on);
 
-/* Formes masquees pour l'ecran et la console (jamais de mot de passe) :
+/* Masked shapes for screen and console (never password):
  * "MonReseau", "a***@exemple.fr", "renseigne (12 caracteres)" / "non renseigne". */
 void credentials_masked_wifi(char *buf, size_t size);
 void credentials_masked_dexcom(char *buf, size_t size);
@@ -89,4 +87,4 @@ const char *credentials_region_label(int index);
 int credentials_region_count(void);
 int credentials_region_index(const char *code);
 
-void credentials_print(void); /* console : etat masque, jamais de secret */
+void credentials_print(void); /* console: state mask, never secret */

@@ -1,12 +1,11 @@
 /*
  * alerts.c: Supplemental glucose alerts and acknowledgement timing.
- * FR: Alertes complémentaires et acquittements.
  * Design note: This display does not replace official Dexcom alarms.
  */
 
 /*
  * Schedules alert priorities and repetitions; acknowledgements are stored separately from readings.
- * Planifie les priorités, répétitions et acquittements des alertes.
+ * Plans the priorities, repetitions and acquittals of alerts.
  */
 #include "alerts.h"
 
@@ -36,9 +35,9 @@ typedef struct {
     audio_pattern_t pattern;
     int repeat_s;      /* intervalle entre deux sonneries tant que non acquittee */
     int max_repeats;   /* 0 = jusqu'a l'acquittement */
-    int reraise_min;   /* nouvelle alerte si la condition persiste apres acquittement */
+    int reraise_min;   /* new alert if condition persists after acquittal */
     bool critical;     /* volume croissant (RAMP) */
-    str_id_t title_id; /* identifiant de texte : passer par tr() ou tr_fr(), jamais tel quel */
+    str_id_t title_id; /* identifiant de texte : passer par tr() ou tr_fr(), never as */
 } alert_cfg_t;
 
 static const alert_cfg_t k_cfg[ALERT_COUNT] = {
@@ -94,7 +93,7 @@ static void build_view(alert_type_t type, int value, alert_view_t *v)
     }
     v->seq = s_slots[type].seq;
     if (type == ALERT_TEST && s_test_as != ALERT_TEST) {
-        /* simulation d'un vrai type : memes titre, message et couleur ; "(test)" dans le message (titre sur une ligne) */
+        /* simulation of a real type: same title, message and color; "(test)" in the message (title on a line) */
         build_view(s_test_as, value, v);
         v->type = ALERT_TEST;
         v->seq = s_slots[ALERT_TEST].seq;
@@ -127,7 +126,7 @@ static void build_view(alert_type_t type, int value, alert_view_t *v)
     }
 }
 
-/* type : type sonore (pour l'alerte de test simulee, le type simule) ; test : trace marquee comme test */
+/* type: sound type (for simule test alert, simule type); test: trace marked as test */
 /* Choose the matching audio pattern; a simulated alert is not a live glucose alarm. */
 static void sound(alert_type_t type, int value, const settings_t *cfg, int repeats, bool test)
 {
@@ -188,8 +187,8 @@ static void alerts_task(void *arg)
         cond[ALERT_NO_DATA] = count > 0 && age_s >= (s_slots[ALERT_NO_DATA].active ? 10 : 15) * 60LL;
         value[ALERT_NO_DATA] = (int)(age_s / 60);
 
-        /* Rappels capteur / catheter : chaque rappel n'est presente qu'une fois (memorise en NVS des sa sonnerie,
-         * jamais rejoue apres un redemarrage) ; un nouveau rappel remplace le precedent par une nouvelle levee */
+        /* Sensor / catheter reminders: each reminder is presented only once (memorise in NVS ringing,
+         * never replay after a restart); a new reminder replaces the previous with a new levee */
         for (int i = 0; i < 2; i++) {
             const alert_type_t t = i == 0 ? ALERT_SENSOR : ALERT_CATHETER;
             bool done = false;
@@ -208,7 +207,7 @@ static void alerts_task(void *arg)
         cond[ALERT_TEST] = s_test_active;
         value[ALERT_TEST] = s_test_value;
 
-        /* Indicateur persistant : condition glycemique ou absence de donnees en cours (ordre = priorite) */
+        /* Persistent indicator: glycemic condition or absence of current data (order = priority) */
         alert_type_t ongoing = ALERT_NONE;
         for (int t = ALERT_VERY_LOW; t <= ALERT_HIGH && ongoing == ALERT_NONE; t++) {
             if (cond[t]) {
@@ -224,7 +223,7 @@ static void alerts_task(void *arg)
         bool test_ready = false;
         for (int t = 0; t < ALERT_COUNT; t++) {
             alert_slot_t *slot = &s_slots[t];
-            const bool log_sd = t != ALERT_TEST; /* l'alerte de test n'apparait pas dans le journal microSD */
+            const bool log_sd = t != ALERT_TEST; /* the test alert does not appear in the microSD journal */
             if (!cond[t]) {
                 if (slot->active || slot->acked) {
                     ESP_LOGI(TAG, "Fin d'alerte : %s", tr_fr(k_cfg[t].title_id));
@@ -269,7 +268,7 @@ static void alerts_task(void *arg)
                 current = (alert_type_t)t;
             }
         }
-        /* L'alerte de test passe devant les alertes non critiques, jamais devant BASSE ni TRES BASSE */
+        /* The test alert passes before non-critical alerts, never ahead BASSE ni TRES BASSE */
         if (test_ready && current != ALERT_VERY_LOW && current != ALERT_LOW) {
             current = ALERT_TEST;
         }
@@ -369,7 +368,7 @@ void alerts_snooze(int minutes)
         slot->active = false;
         slot->snooze_until_us = esp_timer_get_time() + (int64_t)minutes * 60 * 1000000;
         if (t == ALERT_SENSOR || t == ALERT_CATHETER) {
-            /* un rappel capteur ou catheter reporte reviendra une seule fois */
+            /* a sensor reminder or catheter report will return once */
             slot->acked = false;
         }
         char resume[16] = "--:--";

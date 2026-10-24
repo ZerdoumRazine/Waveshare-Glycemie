@@ -1,20 +1,11 @@
 /*
  * glucose_service.c: Refresh, data age, and presentation of glucose readings.
- * FR: Actualisation, ancienneté et diffusion des mesures.
  * Design note: Expose stale readings rather than treating them as current.
  */
 
 /*
- * glucose_service.c: Coordinates refreshing, ageing, and presenting glucose data.
- * FR: Coordonne l'actualisation, l'âge et la diffusion des mesures.
- * Design decision: Display the age of a reading instead of pretending it is current.
- *
- * Experimental supplementary display; official monitoring remains authoritative.
- */
-
-/*
  * Polls Dexcom Share, deduplicates readings, and serves both live and demo modes.
- * Interroge Dexcom Share, évite les doublons et fournit le mode démonstration.
+ * Ask Dexcom Share, avoid duplicates and provide demo mode.
  * This is a supplementary display: official Dexcom alarms remain authoritative.
  */
 #include "glucose_service.h"
@@ -51,7 +42,7 @@ static volatile bool s_arm_request;
 static volatile bool s_test_bad_session;
 static int64_t s_last_request_us;
 
-/* Mode demonstration (console uniquement, jamais persistant, jamais ecrit sur la microSD) */
+/* Mode demonstration (console only, never persistent, never written on microSD) */
 typedef enum {
     DEMO_OFF = 0,
     DEMO_NORMAL,
@@ -74,7 +65,7 @@ static glucose_new_readings_cb_t s_new_readings_cb;
 static glucose_point_t *s_cache; /* PSRAM */
 static int s_cache_count;
 
-/* Delais croissants apres erreur reseau ou serveur (secondes), identifiants deja valides */
+/* Growing times after network error or server (seconds), already valid identifiers */
 static const int32_t k_backoff_s[] = {30, 60, 120, 300};
 #define BACKOFF_STEPS (sizeof(k_backoff_s) / sizeof(k_backoff_s[0]))
 
@@ -87,7 +78,7 @@ static void wait_seconds(int32_t seconds)
     s_heartbeat_us = esp_timer_get_time();
 }
 
-/* Attente entre deux lectures, interrompue par une demande de test ou le mode demo */
+/* Wait between two readings, interrupted by a test request or demo mode */
 static void wait_poll(int32_t seconds)
 {
     for (int32_t i = 0; i < seconds && !s_test_bad_session && s_demo == DEMO_OFF && !s_demo_ended; i++) {
@@ -111,7 +102,7 @@ static int64_t now_epoch_ms(void)
     return (int64_t)tv.tv_sec * 1000 + tv.tv_usec / 1000;
 }
 
-/* Prochaine lecture : heure de la derniere mesure + 5 min + marge, jamais moins de 30 s */
+/* Next reading: time of last measurement + 5 min + margin, never less than 30 s */
 static int32_t next_poll_delay_s(int64_t latest_wt_ms)
 {
     if (!net_time_is_valid() || latest_wt_ms <= 0) {
@@ -155,7 +146,7 @@ static void wait_network_ready(void)
     }
 }
 
-/* Test DNS + TLS vers Dexcom sans identifiants, repete jusqu'au succes */
+/* Test DNS + TLS to Dexcom without IDs, repeats to success */
 static void probe_until_ok(dexcom_client_t *client)
 {
     for (;;) {
@@ -187,7 +178,7 @@ static void log_failure_report(const char *title, const dexcom_client_t *client)
     ESP_LOGE(TAG, "Requete envoyee au serveur : %s", e->request_sent ? "oui" : "non");
 }
 
-/* Arret definitif sur refus : aucune nouvelle tentative, meme apres redemarrage */
+/* Definitive stop on refusal: no new attempt, even after restarting */
 static void stop_on_refusal(dexcom_client_t *client, dex_result_t r)
 {
     char info[128];
@@ -202,7 +193,7 @@ static void stop_on_refusal(dexcom_client_t *client, dex_result_t r)
     idle_forever();
 }
 
-/* Tentative UNIQUE d'authentification pour des identifiants jamais valides. Vrai si reussie. */
+/* Tentative UNIQUE authentication for never valid identifiers. True so successful. */
 static bool single_authentication_attempt(dexcom_client_t *client)
 {
     probe_until_ok(client); /* aucun identifiant envoye */
@@ -234,7 +225,7 @@ static bool single_authentication_attempt(dexcom_client_t *client)
     char info[128];
     format_info(client, info, sizeof(info));
     if (!client->last_error.request_sent) {
-        /* La requete n'est jamais partie : ce n'etait pas une authentification */
+        /* The request was never gone: it was not an authentication */
         dex_guard_set(DEX_GUARD_UNKNOWN, "");
         app_state_set_dexcom(DEX_STATE_AWAITING_ARM, 0);
         app_state_set_dexcom_info(info);
@@ -261,7 +252,7 @@ static int cmp_points_desc(const void *a, const void *b)
     return (pa->wt_ms < pb->wt_ms) - (pa->wt_ms > pb->wt_ms);
 }
 
-/* Fusionne des mesures lues dans le cache ; renvoie le nombre de mesures plus recentes que l'ancien cache */
+/* Merges measurements read in the cache; returns the number of measurements more recent than the old cache */
 static int cache_merge(const glucose_point_t *fresh, int n, int64_t now_ms, bool time_ok)
 {
     static glucose_point_t *merged;
@@ -289,7 +280,7 @@ static int cache_merge(const glucose_point_t *fresh, int n, int64_t now_ms, bool
         if (merged[i].wt_ms < oldest_allowed) {
             break;
         }
-        /* doublon : meme horodatage a moins d'une seconde pres (la version lue en premier est conservee) */
+        /* duplicate: same time stamping less than a second before (first read version is preserved) */
         if (out > 0 && llabs(s_cache[out - 1].wt_ms - merged[i].wt_ms) < 1000) {
             continue;
         }
@@ -375,7 +366,7 @@ static void demo_task(void *arg)
                     break; /* 10 h de mesures sur 24 h : couverture insuffisante */
                 }
                 if (sc == DEMO_GAP && (k == 1 || (k >= 30 && k < 42))) {
-                    continue; /* trou d'une heure et mesure precedente manquante */
+                    continue; /* 1-hour hole and previous missing measurement */
                 }
                 int v = demo_baseline(slot);
                 if (target != 0 && k < 8) {
@@ -433,7 +424,7 @@ static void glucose_task(void *arg)
     s_cache = heap_caps_calloc(GLY_HISTORY_MAX, sizeof(glucose_point_t), MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
     configASSERT(points != NULL && s_cache != NULL);
     static dexcom_client_t client;
-    /* Identifiants saisis sur l'appareil (ou herites de la compilation) : jamais journalises */
+    /* Identifiers entered on the device (or herites of the compilation): never logs */
     static credentials_t cred;
     credentials_get(&cred);
     dexcom_client_init(&client, cred.dexcom_region, cred.dexcom_user, cred.dexcom_password);
@@ -474,7 +465,7 @@ static void glucose_task(void *arg)
                 break;
             }
             if (dex_guard_state() != DEX_GUARD_UNKNOWN) {
-                idle_forever(); /* tentative consommee sans succes */
+                idle_forever(); /* attempt consumed without success */
             }
         }
         break;
@@ -517,7 +508,7 @@ static void glucose_task(void *arg)
             ESP_LOGW(TAG, "TEST : session Dexcom remplacee par une session invalide");
         }
 
-        /* Jamais moins de 30 s entre deux requetes */
+        /* Never less than 30 s between two requests */
         if (s_last_request_us != 0) {
             int64_t since_s = (esp_timer_get_time() - s_last_request_us) / 1000000;
             if (since_s < GLY_MIN_REQUEST_INTERVAL_S) {
@@ -543,7 +534,7 @@ static void glucose_task(void *arg)
         if (r == DEX_OK) {
             r = dexcom_read_glucose(&client, minutes, max_count, points, GLY_HISTORY_MAX, &count);
             if (r == DEX_ERR_SESSION) {
-                /* Session expiree : une seule reconnexion puis un seul nouvel essai */
+                /* Session expires: one reconnexion and then one new try */
                 ESP_LOGI(TAG, "Session Dexcom expiree : reconnexion");
                 r = dexcom_login(&client);
                 if (r == DEX_OK) {
@@ -584,7 +575,7 @@ static void glucose_task(void *arg)
             app_state_set_dexcom(DEX_STATE_OK, 0);
 
             if (newer > 0 && s_new_readings_cb != NULL) {
-                /* du plus ancien au plus recent, uniquement les mesures reellement nouvelles */
+                /* from the oldest to the most recent, only the real new measures */
                 s_new_readings_cb(s_cache, s_cache_count, previous_newest);
             }
 
@@ -610,7 +601,7 @@ static void glucose_task(void *arg)
             server_errors++;
         }
         if (r == DEX_ERR_SESSION || server_errors >= 2) {
-            /* Session douteuse : nouvelle connexion (identifiants valides) au prochain essai */
+            /* Suspicious session: new connection (valid identifiers) to the next trial */
             dexcom_invalidate_session(&client);
             server_errors = 0;
         }
@@ -704,7 +695,7 @@ esp_err_t glucose_service_start(void)
 }
 
 /* ------------------------------------------------------------------------- */
-/* Assistant de configuration : essai de connexion (tache dediee, pile interne pour TLS) */
+/* Configuration assistant: connection test (dediee patch, internal battery for TLS) */
 
 static volatile gly_test_t s_test = GLY_TEST_INACTIF;
 static char s_test_msg[96];
@@ -756,7 +747,7 @@ static void test_task(void *arg)
         vTaskDelete(NULL);
         return;
     }
-    /* Le verrou suit ces identifiants : un essai demande par l'utilisateur est une autorisation explicite */
+    /* The lock follows these identifiers: a test requested by the user is an explicit authorization */
     dex_guard_init(cred.dexcom_region, cred.dexcom_user, cred.dexcom_password);
     dex_guard_set(DEX_GUARD_IN_PROGRESS, "essai depuis l'assistant");
     const dex_result_t r = dexcom_login(&client);
@@ -790,7 +781,6 @@ static void test_task(void *arg)
 }
 
 /* Perform the connection check without replacing saved credentials prematurely.
- * FR: Tester la connexion sans remplacer prématurément les accès enregistrés.
  */
 void glucose_service_test_request(void)
 {

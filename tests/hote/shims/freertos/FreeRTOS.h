@@ -1,10 +1,8 @@
 /* Minimal FreeRTOS types for host compilation.
- * FR: Types FreeRTOS minimum pour la compilation PC.
  * Used exclusively by hardware-independent regression tests.
  */
-/* Remplacant minimal de FreeRTOS pour les tests sur PC (execution mono-tache). */
-/* EN: Minimal FreeRTOS types needed when running C tests on a PC.
- * FR: Types FreeRTOS réduits pour les tests PC.
+/* Minimum FreeRTO filler for PC tests (mono-tache execution). */
+/* Minimal FreeRTOS types needed when running C tests on a PC.
  */
 #pragma once
 #include <stdint.h>

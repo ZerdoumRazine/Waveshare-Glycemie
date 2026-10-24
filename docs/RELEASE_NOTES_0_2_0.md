@@ -34,7 +34,7 @@ automatiquement par GitHub (« Source code »).
 Les six langues parlées sont proposées dans le fichier microSD séparé.
 L'appareil fonctionne également sans les WAV : les bips restent disponibles.
 Les instructions de copie avec ou sans lecteur sont dans le
-[tutoriel des voix](https://github.com/ZerdoumRazine/Waveshare-Glycemie/blob/main/docs/TUTORIEL_VOIX_FR.md).
+[tutoriel des voix](https://github.com/ZerdoumRazine/Waveshare-Glycemie/blob/main/docs/VOICE_TUTORIAL_EN.md).
 
 Les voix ont été synthétisées avec **Google Cloud Text-to-Speech**.
 Google autorise l'utilisation des fichiers audio générés dans des applications

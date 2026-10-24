@@ -1,24 +1,24 @@
 # Stages public firmware and tools apart from personal builds.
-# FR: Prépare le firmware public hors des versions personnelles.
+#
 # Design note: Never ship a build containing Wi-Fi or Dexcom secrets.
-# EN: Legacy local firmware packaging route; never ship an image containing personal secrets.
-# FR: Ancienne procédure locale : aucun binaire contenant des identifiants personnels ne doit partir.
+# Legacy local firmware packaging route; never ship an image containing personal secrets.
+#
 <#
 .SYNOPSIS
-    Prepare les fichiers a telecharger : programme PUBLIC de l'ecran + application Windows + empreintes.
+    Prepare files to download: program PUBLIC de l'ecran + application Windows + empreintes.
 
 .DESCRIPTION
     Le programme est compile depuis la COPIE PUBLIQUE (dossier Razine), qui ne contient aucun
-    identifiant : ni reseau Wi-Fi, ni compte Dexcom. L'utilisateur saisira les siens apres
-    l'installation, sur l'ecran tactile ou avec l'application Windows.
+    Identifier: neither Wi-Fi nor Dexcom account. The user will enter his own after
+    installation, on touch screen or with Windows application.
 
-    Jamais le programme compile depuis le dossier de travail personnel : celui-la contient vos
-    identifiants (private\device_secrets.h y est recopie pour votre propre appareil).
+    Never compile the program from the personal work folder: this one contains your
+    identifiants (private\device_secrets.h is copied for your own device).
 
-    Resultat dans livraison\ (hors depot) :
+    Result in delivery\ (outside deposit):
         glycemie_display.bin, bootloader.bin, partition-table.bin   le programme
         GlycemieConnexion.exe                                        l'application Windows
-        installer.ps1                                                installation en une commande
+        install. ps1 installation in one control
         SHA256SUMS.txt                                               empreintes de tout
 
 .EXAMPLE
@@ -50,8 +50,8 @@ if ($Propre) { $arguments += '-Clean' }
 & powershell @arguments
 if ($LASTEXITCODE -ne 0) { throw "La compilation a echoue (code $LASTEXITCODE)." }
 
-# build.ps1 compile dans une copie de travail ASCII quand le chemin contient un accent
-# Le @(...) exterieur impose un tableau : sans lui, un resultat unique serait une chaine,
+# build.ps1 compiles in a working copy ASCII quand le chemin contient un accent
+# The outsider imposes an array: without it, a single result would be a chain,
 # et $sorties[0] renverrait sa premiere LETTRE.
 $sorties = @(@(
     (Join-Path $publique 'build'),
@@ -82,16 +82,16 @@ if (-not $SansExe) {
 }
 if (Test-Path $exe) { Copy-Item $exe $livraison -Force } else { Write-Warning "Application absente : $exe" }
 
-# --- 3. Installation en une commande, pour la personne qui telecharge -----------------------------
+# --- 3. Installation in one order, for the person who charges ------------------------------
 @'
 <#
     Installe le programme WaveShare Glycemie sur l'ecran, par le cable USB.
 
-    Avant : branchez l'ecran au PC avec un cable USB-C de DONNEES, et fermez tout moniteur serie.
-    Ensuite : clic droit sur ce fichier -> Executer avec PowerShell. Comptez deux minutes.
+    Before: Connect the screen to the PC with a cable USB-C de DONNEES, et fermez tout moniteur serie.
+    Then: right click on this file -> Run with PowerShell. Count two minutes.
 
-    Ce script n'efface pas la carte (pas d'erase_flash) : il remplace le programme, la table des
-    partitions et l'amorce. Les reglages, les dates de consommables et la microSD sont conserves.
+    Ce script n'efface pas la carte (pas d'erase_flash) : it replaces the program, the table of
+    partitions and primer. Adjustments, consumable dates and microSD are preserved.
 #>
 param([string]$Port = '')
 $ErrorActionPreference = 'Stop'
@@ -134,11 +134,11 @@ Write-Host "C'est installe. L'ecran redemarre et affiche l'assistant de configur
 Write-Host "Choisissez la langue, le reseau Wi-Fi, puis saisissez votre compte Dexcom."
 '@ | Set-Content -Path (Join-Path $livraison 'installer.ps1') -Encoding UTF8
 
-# --- 3 bis. Empreinte des SOURCES qui ont produit ce programme ------------------------------------
-# Elle permet de verifier plus tard que le programme livre vient bien de ces sources-la, quelles que
-# soient les dates des fichiers (regenerer la copie publique les rend toutes "recentes").
-# Le chemin du projet contient un accent : on le passe en ARGUMENT (une seule chaine, encodee
-# correctement) plutot que dans le code d'un python -c, ou il serait abime.
+# --- 3 bis. Imprint SOURCES qui ont produit ce programme ------------------------------------
+# It later verifies that the book program comes from these sources, whatever
+# be the dates of the files (renewing the public copy makes them all "recent").
+# Le chemin du projet contient un accent : on le passe en ARGUMENT (one string, encoded)
+# correctly) rather than in the code of a python -c, or it would be damaged.
 $empreinte = & python (Join-Path $racine 'tools\preparer_paquet.py') --empreinte
 if ($LASTEXITCODE -ne 0 -or -not $empreinte) { throw "Empreinte des sources impossible a calculer." }
 "$empreinte  sources du firmware (main, components, config, CMakeLists, sdkconfig.defaults, partitions.csv)" |

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # Organizes and validates speech clips for the device.
-# FR: Organise et vérifie les annonces sonores.
+#
 # Design note: Keep generated audio separate from code copyright and user data.
-# EN: Processes a legacy Windows voice into short PCM clips for local use only.
-# FR: Prépare les anciens extraits PCM Windows sans autoriser leur redistribution.
+# Processes a legacy Windows voice into short PCM clips for local use only.
+#
 """Assemble les extraits vocaux WAV en un bloc PCM integre au firmware.
 
 - rogne les silences de debut et de fin (marge 30 ms) ;
@@ -38,9 +38,9 @@ RATE = 16000
 THRESHOLD = 250
 MARGIN = int(0.03 * RATE)
 
-TARGET_RMS_DB = -12.0              # niveau efficace vise sur les fenetres de parole (20 ms)
+TARGET_RMS_DB = -12.0              # effective level targets speech windows (20 ms)
 ACTIVE_DB = -40.0                  # fenetre consideree comme parole au-dessus de ce niveau
-CEILING_DB = -1.5                  # crete maximale apres limitation (marge avant la pleine echelle)
+CEILING_DB = -1.5                  # maximum crete after limitation (margin before full scale)
 MAX_REDUCTION_DB = 6.0             # limitation maximale : au-dela, le gain de l'extrait est reduit (voix naturelle)
 LOOKAHEAD = int(0.008 * RATE)      # anticipation et lissage du gain : 8 ms
 RELEASE_S = 0.100                  # retour du gain : 100 ms

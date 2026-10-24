@@ -1,5 +1,4 @@
 /* night_mode.h: Night display settings and schedule API.
- * FR: Réglages et horaires de l'écran de nuit.
  * The declarations below are shared with other firmware modules.
  */
 /*
@@ -7,17 +6,16 @@
  * a la luminosite nuit. LVGL, Dexcom, Wi-Fi, microSD, historique, alertes, son et voix continuent normalement ;
  * aucune veille du P4.
  *
- * - Periode nuit (heure locale SNTP, reglages RÉGLAGES > MODE NUIT) : bascule vers l'ecran nuit ; fin de periode :
+ * - Periode nuit (heure locale SNTP, adjustments MODE NUIT) : bascule vers l'ecran nuit ; fin de periode :
  *   retour a l'interface normale a la luminosite jour.
- * - Toucher sur l'ecran nuit : ce toucher ne declenche rien d'autre ; l'interface normale reste visible 30 s apres
+ * - Touch the night screen: this touch does not trigger anything else; the normal interface remains visible 30 s after
  *   la derniere interaction, puis retour a l'ecran nuit.
  * - Panneau d'alerte TRES BASSE / BASSE / TRES ELEVEE / ELEVEE / AUCUNE DONNEE : prioritaire, luminosite jour ;
- *   retour a l'ecran nuit 45 s apres la disparition du panneau.
- * - Apercu (bouton TEST MODE NUIT) : ecran nuit immediat sans modifier les horaires ; un toucher ou 60 s y mettent fin.
+ *   Back to the screen night 45 seconds after the sign disappeared.
+ * - Apercu (bouton TEST MODE NUIT) : short night screen without changing the timetable ; A touch or 60 s end it.
  */
 /* Public interface / Interface publique
- * EN: Night schedule, brightness transitions and temporary wake-up preview.
- * FR: Horaires du mode nuit et retour temporaire à l'écran principal.
+ * Night schedule, brightness transitions and temporary wake-up preview.
  */
 #pragma once
 
@@ -34,11 +32,11 @@ typedef enum {
 
 /* Tache LVGL */
 void night_mode_init(void);
-void night_mode_update(const ui_data_t *d); /* chaque seconde, apres ui_alert_update() */
-void night_mode_brightness_changed(void);   /* luminosite modifiee dans RÉGLAGES : application immediate */
+void night_mode_update(const ui_data_t *d); /* every second, after ui_alert_update() */
+void night_mode_brightness_changed(void);   /* luminosite modified in LOGAGES: immediate application */
 void night_mode_preview(void);              /* bouton TEST MODE NUIT */
 void night_mode_relang(void);               /* langue changee : textes de l'ecran nuit a refaire */
-bool night_mode_screen_visible(void);       /* ecran nuit affiche (lecture seule, animations de l'accueil) */
+bool night_mode_screen_visible(void);       /* night screen displays (reading only, hosting animations) */
 
 /* Console (toute tache) */
 void night_mode_request(night_request_t req);

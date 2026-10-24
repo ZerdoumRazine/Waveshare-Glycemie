@@ -1,20 +1,19 @@
 /*
  * wifi_manager.c: Wi-Fi scan, association and reconnection.
- * FR: Recherche Wi-Fi, connexion et reprise.
  * Design note: Network failure must not destroy the saved configuration.
  */
 
 /*
  * Coordinates the ESP32-C6 network driver, reconnection and Wi-Fi scanning.
- * Coordonne le pilote Wi-Fi, ses reconnexions et la recherche de réseaux.
+ * Coordinates the Wi-Fi driver, its reconnections and network search.
  */
 #include "wifi_manager.h"
 
 /*
- * La mise en route du Wi-Fi (enregistrement des gestionnaires d'evenements, attente par groupe
+ * The start of Wi-Fi (recording of events managers, waiting by group)
  * d'evenements) suit le squelette de l'exemple station d'Espressif, repris tel quel par Waveshare
  * (examples/esp-idf/05_wifistation, SPDX-License-Identifier: Apache-2.0). Tout le reste - liaison
- * par ESP-Hosted, reconnexion, recherche des reseaux, application a chaud des identifiants - est
+ * par ESP-Hosted, reconnection, search for networks, hot application of identifiers - is
  * propre a ce projet.
  */
 
@@ -43,7 +42,7 @@ static EventGroupHandle_t s_events;
 static esp_netif_t *s_sta_netif;
 static volatile bool s_connected;
 
-/* Reconnexion progressive : jamais de boucle agressive */
+/* Progressive reconnection: never aggressive loop */
 static const uint32_t k_retry_delays_ms[] = {2000, 5000, 10000, 30000, 60000};
 #define RETRY_STEPS (sizeof(k_retry_delays_ms) / sizeof(k_retry_delays_ms[0]))
 
@@ -52,7 +51,7 @@ static bool wifi_configured(void)
     return credentials_has_wifi();
 }
 
-/* Configuration station a partir des identifiants saisis par l'utilisateur (jamais journalises) */
+/* Station configuration from user input identifiers (never logs) */
 static esp_err_t apply_config(void)
 {
     credentials_t cred;
@@ -84,7 +83,7 @@ static void on_network_event(void *arg, esp_event_base_t base, int32_t id, void 
         case WIFI_EVENT_STA_DISCONNECTED: {
             const wifi_event_sta_disconnected_t *d = data;
             s_connected = false;
-            /* Ne jamais journaliser le SSID : seulement la raison et le signal */
+            /* Never log SSID : seulement la raison et le signal */
             ESP_LOGW(TAG, "Wi-Fi deconnecte (raison %d, RSSI %d dBm)", d ? d->reason : -1, d ? d->rssi : 0);
             app_state_set_wifi(LINK_ERROR, 0, "");
             xEventGroupClearBits(s_events, BIT_CONNECTED);
@@ -147,7 +146,7 @@ static void scan_networks(void)
 
     char attendu[CRED_SSID_MAX] = "";
     if (wifi_configured()) {
-        credentials_masked_wifi(attendu, sizeof(attendu)); /* le nom du reseau n'est pas un secret */
+        credentials_masked_wifi(attendu, sizeof(attendu)); /* the name of the network is not a secret */
     }
     int best_rssi = -127;
     bool found = false;
@@ -247,7 +246,7 @@ esp_err_t wifi_manager_start(void)
     wifi_init_config_t init_cfg = WIFI_INIT_CONFIG_DEFAULT();
     ESP_RETURN_ON_ERROR(esp_wifi_init(&init_cfg), TAG, "esp_wifi_init");
 
-    /* Configuration gardee en RAM : rien n'est enregistre dans la memoire du C6 */
+    /* Configuration gardee en RAM : nothing recorded in the memory of the C6 */
     err = esp_wifi_set_storage(WIFI_STORAGE_RAM);
     if (err != ESP_OK) {
         ESP_LOGW(TAG, "esp_wifi_set_storage(RAM) : %s", esp_err_to_name(err));
@@ -266,7 +265,7 @@ esp_err_t wifi_manager_start(void)
     return ESP_OK;
 }
 
-/* Assistant : liste des reseaux visibles, sans doublon, le plus fort d'abord */
+/* Assistant: list of visible networks, without duplicate, the strongest first */
 int wifi_manager_scan(wifi_reseau_t *out, int max)
 {
     if (out == NULL || max <= 0 || !wifi_manager_wait_started(pdMS_TO_TICKS(5000))) {
@@ -324,7 +323,7 @@ int wifi_manager_scan(wifi_reseau_t *out, int max)
     return n;
 }
 
-/* Assistant : applique les identifiants enregistres et attend l'adresse IP */
+/* Assistant: Applies Save IDs and waits for IP address */
 bool wifi_manager_apply_credentials(TickType_t timeout)
 {
     if (!wifi_manager_wait_started(pdMS_TO_TICKS(5000))) {

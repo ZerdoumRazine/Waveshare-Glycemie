@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # Generates optional language recordings with Google Cloud TTS.
-# FR: Génère les annonces via Google Cloud TTS.
+#
 # Design note: Generation may incur API fees; avoid running it accidentally.
-# EN: Builds spoken WAV banks locally from project phrases using Google Cloud TTS.
-# FR: Génère des banques WAV à partir des textes du projet avec Google Cloud.
+# Builds spoken WAV banks locally from project phrases using Google Cloud TTS.
+#
 """Banque vocale Google Cloud Text-to-Speech pour glycemie_display, en six langues.
 
 Meme timbre partout (Chirp 3 HD "Aoede") : francais, anglais, espagnol, allemand, italien,
@@ -76,8 +76,8 @@ def configure(lang):
     MANIFEST = os.path.join(BANK_DIR, 'manifest.csv')
 
 RATE = 16000                       # frequence du lecteur audio existant (ES8311, AUDIO_SAMPLE_RATE)
-LEAD_S = 0.030                     # marge conservee avant la parole
-TAIL_S = 0.060                     # marge conservee apres la parole
+LEAD_S = 0.030                     # margin retained before speech
+TAIL_S = 0.060                     # margin retained after speech
 SILENCE_DB = -50.0                 # trame de 10 ms consideree comme silence en dessous de ce niveau
 FADE_S = 0.005
 TARGET_RMS_DB = -12.0              # memes cibles que tools/voice/pack_voice.py (niveau deja valide sur la carte)
@@ -148,7 +148,7 @@ def resample(x, rate_in, rate_out):
     up, down = rate_out // g, rate_in // g
     fs_up = rate_in * up
     nyquist_out = min(rate_in, rate_out) / 2.0
-    transition = 0.1 * nyquist_out                   # 7,2 -> 8 kHz pour une sortie a 16 kHz
+    transition = 0.1 * nyquist_out                   # 7.2 -> 8 kHz for a 16 kHz output
     cutoff = nyquist_out - transition / 2.0
     attenuation = 80.0
     beta = 0.1102 * (attenuation - 8.7)
@@ -245,7 +245,7 @@ def process(raw, raw_rate):
 
 
 def make_client():
-    from google.cloud import texttospeech  # import differe : --estimate fonctionne sans reseau
+    from google.cloud import texttospeech  # import difference: --estimate works without network
     return texttospeech, texttospeech.TextToSpeechClient()
 
 
@@ -357,7 +357,7 @@ def generate(items, only):
         if not unchanged:
             with open(path, 'wb') as f:
                 f.write(data)
-        # verification : le fichier ecrit se relit comme un WAV PCM 16 bits mono 16 kHz de duree plausible
+        # verification: the written file is read as a WAV PCM 16 bits mono 16 kHz de duree plausible
         check_back = read_wav_file(path)
         if check_back is None or check_back[1] != RATE:
             raise SystemExit('%s : WAV final illisible' % name)

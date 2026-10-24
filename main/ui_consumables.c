@@ -1,12 +1,11 @@
 /*
  * ui_consumables.c: Sensor dates, infusion-set changes and stock controls.
- * FR: Dates des capteurs, cathéters et gestion des stocks.
  * Design note: A user action must not decrement an item twice.
  */
 
 /*
  * Implements touchscreen confirmation for sensor, infusion set and stock changes.
- * Gère les confirmations tactiles des changements et des stocks.
+ * Manages tactile confirmations of changes and stocks.
  */
 #include "i18n.h"
 #include "ui_pages.h"
@@ -21,10 +20,10 @@
 static const char *TAG = "ui_conso";
 
 /*
- * CONSOMMABLES : deux grandes sections, CAPTEUR G7 et SITE DE PERFUSION (catheter), et sous chacune une carte STOCK.
- * NOUVEAU CAPTEUR / NOUVEAU CATHETER : une seule confirmation, puis l'heure actuelle devient l'heure de depart
- * (aucune saisie de date ni d'heure) ; le stock renseigne perd alors une unite (une seule fois par changement).
- * STOCK : [-] quantite [+], appui sur la quantite = saisie directe ; "NON RENSEIGNE" tant que l'utilisateur n'a rien
+ * CONSOMMABLES : deux grandes sections, CAPTEUR G7 et SITE DE PERFUSION (catheter), and under each map STOCK.
+ * NOUVEAU CAPTEUR / NOUVEAU CATHETER One confirmation, then the current time becomes the start time
+ * (no date or time entry) The inventory then loses a unit (only once by change).
+ * STOCK : [-] quantite [+], appui sur la quantite = saisie directe ; "NON RENSEIGNE"as long as the user has nothing
  * saisi (aucune decrementation ne la transforme en 0) ; mention discrete "STOCK FAIBLE" au seuil.
  */
 
@@ -98,7 +97,7 @@ void ui_consumables_close_dialog(void)
     }
 }
 
-/* Fond plein ecran qui bloque les appuis ; la boite reste sur l'ecran actif (capture incluse) */
+/* Full screen background that blocks the supports; the box remains on the active screen (capture included) */
 static lv_obj_t *dialog_backdrop(const char *name)
 {
     lv_obj_t *backdrop = lv_obj_create(lv_screen_active());
@@ -318,7 +317,7 @@ static void stock_create(lv_obj_t *page, stock_item_t item, int32_t x, const cha
     lv_obj_set_style_bg_grad_color(s->set, UI_G_ACCENT_DEEP, 0);
     lv_obj_set_style_bg_grad_dir(s->set, LV_GRAD_DIR_VER, 0);
     touch_diag_name(s->set, item == STOCK_SENSOR ? "RENSEIGNER capteur" : "RENSEIGNER catheter");
-    /* Etat initial coherent avec [-] et [+] visibles : RENSEIGNER masque (il recouvre le bouton [+]) */
+    /* Initial coherent state with [-] and [+] visible: RENSEIGNER masque (il recouvre le bouton [+]) */
     lv_obj_add_flag(s->set, LV_OBJ_FLAG_HIDDEN);
 }
 
@@ -366,8 +365,8 @@ static void section_create(lv_obj_t *page, consumable_t c, int32_t x, const char
 
 void ui_consumables_create(lv_obj_t *page)
 {
-    /* Reconstruction (changement de langue) : les boites de dialogue sont filles de l'ecran, pas de
-     * la page. ui_main.c les ferme avant de reconstruire ; ces pointeurs sont remis a zero par surete. */
+    /* Reconstruction (language change): the dialog boxes are girls of the screen, no
+     * la page. ui_main.c farm them before rebuilding; These pointers are back to zero by surete. */
     s_backdrop = NULL;
     s_dialog_when = NULL;
     s_qty_backdrop = NULL;

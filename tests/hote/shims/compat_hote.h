@@ -1,24 +1,22 @@
 /* Adapts firmware code for a desktop C compiler.
- * FR: Adapte le firmware au compilateur C du PC.
  * Test and configuration interface only; no live patient data is included.
  */
 /*
- * Compatibilite du compilateur hote pour les tests sur PC.
- * Inclus de force par tests/run_tests.py (option /FI avec MSVC, -include avec gcc/clang).
+ * Compatibility of the hot compiler for PC tests.
+ * Inclus de force par tests/run_tests.py (option /FI with MSVC-included with gcc/clang).
  */
-/* EN: Portable replacements for ESP-IDF platform conveniences during tests.
- * FR: Remplacements pour compiler les tests hors ESP32.
+/* Portable replacements for ESP-IDF platform conveniences during tests.
  */
 #pragma once
 
 #ifdef _MSC_VER
 #include <time.h>
-/* MSVC fournit localtime_s / gmtime_s, avec des arguments inverses par rapport a POSIX.
- * Les parametres ne doivent pas s'appeler "tm" : le jeton apparait dans "struct tm *". */
+/* MSVC fournit localtime_s / gmtime_s, with inverse arguments in relation to POSIX.
+ * Parameters should not be called "tm": the token appears in "struct tm *". */
 #define localtime_r(_t, _out) (localtime_s((_out), (_t)) == 0 ? (_out) : (struct tm *)0)
 #define gmtime_r(_t, _out)    (gmtime_s((_out), (_t)) == 0 ? (_out) : (struct tm *)0)
 #endif
 
-/* strlcpy : extension BSD fournie par ESP-IDF, absente des bibliotheques C du PC. */
+/* strlcpy : extension BSD fournie par ESP-IDF, absent from PC C librarians. */
 #include <stddef.h>
 size_t strlcpy(char *dst, const char *src, size_t size);

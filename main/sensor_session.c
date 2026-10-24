@@ -1,12 +1,11 @@
 /*
  * sensor_session.c: Sensor insertion dates and expected replacement time.
- * FR: Dates de pose et échéances du capteur.
  * Design note: Keep insertion dates persistent across normal reboots.
  */
 
 /*
  * Keeps sensor insertion time, expected expiration and one-time reminder flags.
- * Suit la date de pose du capteur et les rappels déjà délivrés.
+ * Follows the date of installation of the sensor and the reminders already issued.
  */
 #include "sensor_session.h"
 
@@ -22,7 +21,7 @@ static const char *TAG = "capteur";
 #define NVS_NS            "sensor"
 #define KEY_START         "start"
 #define KEY_REMINDERS     "remind2" /* bit 0 : rappel 24 h, bit 1 : rappel 2 h */
-#define KEY_OLD_REMINDERS "remind"  /* ancien masque (48 h, 24 h, 12 h, grace, fin de grace - 2 h) : lu, jamais ecrit */
+#define KEY_OLD_REMINDERS "remind"  /* former mask (48 h, 24 h, 12 h, grace, end of grace - 2 h): read, never written */
 
 static SemaphoreHandle_t s_mutex;
 static int64_t s_start_s;       /* 0 = aucun capteur */
@@ -143,7 +142,7 @@ esp_err_t sensor_session_adjust(int64_t delta_s, int64_t now_s)
         return ESP_ERR_INVALID_STATE;
     }
     int64_t start = s_start_s + delta_s;
-    /* jamais dans le futur, jamais plus ancien que la fin de grace */
+    /* never in the future, never older than the end of grace */
     if (start > now_s) {
         start = now_s;
     }
@@ -190,7 +189,7 @@ void sensor_session_mark_reminder_done(int reminder)
         return;
     }
     xSemaphoreTake(s_mutex, portMAX_DELAY);
-    /* les rappels plus anciens sont aussi consideres comme signales ; NVS ecrite seulement si le masque change */
+    /* older reminders are also considered as reports; NVS ecrite seulement si le masque change */
     uint8_t mask = s_done_mask;
     for (int i = 0; i <= reminder; i++) {
         mask |= (uint8_t)(1u << i);

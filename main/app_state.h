@@ -1,15 +1,13 @@
 /* app_state.h: Application-wide glucose and connection snapshots.
- * FR: États partagés des mesures et connexions.
  * Keep this header focused on the contracts used by other modules.
  */
 /*
- * Etat partage entre les taches (reseau, Dexcom, stockage, audio, alertes) et l'interface.
- * Les taches publient sous mutex ; l'interface lit une copie une fois par seconde.
- * L'historique (jusqu'a 24 h) est stocke a part et n'est recopie que lorsqu'il change.
+ * State sharing between the spots (network, Dexcom, storage, audio, alerts) and the interface.
+ * The spots publish under mutex; the interface reads one copy once a second.
+ * The history (up to 24 h) is stored separately and is only copied when it changes.
  */
 /* Public interface / Interface publique
- * EN: Thread-safe snapshots of link state, glucose data and history.
- * FR: État partagé des liaisons et des mesures, protégé entre tâches.
+ * Thread-safe snapshots of link state, glucose data and history.
  */
 #pragma once
 
@@ -33,15 +31,15 @@ typedef enum {
     DEX_STATE_RETRYING,     /* erreur reseau ou serveur : nouvel essai programme */
     DEX_STATE_AUTH_REFUSED, /* identifiants refuses : tentatives arretees */
     DEX_STATE_LOCKED,       /* compte temporairement bloque par Dexcom */
-    DEX_STATE_AWAITING_ARM, /* identifiants jamais valides : tentative unique en attente d'autorisation */
-    DEX_STATE_AUTH_BLOCKED, /* tentative unique deja consommee sans verdict : verification requise */
+    DEX_STATE_AWAITING_ARM, /* Never valid identifiers: single attempt pending authorization */
+    DEX_STATE_AUTH_BLOCKED, /* unique attempt already consumed without verdict: verification required */
 } dexcom_state_t;
 
 typedef enum {
     SD_STATE_UNKNOWN = 0,   /* pas encore initialisee */
     SD_STATE_ABSENT,        /* aucune carte detectee */
     SD_STATE_OK,            /* montee, ecriture possible */
-    SD_STATE_UNSUPPORTED,   /* systeme de fichiers non reconnu : aucun formatage automatique */
+    SD_STATE_UNSUPPORTED,   /* Unrecognized file system: no automatic formatting */
     SD_STATE_ERROR,         /* erreur d'acces : fonctionnement principal non affecte */
 } sd_state_t;
 
@@ -78,7 +76,7 @@ typedef struct {
     dexcom_state_t dexcom;
     int32_t dexcom_retry_s;
     char dexcom_info[128];      /* diagnostic non sensible (etape, HTTP, code Dexcom) */
-    bool demo_mode;             /* donnees simulees (console de developpement uniquement) */
+    bool demo_mode;             /* simule data (development console only) */
 
     sd_state_t sd;
     char sd_type[12];

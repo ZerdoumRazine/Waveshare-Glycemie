@@ -1,12 +1,11 @@
 /*
  * stock.c: Consumable stock counting and one-time decrements.
- * FR: Comptage des consommables et décréments uniques.
  * Design note: Repeated UI events must not consume the same item twice.
  */
 
 /*
  * Tracks local stock levels and signals low quantities without creating negative values.
- * Suit les consommables en stock et prévient quand ils deviennent rares.
+ * Follows consumables in stock and warns when they become rare.
  */
 #include "stock.h"
 
@@ -24,7 +23,7 @@
 static const char *TAG = "stock";
 
 #define NVS_NS        "stock"
-#define EVENT_MAX     4 /* file d'evenements STOCK_LOW (les plus anciens sont perdus) */
+#define EVENT_MAX     4 /* file d'evenements STOCK_LOW (oldest are lost) */
 
 static const char *const k_key_qty[STOCK_COUNT] = {"q_g7", "q_cath"};
 static const char *const k_key_low[STOCK_COUNT] = {"s_g7", "s_cath"};
@@ -179,11 +178,11 @@ esp_err_t stock_add(stock_item_t item, int delta)
     const int current = s_qty[item];
     xSemaphoreGive(s_mutex);
     if (current == STOCK_UNKNOWN) {
-        return ESP_ERR_INVALID_STATE; /* rien a incrementer tant que le stock n'est pas renseigne */
+        return ESP_ERR_INVALID_STATE; /* Nothing to increment until the stock is clear */
     }
     int value = current + delta;
     if (value < 0) {
-        value = 0; /* jamais negatif */
+        value = 0; /* Never negative */
     }
     return stock_set(item, value);
 }

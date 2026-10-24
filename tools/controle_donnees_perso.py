@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # Checks release candidates for likely personal data.
-# FR: Vérifie la présence possible de données personnelles.
+#
 # Design note: Automated checks reduce risk but do not replace a human review.
-# EN: Scans public files, binaries and ZIP contents for known private data.
-# FR: Contrôle les sources, exécutables et ZIP avant publication.
+# Scans public files, binaries and ZIP contents for known private data.
+#
 r"""Controle des donnees personnelles dans ce qui serait publie.
 
 Examine, sans rien modifier :
@@ -29,11 +29,11 @@ import sys
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 
-# Mots des credits volontaires : ils doivent RESTER (auteur, dedicace au fils, composants tiers).
+# Words of voluntary credits: they must RESTER (auteur, dedicace au fils, composants tiers).
 CREDITS_VOULUS = ('Razine', 'razine')
 
 BINAIRES = ('.png', '.jpg', '.jpeg', '.bin', '.elf', '.map', '.zip', '.pcm', '.wav', '.ico')
-# Fichiers dont le contenu est du signal ou de la compression : voir controler_media().
+# Files whose content is signal or compression: see controler_media().
 MEDIA = ('.png', '.jpg', '.jpeg', '.wav', '.pcm', '.mp3', '.ogg', '.ico')
 
 COURRIEL = re.compile(r'[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}')
@@ -42,9 +42,9 @@ CHEMINS = [
     (re.compile(r'[A-Za-z]:[\\/]Nouveau dossier', re.I), 'chemin "Nouveau dossier" (dossier d\'archive local)'),
     (re.compile(r'[A-Za-z]:[\\/]Waveshare', re.I), 'chemin local du projet'),
 ]
-# Adresses attendues et autorisees : composants tiers, adresses neutres, et les adresses de contact
-# des autorites de certification contenues dans le paquet de certificats racine d'ESP-IDF
-# (esp_crt_bundle, liste Mozilla) : elles viennent des certificats eux-memes, pas du projet.
+# Expected and authorized addresses: third party components, neutral addresses, and contact addresses
+# certification authorities contained in the root certificate packageESP-IDF
+# (esp_crt_bundle, Mozilla list): they come from certificates themselves, not from the project.
 COURRIELS_AUTORISES = re.compile(r'(noreply@|@users\.noreply\.github\.com|@exemple\.|@example\.|'
                                  r'@espressif\.com|@lvgl\.io|'
                                  r'support@waveshare|@dexcom\.com$|'
@@ -210,7 +210,7 @@ def main():
                 textes += 1
                 controler_texte(rel, texte, secrets, trouves)
     print('%d fichiers suivis, dont %d fichiers texte' % (len(suivis), textes))
-    # Un controle qui n'a rien lu n'est pas une reussite : il ne prouve rien.
+    # A control that has read nothing is not a success: it proves nothing.
     rien_lu = len(suivis) < 50 or textes < 30
     if rien_lu:
         print('ANOMALIE : trop peu de fichiers lus pour que ce controle veuille dire quelque chose.')
@@ -252,8 +252,8 @@ def main():
         for sha, nom in objets:
             avant = len(trouves)
             if nom.lower().endswith(BINAIRES):
-                # Les anciens fichiers binaires comptent aussi : un firmware commite par erreur
-                # contiendrait les identifiants.
+                # Old binary files also count: a firmware commits by mistake
+                # would contain the identifiers.
                 brut = subprocess.run(['git', 'cat-file', '-p', sha], cwd=ROOT,
                                       capture_output=True).stdout
                 controler_binaire('historique:' + nom, brut, secrets, trouves)

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # Builds source archives from a controlled Git snapshot.
-# FR: Construit des archives depuis un état Git contrôlé.
+#
 # Design note: Never archive the personal working directory indiscriminately.
-# EN: Exports only tracked Git files and rejects unsafe publication artefacts.
-# FR: Archive uniquement les fichiers Git suivis et refuse les ressources privées.
+# Exports only tracked Git files and rejects unsafe publication artefacts.
+#
 r"""Fabrique et controle l'archive publique du depot, a partir de ce que Git suit reellement.
 
 Un .gitignore ne nettoie PAS une archive faite en copiant un dossier : journaux, identifiants ou
@@ -40,10 +40,10 @@ RACINE = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import controle_donnees_perso as cdp  # noqa: E402
 
-# Tout ce qui ne doit JAMAIS sortir : identifiants, donnees de sante, binaires personnels, caches.
-# Les motifs sont appliques SANS tenir compte de la casse (.BIN, .Pcm, PRIVATE/... sont vises aussi).
+# Everything that should JAMAIS exit: IDs, health data, personal binary, caches.
+# The reasons apply SANS tenir compte de la casse (.BIN, .Pcm, PRIVATE/... sont vises aussi).
 INTERDITS = [
-    # private/ reste dans le depot avec son seul .gitignore (le dossier doit exister) : tout le reste est interdit
+    # private/ stays in the repository with its only .gitignore (the folder must exist): everything else is forbidden
     (r'(^|/)private/(?!\.gitignore$).+', 'identifiants prives'),
     (r'device_secrets\.h$', 'identifiants prives'),
     (r'(^|/)tools/logs/', 'journaux locaux (glycemies reelles, chemins du PC)'),
@@ -163,7 +163,7 @@ def main():
     for nom_fichier, genre, detail in trouvailles:
         problemes.append('contenu de %s : %s (%s)' % (nom_fichier, genre, detail))
 
-    # --- fichiers livres a cote (programme compile, application Windows) ----------------------
+    # --- coded book files (compile program, Windows application) ----------------------
     livres = []
     for livre in args.livre:
         if not os.path.exists(livre):

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # Defines voice phrases and spoken number forms for six languages.
-# FR: Définit les phrases et nombres parlés dans six langues.
+#
 # Design note: The WAV file names must match the firmware's expected clips.
-# EN: Defines fixed spoken phrases and grammar-aware number words in six languages.
-# FR: Contient les phrases fixes et les nombres prononcés dans six langues.
+# Defines fixed spoken phrases and grammar-aware number words in six languages.
+#
 """Textes de la banque vocale, langue par langue (francais, anglais, espagnol, allemand, italien, portugais).
 
 Utilise par gen_voice_google.py. Chaque langue fournit :
@@ -188,7 +188,7 @@ def number_pt(n):
 # --------------------------------------------------------------------------------------------------
 # Phrases fixes
 # --------------------------------------------------------------------------------------------------
-# Ordre identique dans toutes les langues ; les noms de fichiers ne changent jamais.
+# The same order in all languages; file names never change.
 
 ORDRE = [
     'alert_urgent_low', 'alert_low', 'alert_high', 'alert_urgent_high', 'alert_no_data',
@@ -439,7 +439,7 @@ GLUCOSE_PREFIX = {
 
 NOMBRE = {'fr': number_fr, 'en': number_en, 'es': number_es, 'de': number_de, 'it': number_it, 'pt': number_pt}
 
-# Meme timbre dans toutes les langues. Le portugais est en pt-BR : Google ne propose pas de Chirp 3 HD en pt-PT.
+# Same stamp in all languages. Portuguese is in pt-BR: Google does not offer Chirp 3 HD in pt-PT.
 VOIX = {
     'fr': ('fr-FR', 'fr-FR-Chirp3-HD-Aoede'),
     'en': ('en-US', 'en-US-Chirp3-HD-Aoede'),

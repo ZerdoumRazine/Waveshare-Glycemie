@@ -1,12 +1,11 @@
 /*
  * ui_main.c: Coordinates the five LVGL pages.
- * FR: Coordonne les cinq pages LVGL.
  * Design note: Changing pages must not restart networking or erase state.
  */
 
 /*
  * Owns the LVGL event loop, the page switcher and capture/diagnostic entry points.
- * Coordonne LVGL, la navigation entre pages et les captures.
+ * Coordonne LVGL, navigation between pages and catches.
  */
 #include "ui_main.h"
 
@@ -68,14 +67,14 @@ static volatile int s_requested_dialog; /* 1 = NOUVEAU CAPTEUR, 2 = fermer, 3 = 
 static volatile int s_requested_alert;  /* 1 = OK, 2 = rappel 30 min */
 static volatile int s_requested_scroll = -1;
 static volatile int s_requested_lang = -1; /* langue demandee depuis REGLAGES, appliquee hors du callback */
-/* Commande vocale confirmee : enregistrement dans la tache LVGL (pile en RAM interne, ecriture NVS permise) */
+/* Voice command confirmed: recording in the spot LVGL (pile en RAM interne, ecriture NVS permise) */
 static volatile int s_requested_new = -1;
 static volatile uint32_t s_new_seq;
 static volatile uint32_t s_new_done_seq;
 static volatile int s_new_result;
 
 /* Intitules de la barre de navigation : remplis par fill_nav_map() selon la langue choisie.
- * LVGL conserve le pointeur de la carte : le tableau doit rester valide (statique). */
+ * LVGL keeps the map pointer: the table must remain valid (static). */
 static const char *k_nav_map[UI_PAGE_COUNT + 1];
 static const str_id_t k_nav_ids[UI_PAGE_COUNT] = {S_NAV_HOME, S_NAV_GRAPH, S_NAV_TODAY, S_NAV_CONSUM,
                                                   S_NAV_SETTINGS};
@@ -87,7 +86,7 @@ static void fill_nav_map(void)
     }
     k_nav_map[UI_PAGE_COUNT] = "";
 }
-/* Largeurs relatives (1 a 15) des boutons de navigation : intitules de longueurs tres differentes */
+/* Relative widths (1 to 15) of navigation buttons: very different length titles */
 static const uint8_t k_nav_widths[UI_PAGE_COUNT] = {7, 9, 10, 12, 8};
 
 /* ------------------------------------------------------------------------- */
@@ -204,7 +203,7 @@ static void collect_data(void)
 static void update_top_bar(void)
 {
     const ui_data_t *d = &g_ui;
-    /* Le bandeau porte le temps pour toutes les pages : date a gauche, heure a droite */
+    /* The banner carries time for all pages: date left, time right */
     char buf[64];
     if (d->time_ok) {
         snprintf(buf, sizeof(buf), "%02d:%02d", d->now_tm.tm_hour, d->now_tm.tm_min);
@@ -235,16 +234,16 @@ static void update_top_bar(void)
     }
 }
 
-/* Changement de langue : appele UNIQUEMENT depuis la tache LVGL (ui_timer_cb), jamais depuis
- * le callback d'un bouton, puisque les objets qui portent ce callback sont detruits ici.
- * Seules les pages sont reconstruites : le bandeau, la barre de navigation, l'ecran nuit et la
+/* Changement de langue : appele UNIQUEMENT depuis la tache LVGL (ui_timer_cb), never since
+ * The callback of a button, since the objects that carry this callback are destroyed here.
+ * Only the pages are rebuilt: the banner, the navigation bar, the night screen and the
  * fenetre d'alerte sont conserves et simplement remis a jour. */
 /* Rebuild translated page labels outside the callback of the control being destroyed. */
 static void apply_language(lang_t lang)
 {
     settings_lang_set(lang); /* applique la langue puis demande l'enregistrement NVS differe */
 
-    ui_consumables_close_dialog(); /* une boite de dialogue ouverte resterait dans l'ancienne langue */
+    ui_consumables_close_dialog(); /* an open dialog box would remain in the old language */
 
     fill_nav_map();
     lv_buttonmatrix_set_map(s_nav, k_nav_map);
@@ -256,7 +255,7 @@ static void apply_language(lang_t lang)
     ui_set_text(s_demo, tr(S_DEMO_MODE));
 
     for (int i = 0; i < UI_PAGE_COUNT; i++) {
-        lv_obj_clean(s_pages[i]); /* les pages elles-memes restent, seul leur contenu est refait */
+        lv_obj_clean(s_pages[i]); /* the pages themselves remain, only their content is redone */
     }
     ui_home_create(s_pages[UI_PAGE_HOME]);
     ui_graph_create(s_pages[UI_PAGE_GRAPH]);
@@ -324,7 +323,7 @@ static void ui_timer_cb(lv_timer_t *timer)
     (void)timer;
     const int64_t start_us = esp_timer_get_time();
     s_heartbeat_us = start_us;
-    ui_setup_tick(); /* assistant de configuration : recherche de reseaux, essai de connexion */
+    ui_setup_tick(); /* configuration assistant: network search, connection test */
     if (!s_wdt_subscribed) {
         /* La tache LVGL est surveillee par le watchdog de taches : redemarrage si elle se bloque */
         s_wdt_subscribed = esp_task_wdt_add(NULL) == ESP_OK;
@@ -398,7 +397,7 @@ bool ui_main_create(void)
 
     lv_obj_t *scr = lv_screen_active();
     lv_obj_clean(scr);
-    ui_screen_background(scr); /* degrade bleu nuit vers noir, peint une seule fois pour toutes les pages */
+    ui_screen_background(scr); /* degrade blue night to black, painted once for all pages */
     lv_obj_remove_flag(scr, LV_OBJ_FLAG_SCROLLABLE);
     touch_diag_name(scr, "ecran");
 
@@ -408,7 +407,7 @@ bool ui_main_create(void)
     lv_obj_set_style_border_color(bar, UI_G_LINE, 0);
     lv_obj_set_style_border_width(bar, 1, 0);
     touch_diag_name(bar, "bandeau");
-    /* Date a gauche, heure a droite (K17 : plus aucun voyant de liaison, l'etat detaille reste dans REGLAGES) */
+    /* Date a gauche, heure a droite (K17 : no more connection lights, the size remains in REGLAGES) */
     s_date = ui_label(bar, g_fonts.m, UI_COL_DATE, "");
     lv_obj_set_width(s_date, 420);
     lv_label_set_long_mode(s_date, LV_LABEL_LONG_MODE_CLIP);
@@ -421,7 +420,7 @@ bool ui_main_create(void)
     /* Ligne d'etat entre la date et l'heure : MODE DEMO puis indicateur d'alerte persistant */
     lv_obj_t *status = lv_obj_create(bar);
     lv_obj_remove_style_all(status);
-    lv_obj_set_size(status, 400, UI_TOP_H); /* s'arrete avant l'heure, qui est plus large depuis K18 */
+    lv_obj_set_size(status, 400, UI_TOP_H); /* stops before the hour, which has been wider since K18 */
     lv_obj_align(status, LV_ALIGN_LEFT_MID, 456, 0);
     lv_obj_set_flex_flow(status, LV_FLEX_FLOW_ROW);
     lv_obj_set_flex_align(status, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
@@ -437,7 +436,7 @@ bool ui_main_create(void)
     lv_obj_add_flag(s_demo, LV_OBJ_FLAG_HIDDEN);
     ui_alert_create_indicator(status);
 
-    /* Commande vocale : "Repetez pour confirmer" (fenetre de 10 s) ou ecoute apres le mot d'eveil */
+    /* Voice command: "Repeet to confirm" (ten-s window) or listen after the elevation word */
     s_voice_pill = lv_obj_create(status);
     lv_obj_remove_style_all(s_voice_pill);
     lv_obj_set_size(s_voice_pill, LV_SIZE_CONTENT, 36);
@@ -481,7 +480,7 @@ bool ui_main_create(void)
     lv_obj_set_pos(s_nav, 0, UI_SCR_H - UI_NAV_H);
     lv_obj_set_size(s_nav, UI_SCR_W, UI_NAV_H);
     ui_pill_buttons_style(s_nav, g_fonts.navbar, false);
-    /* Barre pleine (couleur du bandeau) avec filet fin en haut ; page active en pilule bleue lumineuse */
+    /* Full bar (band colour) with fine mesh at the top; page active in bright blue pill */
     lv_obj_set_style_bg_opa(s_nav, LV_OPA_COVER, 0);
     lv_obj_set_style_bg_color(s_nav, UI_COL_BAR, 0);
     lv_obj_set_style_border_side(s_nav, LV_BORDER_SIDE_TOP, 0);
@@ -491,7 +490,7 @@ bool ui_main_create(void)
 
     /* Fenetre d'alerte au-dessus de tout */
     ui_alert_create(scr);
-    /* Assistant de configuration : au-dessus des pages, ouvert tant que rien n'est renseigne */
+    /* Configuration Assistant: above pages, open as long as nothing is provided */
     ui_setup_create();
     /* Mode nuit : retroeclairage seulement (reveil par toucher sur lv_layer_top) */
     night_mode_init();
@@ -624,7 +623,7 @@ void ui_snapshot_dump(void)
         printf("SNAP_ERR lock\n");
         return;
     }
-    /* L'assistant de configuration occupe toute la couche superieure : sans ce choix, la capture
+    /* The configuration wizard occupies the entire layer: without this choice, the capture
      * montrerait la page qui se trouve DERRIERE lui, ce qui est trompeur. */
     lv_obj_t *source = ui_setup_visible() ? lv_layer_top() : lv_screen_active();
     lv_draw_buf_t *snap = lv_snapshot_take(source, LV_COLOR_FORMAT_RGB565);

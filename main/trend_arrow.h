@@ -1,13 +1,11 @@
 /* trend_arrow.h: Trend arrow rendering and mapping interface.
- * FR: Interface d'affichage des flèches de tendance.
  * The declarations below are shared with other firmware modules.
  */
 /*
- * Icone de tendance 2.5D dessinee avec les primitives LVGL (lisible a distance, aucune image ni police requise).
+ * Trend Icon 2.5D drawing with primitives LVGL (lisible a distance, aucune image ni police requise).
  */
 /* Public interface / Interface publique
- * EN: Trend symbol drawing; an icon is not a medical prediction.
- * FR: Affichage de tendance sans prédiction médicale.
+ * Trend symbol drawing; an icon is not a medical prediction.
  */
 #pragma once
 

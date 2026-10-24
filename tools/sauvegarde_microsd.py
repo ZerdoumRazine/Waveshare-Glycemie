@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # Creates and verifies a removable-card backup.
-# FR: Sauvegarde et vérifie la carte microSD.
+#
 # Design note: A backup should be checked, not just copied.
-# EN: Makes a verified file copy from removable media without writing to the card.
-# FR: Copie et vérifie la microSD sans jamais la modifier.
+# Makes a verified file copy from removable media without writing to the card.
+#
 r"""Copier et VERIFIER le contenu de la microSD, sans jamais la modifier.
 
 La carte n'est que LUE : aucun fichier n'y est ecrit, deplace ou efface, et elle n'est jamais
@@ -151,7 +151,7 @@ def main():
         os.makedirs(cible, exist_ok=True)
         print('Copie vers : %s' % cible)
 
-    # --- 1. Copie (la carte n'est que lue) ---------------------------------------------------
+    # --- 1. Copy (card is only read) ---------------------------------------------------
     manifeste = {'date': horodatage, 'lecteur': lettre, 'volume': nom_volume,
                  'format': systeme, 'taille_go': round(taille_go, 2), 'fichiers': []}
     copies = 0
@@ -170,7 +170,7 @@ def main():
                 print('   %d/%d fichiers...' % (copies, len(fichiers)))
         print('%d fichier(s) copie(s).' % copies)
 
-    # --- 2. Verification : tout est relu des DEUX cotes et compare ----------------------------
+    # --- 2. Verification: everything is read from DEUX cotes et compare ----------------------------
     print('\nVerification (relecture de la carte et de la copie)...')
     identiques, differents, manquants, illisibles = 0, [], [], []
     for rel, taille in fichiers:

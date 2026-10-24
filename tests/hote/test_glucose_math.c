@@ -1,13 +1,11 @@
 /* Covers glucose arithmetic and its boundary values.
- * FR: Teste les calculs glycémiques et leurs limites.
  * Host tests use simulated dependencies, never personal readings.
  */
 /*
  * Tests du calcul glycemique reel (main/glucose_math.c et main/app_state.c compiles tels quels) :
  * age et fraicheur, cadence, variation entre mesures, prochaine mesure, noms de tendance, historique.
  */
-/* EN: Verify reading age, cadence and delta using controlled sample timestamps.
- * FR: Teste les calculs d'ancienneté et de variation des mesures.
+/* Verify reading age, cadence and delta using controlled sample timestamps.
  */
 #include <stdio.h>
 #include <string.h>
@@ -19,7 +17,7 @@
 
 #define MIN_MS (60LL * 1000)
 
-/* Serie de `n` mesures espacees de `step_s`, la plus recente en tete (comme dans le firmware). */
+/* Serie de `n` mesures espacees de `step_s`, the most recent in head (as in firmware). */
 static void serie(glucose_point_t *p, int n, int64_t newest_ms, int step_s, int16_t first, int16_t delta)
 {
     for (int i = 0; i < n; i++) {

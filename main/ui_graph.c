@@ -1,12 +1,11 @@
 /*
  * ui_graph.c: Layout and touch interactions of the glucose graph.
- * FR: Mise en page et interaction tactile du graphique.
  * Design note: Keep display calculations separate from data acquisition.
  */
 
 /*
  * Owns the graph page controls and coordinates range selection with the chart widget.
- * Pilote la page graphique et les durées sélectionnées.
+ * Pilot the graphic page and selected durations.
  */
 #include "i18n.h"
 #include "ui_pages.h"
@@ -50,7 +49,7 @@ static void on_range_changed(lv_event_t *e)
 
 void ui_graph_create(lv_obj_t *page)
 {
-    /* Durees : pilules dans un bandeau de verre */
+    /* Purees: pills in a glass band */
     s_ranges = lv_buttonmatrix_create(page);
     touch_diag_name(s_ranges, "durees graphique");
     lv_buttonmatrix_set_map(s_ranges, k_range_map);
@@ -107,5 +106,5 @@ void ui_graph_update(const ui_data_t *d, bool force)
         ui_chart_update(&s_chart, d, hours);
         s_drawn_hours = hours;
     }
-    ui_chart_explore_tick(&s_chart); /* curseur efface quelques secondes apres le relachement */
+    ui_chart_explore_tick(&s_chart); /* cursor clears a few seconds after release */
 }

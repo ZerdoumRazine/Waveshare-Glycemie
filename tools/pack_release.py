@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # Packages verified firmware and Windows files with checksums.
-# FR: Prépare firmware et application Windows avec leurs empreintes.
+#
 # Design note: Release ZIP files must be traced to the tested source commit.
-# EN: Packages exact firmware outputs with checksums and Windows installer.
-# FR: Assemble les fichiers de l'écran, les empreintes et l'installateur Windows.
+# Packages exact firmware outputs with checksums and Windows installer.
+#
 """Prépare une archive d'installation vérifiable à partir d'un build ESP-IDF validé.
 
 Aucun compte utilisateur ni accès réseau. Ne prend jamais de fichiers sous private/.

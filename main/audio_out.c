@@ -1,12 +1,11 @@
 /*
  * audio_out.c: Audio playback and alert tones.
- * FR: Lecture audio et bips d'alerte.
  * Design note: The audible beep fallback works without prerecorded WAVs.
  */
 
 /*
  * Owns the codec and serialises tones, alerts and spoken clips through one worker task.
- * Pilote le codec et sérialise les sons dans une tâche dédiée.
+ * Pilot the codec and serialize the sounds in a dedicated task.
  */
 #include "audio_out.h"
 
@@ -30,14 +29,14 @@ static const char *TAG = "audio";
 
 #define CHUNK_FRAMES   320  /* 20 ms a 16 kHz */
 #define IDLE_CLOSE_MS  3000
-#define TONE_AMPLITUDE 0.5f /* -6 dBFS : a 100 % l'ampli sature au-dela (mesure micro : H3 -11 dB avec -1,5 dBFS) */
+#define TONE_AMPLITUDE 0.5f /* -6 dBFS: has 100 % of the amp sature adu-dela (micro measure: H3 -11 dB with -1.5 dBFS) */
 #define ES8311_REG_DAC_VOLUME 0x32 /* 0xBF = 0 dB, pas de 0,5 dB */
 
 /*
  * Volume general -> volume numerique du DAC ES8311 (dB). La courbe par defaut d'esp_codec_dev est lineaire
- * de -50 dB a 0 dB (45 % = -27,5 dB : voix trop faible). Loi proche d'une amplitude proportionnelle au carre
- * du pourcentage (40 log10) : 50 % = -12 dB, 70 % = -6 dB, 85 % = -3 dB, 100 % = 0 dB. Jamais de gain
- * numerique positif (il saturerait les extraits normalises a -1,5 dBFS).
+ * Of -50 dB at 0 dB (45% = -27.5 dB: voice too low). Law close to an amplitude proportional to the square
+ * of the percentage (40 log10): 50% = -12 dB, 70% = -6 dB, 85% = -3 dB, 100% = 0 dB. Never gain
+ * positive digital (it would saturate normalized extracts a -1.5 dBFS).
  */
 static const struct {
     int pct;
@@ -48,7 +47,7 @@ static const struct {
 };
 #define VOLUME_POINTS (int)(sizeof(k_volume_curve) / sizeof(k_volume_curve[0]))
 
-/* Meme compensation que le pilote ES8311 avec les valeurs du BSP (ampli 5 V, DAC 3,3 V) : environ -3,6 dB */
+/* Meme compensation que le pilote ES8311 with values of BSP (ampli 5 V, DAC 3,3 V) : environ -3,6 dB */
 static esp_codec_dev_hw_gain_t s_hw_gain = {.pa_voltage = 5.0, .codec_dac_voltage = 3.3};
 
 typedef enum {
@@ -101,7 +100,7 @@ static const struct {
 
 static esp_codec_dev_handle_t s_speaker;
 static esp_codec_dev_handle_t s_mic;
-static volatile bool s_mic_reserved; /* micros utilises en continu par les commandes vocales */
+static volatile bool s_mic_reserved; /* microphones used continuously by voice commands */
 static bool s_open;
 static int s_volume_set = -1;
 static QueueHandle_t s_queue;
@@ -292,14 +291,14 @@ esp_err_t audio_out_init(void)
         ESP_LOGW(TAG, "Courbe de volume refusee : courbe par defaut d'esp_codec_dev");
     }
     s_queue = xQueueCreate(24, sizeof(audio_req_t));
-    /* pile de 6 Ko : les fonctions de rendu lisent la microSD (FatFs, pilote SDMMC) */
+    /* 6 KB stack: rendering functions read microSD (FatFs, driver) SDMMC) */
     if (s_queue == NULL || xTaskCreate(audio_task, "audio", 6144, NULL, 5, NULL) != pdPASS) {
         return ESP_ERR_NO_MEM;
     }
     app_state_set_audio_ok(true);
     ESP_LOGI(TAG, "Audio pret : ES8311 via le BSP, 16 kHz stereo 16 bits");
-    /* Le codec est ouvert a chaque sonnerie : traces d'information des pilotes masquees, ainsi que le faux message
-     * d'erreur "i2s_channel_disable ... has not been enabled yet" d'esp_codec_dev (sans consequence). Les vrais
+    /* The codec is open to every ringing: traces of information of masked drivers, as well as the false message
+     * d'erreur "i2s_channel_disable ... has not been enabled yet" d'esp_codec_dev (without consequence). The real
      * echecs d'ouverture et d'ecriture restent journalises par ce module. */
     esp_log_level_set("I2S_IF", ESP_LOG_WARN);
     esp_log_level_set("Adev_Codec", ESP_LOG_WARN);
@@ -425,7 +424,7 @@ static double goertzel(const int16_t *stereo, int frames, int freq)
     return sqrt(power > 0 ? power : 0) / frames;
 }
 
-/* Tampon des mesures au micro (console) : 100 ms stereo, en PSRAM a la premiere mesure (la RAM interne reste aux
+/* Micro (console) measuring stamp: 100 ms stereo, in PSRAM a la premiere mesure (la RAM interne reste aux
  * tampons DMA) */
 #define MIC_CHUNK 1600
 static int16_t *s_rx;

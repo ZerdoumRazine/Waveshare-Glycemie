@@ -1,8 +1,8 @@
 # Builds firmware using the designated ESP-IDF environment.
-# FR: Compile le firmware avec l'environnement ESP-IDF prévu.
+#
 # Design note: Build from clean settings to prevent stale optional voice settings.
-# EN: Build firmware in a compatible ASCII-only path, with explicit voice-recognition options.
-# FR: Compile le firmware depuis un chemin compatible avec ESP-IDF.
+# Build firmware in a compatible ASCII-only path, with explicit voice-recognition options.
+#
 #Requires -Version 5.1
 <#
 .SYNOPSIS
@@ -10,18 +10,18 @@
 
 .DESCRIPTION
     ESP-IDF ne sait pas compiler depuis un chemin contenant un caractere accentue : ccache,
-    ldgen.py et l'editeur de liens echouent tous les trois. Si la racine du projet contient un
-    accent, ce script recopie le projet dans un dossier de travail ASCII (sous le dossier temporaire
-    de l'utilisateur, jamais a cote du projet) et compile la-bas. Sinon il compile sur place.
+    ldgen.py and the link editor fail all three. If the project root contains a
+    accent, this script copies the project into a working folder ASCII (sous le dossier temporaire
+    user, never rated the project) and compiles there. Otherwise he compiles on the spot.
 
-    Le dossier private/ n'est JAMAIS efface par la recopie et sa presence est verifiee avant de
-    compiler : un firmware sans identifiants demarre mais reste sans Wi-Fi ni Dexcom.
+    Private/ is not JAMAIS erased by copying and its presence is checked before
+    compile: a firmware without login but without Wi-Fi or Dexcom.
 
 .PARAMETER Clean
-    Repart d'une compilation vide (fullclean) et vide le dossier de travail.
+    Starts from an empty compilation (fullclean) and emptys the work folder.
 
 .PARAMETER Flash
-    Flashe l'application apres une compilation reussie (idf.py -p <port> app-flash).
+    Flash the app after a successful compilation (idf.py -p <port> app-flash).
 
 .PARAMETER Port
     Port serie, COM7 par defaut.
@@ -55,15 +55,15 @@ if (Test-Ascii $Root) {
     Write-Host "Copie de travail ASCII : $Work"
     if ($Clean -and (Test-Path $Work)) { Remove-Item -LiteralPath $Work -Recurse -Force }
     New-Item -ItemType Directory -Force $Work | Out-Null
-    # /XD private : la copie de travail garde ses identifiants, le miroir ne doit pas les effacer.
+    # /XD private: the working copy keeps its identifiers, the mirror must not erase them.
     $null = robocopy $Root $Work /MIR /NFL /NDL /NJH /NJS /NP `
         /XD build managed_components .git private 'tools\logs' 'tools\cache' 'tools\espressif' `
             'tools\esp-idf-v5.5.5' 'tests\build' Razine
     if ($LASTEXITCODE -ge 8) { throw "Copie de travail impossible (robocopy $LASTEXITCODE)" }
     $priv = Join-Path $Work 'private'
     New-Item -ItemType Directory -Force $priv | Out-Null
-    # Les identifiants sont recopies des qu'ils different : sinon une ancienne copie de travail
-    # garderait un Wi-Fi ou un compte Dexcom perime sans que rien ne le signale.
+    # Identifiers are copied from what they differ: otherwise an old working copy
+    # Would keep a Wi-Fi or Dexcom account perime without any mention.
     $src = Join-Path $Root 'private\device_secrets.h'
     $dst = Join-Path $priv 'device_secrets.h'
     if (Test-Path $src) {
@@ -95,7 +95,7 @@ if (-not $env:IDF_PATH) {
     throw "IDF_PATH n'est pas defini. Ouvrez la fenetre 'ESP-IDF 5.5 PowerShell', ou definissez `$env:IDF_PATH. Voir docs\INSTALLATION_FR.md."
 }
 if (-not $env:IDF_TOOLS_PATH) {
-    # Installation « dans le projet » : les outils sont a cote d'ESP-IDF (tools\espressif).
+    # Installation "in the project": the tools are ratedESP-IDF (tools\espressif).
     foreach ($candidat in @((Join-Path (Split-Path -Parent $env:IDF_PATH) 'espressif'),
                             (Join-Path $Root 'tools\espressif'))) {
         if (Test-Path (Join-Path $candidat 'python_env')) { $env:IDF_TOOLS_PATH = $candidat; break }
@@ -105,8 +105,8 @@ $env:PYTHONUTF8 = '1'
 # IDF_CCACHE_ENABLE est teste non vide par ESP-IDF : "0" l'ACTIVE. Il faut supprimer la variable.
 Remove-Item Env:IDF_CCACHE_ENABLE -ErrorAction SilentlyContinue
 
-# activate.py ecrit sa progression sur stderr : sans cela, ErrorActionPreference = 'Stop'
-# l'interpreterait comme une erreur alors que tout va bien.
+# activate.py writes its progress on stderr: without this, ErrorActionPreference = 'Stop'
+# It would be interpreted as a mistake while everything is fine.
 $previous = $ErrorActionPreference
 $ErrorActionPreference = 'Continue'
 $exports = python "$env:IDF_PATH\tools\activate.py" --export
@@ -127,8 +127,8 @@ try {
     New-Item -ItemType Directory -Force $logDir | Out-Null
     $log = Join-Path $logDir ('build_{0:yyyyMMdd_HHmmss}.log' -f (Get-Date))
     # Commandes vocales locales : absentes par defaut (voir main/CMakeLists.txt).
-    # La valeur est TOUJOURS passee : CMake garde en cache ce qui lui a ete donne une fois, donc
-    # une compilation faite apres un -Vocal garderait les commandes vocales sans rien dire.
+    # La valeur est TOUJOURS pass: Cmake keeps in cache what was given him once, so
+    # a compilation made after a -Vocal would keep voice commands without saying anything.
     $defines = @(if ($Vocal) { '-DGLY_VOICE_CMD=ON' } else { '-DGLY_VOICE_CMD=OFF' })
     & $idfPython "$env:IDF_PATH\tools\idf.py" @defines build *>&1 | Tee-Object -FilePath $log | Out-Null
     $code = $LASTEXITCODE

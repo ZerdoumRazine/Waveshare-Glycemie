@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # Configures the screen over USB without requiring a firmware rebuild.
-# FR: Configure l'écran par USB sans recompiler.
+#
 # Design note: Passwords are sent to the device, not stored in a PC configuration file.
-# EN: Configures the device by USB when touchscreen entry is inconvenient.
-# FR: Configure le Waveshare par USB lorsque la saisie tactile est difficile.
+# Configures the device by USB when touchscreen entry is inconvenient.
+#
 r"""Assistant de configuration par le cable USB (solution de secours a l'assistant de l'ecran tactile).
 
 A utiliser si la saisie au doigt pose probleme (mot de passe long, clavier a l'ecran peu pratique) ou si
@@ -32,7 +32,7 @@ import time
 REGIONS = {'1': ('ous', 'Europe / hors Amerique du Nord'), '2': ('us', 'Amerique du Nord'),
            '3': ('jp', 'Japon')}
 
-# etats renvoyes par "ident_etat" (gly_test_t dans main/glucose_service.h)
+# etats renvoyes par "ident_etat" (gly_test_t in main/glucose_service.h)
 ETAT_INACTIF, ETAT_EN_COURS, ETAT_REUSSI, ETAT_ECHEC = 0, 1, 2, 3
 ETAPES = {
     'demarrage': 'demarrage',
@@ -133,7 +133,7 @@ class PortWin32(object):
             raise IOError('SetCommState a echoue sur %s' % nom)
         to = TIMEOUTS(50, 0, 200, 0, 2000)
         k.SetCommTimeouts(self.h, ctypes.byref(to))
-        k.PurgeComm(self.h, 0x000F)  # vide les tampons d'entree et de sortie
+        k.PurgeComm(self.h, 0x000F)  # emptys entry and exit buffers
 
     def write(self, data):
         ecrit = self.wt.DWORD(0)
@@ -220,7 +220,7 @@ def trouver_port():
         return probables[0]
     if not probables and len(ports) == 1:
         return ports[0][0]
-    return None   # zero ou plusieurs candidats : ne jamais choisir a la place de l'utilisateur
+    return None   # zero or more candidates: never choose the user's place
 
 
 # Open the serial port without toggling DTR/RTS and unintentionally rebooting the board.
@@ -233,11 +233,11 @@ def ouvrir_port(nom):
 
 
 # --------------------------------------------------------------------------------------------------
-# Dialogue avec l'appareil
+# Dialogue with the device
 # --------------------------------------------------------------------------------------------------
 class Appareil(object):
     def __init__(self, port):
-        self.port = port          # objet write/read/close (injectable pour les tests)
+        self.port = port          # objet write/read/close (injectable for testing)
         self.reste = b''
 
     def envoyer(self, commande):

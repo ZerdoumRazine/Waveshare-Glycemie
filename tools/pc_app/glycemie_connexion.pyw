@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # Windows configuration interface for the connected display.
-# FR: Interface Windows de configuration de l'écran.
+#
 # Design note: Do not display, log or persist account passwords on the PC.
-# EN: Provides the Windows USB setup interface; credential changes remain a confirmable trial.
-# FR: Interface Windows de configuration USB avec essai réversible des accès.
+# Provides the Windows USB setup interface; credential changes remain a confirmable trial.
+#
 """Configuration de l'ecran WaveShare Glycemie depuis le PC (fenetre graphique Windows).
 
 Ce programme sert a renseigner, essayer, enregistrer ou effacer les acces de l'ecran (reseau Wi-Fi et
@@ -29,7 +29,7 @@ import threading
 import tkinter as tk
 from tkinter import messagebox, ttk
 
-# --- import de l'assistant (tools/assistant_config.py), que le programme soit lance depuis les
+# --- import de l'assistant (tools/assistant_config.py), the programme has been launched since
 #     sources ou depuis l'executable fabrique par PyInstaller -----------------------------------
 ICI = os.path.dirname(os.path.abspath(__file__))
 for candidat in (os.path.join(ICI, '..'), ICI, getattr(sys, '_MEIPASS', ICI)):
@@ -39,7 +39,7 @@ for candidat in (os.path.join(ICI, '..'), ICI, getattr(sys, '_MEIPASS', ICI)):
 import assistant_config as ac  # noqa: E402
 
 TITRE = 'WaveShare Glycémie — connexion'
-# Libelles accentues pour la fenetre ; les codes ("ous", "us", "jp") restent ceux du firmware.
+# Increased libels for the window; the codes ("us", "jp") remain those of the firmware.
 REGIONS_FR = {'ous': 'Europe / hors Amérique du Nord', 'us': 'Amérique du Nord', 'jp': 'Japon'}
 LARGEUR_CHAMP = 34
 
@@ -51,7 +51,7 @@ class Fenetre(object):
     # Build controls with passwords hidden by default.
     def __init__(self, racine):
         self.racine = racine
-        self.file = queue.Queue()        # messages venant du fil de discussion avec l'appareil
+        self.file = queue.Queue()        # messages from the thread with the device
         self.occupe = False
         self.essai_reussi = False
         racine.title(TITRE)
@@ -193,7 +193,7 @@ class Fenetre(object):
         elif len(self.ports) == 1:
             self.liste_ports.current(0)
         else:
-            # Plusieurs appareils : c'est a l'utilisateur de choisir, jamais au programme.
+            # Several devices: it is up to the user to choose, never to the program.
             self.port.set('')
             self.dire('%d ports série trouvés : choisissez celui de l\'écran dans la liste. '
                       'En cas de doute, débranchez le câble, appuyez sur « Rechercher », '

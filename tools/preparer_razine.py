@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # Exports a shareable source copy without rewriting Git history.
-# FR: Exporte une copie des sources sans réécrire l'historique Git.
+#
 # Design note: Refuse to overwrite an existing repository or folder.
-# EN: Exports a safe tracked-file snapshot without overwriting an existing repository.
-# FR: Exporte une copie sûre sans écraser un dépôt déjà existant.
+# Exports a safe tracked-file snapshot without overwriting an existing repository.
+#
 r"""Prepare la copie publiable du projet (dossier Razine) a partir de ce que Git suit reellement.
 
 Pourquoi cette methode : copier un dossier a la main laisse passer des journaux, des sauvegardes ou
@@ -30,7 +30,7 @@ import zipfile
 
 RACINE = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import archive_publique as ap          # noqa: E402  (motifs interdits et fichiers attendus)
+import archive_publique as ap          # noqa: E402  (prohibited reasons and expected files)
 import controle_donnees_perso as cdp   # noqa: E402
 
 

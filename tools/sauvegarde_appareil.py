@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # Backs up the firmware flash for recovery purposes.
-# FR: Sauvegarde la mémoire flash en vue d'une restauration.
+#
 # Design note: The backup is private because it may contain Wi-Fi, Dexcom and health data.
-# EN: Reads a complete flash backup before maintenance without changing the device.
-# FR: Sauvegarde la flash avant une intervention sans écrire sur la carte.
+# Reads a complete flash backup before maintenance without changing the device.
+#
 r"""Identifier et SAUVEGARDER l'ecran avant toute mise a jour. Ce programme n'ecrit JAMAIS dans l'appareil.
 
 Il fait trois choses, dans cet ordre :
@@ -64,8 +64,8 @@ def esptool_cmd(impose=None):
         env = os.path.join(base, 'python_env')
         if os.path.isdir(env):
             for sous in sorted(os.listdir(env)):
-                # le python de l'environnement ESP-IDF, avec le module esptool : plus fiable que
-                # esptool.exe, qui a besoin de cet environnement pour demarrer
+                # le python de l'environnement ESP-IDF, with the esptool module: more reliable than
+                # esptool.exe, which needs this environment to start
                 py = os.path.join(env, sous, 'Scripts', 'python.exe')
                 if os.path.exists(py):
                     candidats.append([py, '-m', 'esptool'])
@@ -180,7 +180,7 @@ def main():
     dossier = args.dossier or os.path.join(SAUVEGARDES, horodatage)
     os.makedirs(dossier, exist_ok=True)
 
-    # Table des partitions : toujours lue, elle sert a tout le reste
+    # Table of scores: Always read, it serves everything else
     table = os.path.join(dossier, 'table_partitions.bin')
     code, sortie = lancer(cmd, base + ['read_flash', '0x8000', '0x1000', table], timeout=300)
     partitions = lire_partitions(table) if code == 0 else []
@@ -203,7 +203,7 @@ def main():
                 pass
         return 0
 
-    # --- 2. Sauvegarde -----------------------------------------------------------------------
+    # --- 2. Backup -------------------------------------------------------------------------
     print('\n--- Sauvegarde dans %s ---' % dossier)
     print("Rien n'est ecrit dans l'appareil : il n'est que relu.")
     fichiers = []
@@ -218,7 +218,7 @@ def main():
     else:
         zones = list(ZONES_PAR_DEFAUT)
         for nom, type_, sous, adresse, taille in partitions:
-            # applications et donnees utiles ; on saute les partitions vides de grande taille
+            # useful applications and data; one skips large empty partitions
             if nom in ('nvs', 'otadata', 'phy_init') or type_ == 0:
                 zones.append((nom, adresse, taille))
         for nom, adresse, taille in zones:

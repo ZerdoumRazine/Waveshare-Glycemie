@@ -1,17 +1,15 @@
 /* Tests sensor dates, consumables and stock updates.
- * FR: Teste les dates, consommables et stocks.
  * Host tests use simulated dependencies, never personal readings.
  */
 /*
- * Tests des consommables sur le vrai code du firmware (main/sensor_session.c, main/consumables.c, main/stock.c
- * compiles tels quels) : echeances, rappels 24 h / 2 h, anti-repetition, persistance NVS apres redemarrage,
- * stock jamais negatif et decremente une seule fois par changement.
+ * Consumables tests on the real firmware code (main/sensor_session.c, main/consumables.c, main/stock.c
+ * compiles tels quels) : echeances, rappels 24 h / 2 h, anti-repetition, persistance NVS After starting again,
+ * stock never negative and decrement only once by change.
  *
- * La NVS est simulee en memoire (tests/hote/shims) : un "redemarrage" consiste a rappeler les fonctions
- * d'initialisation sans effacer la NVS, exactement comme au demarrage de la carte.
+ * La NVS est simulee en memoire (tests/hote/shims) : a "restart" consists of recalling the functions
+ * initialization without deleting the NVS, exactement comme au demarrage de la carte.
  */
-/* EN: Verify sensor/catheter dates, reminders and stock after simulated restart.
- * FR: Vérifie les dates, rappels et stocks après un redémarrage simulé.
+/* Verify sensor/catheter dates, reminders and stock after simulated restart.
  */
 #include <stdio.h>
 #include <string.h>
@@ -27,7 +25,7 @@ void test_set_time_valid(int ok);
 #define H (3600LL)
 #define J (24LL * 3600)
 
-static const int64_t POSE = 1789747393LL; /* exemple : une date de pose quelconque */
+static const int64_t POSE = 1789747393LL; /* example: any date of installation */
 
 static void demarrage(void)
 {
@@ -95,7 +93,7 @@ int main(void)
 
     section("Capteur G7 : un redemarrage ne perd ni la date ni les rappels deja signales");
     const uint8_t masque_avant = sensor_session_reminder_mask();
-    demarrage(); /* relecture de la NVS, comme apres un redemarrage de la carte */
+    demarrage(); /* relecture de la NVS, as after a card reboot */
     sensor_session_get(POSE + 3 * J, &s);
     CHECK(s.known, "capteur toujours connu apres redemarrage");
     CHECK_EQ_I(s.start_s, POSE, "heure de pose identique a la seconde pres");
@@ -104,7 +102,7 @@ int main(void)
     CHECK(done, "aucun rappel rejoue apres redemarrage");
 
     section("Capteur G7 : pose enregistree tardivement, rappels deja passes");
-    sensor_session_start(POSE, POSE + 10 * J - 3 * H); /* enregistre 3 h avant l'echeance */
+    sensor_session_start(POSE, POSE + 10 * J - 3 * H); /* records 3 hours before maturity */
     sensor_session_current_reminder(POSE + 10 * J - 3 * H, &done);
     CHECK(done, "le rappel 24 h deja depasse est marque fait : pas de rafale de rappels perimes");
     sensor_session_current_reminder(POSE + 10 * J - 2 * H, &done);

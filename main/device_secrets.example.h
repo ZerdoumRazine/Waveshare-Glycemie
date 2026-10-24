@@ -1,18 +1,16 @@
 /* Template for optional local credentials; never put real passwords in Git.
- * FR: Modèle d'accès locaux : ne jamais versionner de vrais mots de passe.
  * Test and configuration interface only; no live patient data is included.
  */
 /*
  * MODELE - a copier en <racine du projet>/private/device_secrets.h puis a completer.
  * Sous Windows :  copy main\device_secrets.example.h private\device_secrets.h
  *
- * Le vrai fichier ne doit JAMAIS etre publie, versionne, joint a un rapport ou copie
- * dans un journal. Les valeurs sont compilees dans le firmware : ne jamais publier
- * non plus le dossier build/ ni les binaires produits.
+ * The real file must not JAMAIS etre publie, versionne, joint a un rapport ou copie
+ * in a newspaper. Values are compiled in firmware: never publish
+ * neither the build/ folder nor the binary products.
  */
 /* Public interface / Interface publique
- * EN: Example values for developers only; the public build is configured on the device.
- * FR: Exemple réservé aux développeurs ; la version publique se configure à l'écran.
+ * Example values for developers only; the public build is configured on the device.
  */
 #pragma once
 

@@ -1,12 +1,11 @@
 /*
  * consumables.c: Consumable replacement lifecycle and reminders.
- * FR: Cycle de remplacement et rappels des consommables.
  * Design note: A reboot does not indicate that a new item was installed.
  */
 
 /*
  * Maintains infusion-set dates, configurable intervals and reminders in persistent storage.
- * Conserve les dates et rappels du cathéter en mémoire persistante.
+ * Keeps the dates and recalls of the catheter in persistent memory.
  */
 #include "consumables.h"
 
@@ -30,7 +29,7 @@ static const char *TAG = "consommables";
 #define NVS_NS_CONSO      "conso"
 #define KEY_START         "start"
 #define KEY_REMINDERS     "remind2" /* bit 0 : rappel 2 h */
-#define KEY_OLD_REMINDERS "remind"  /* ancien masque (24 h, 6 h, 2 h, echeance) : lu, jamais ecrit */
+#define KEY_OLD_REMINDERS "remind"  /* former mask (24 h, 6 h, 2 h, time): read, never written */
 #define KEY_HOURS         "hours"
 #define KEY_LOGGED_G7     "log_g7"
 #define KEY_LOGGED_CATH   "log_cath"
@@ -43,7 +42,7 @@ static int64_t s_cath_start_s; /* 0 = aucun changement enregistre */
 static uint8_t s_cath_done;
 static uint8_t s_cath_hours = CATHETER_DEFAULT_H;
 static volatile uint32_t s_revision;
-/* Derniere heure de depart deja ecrite dans consumables.csv (par consommable) */
+/* Last start time already written in consumables.csv (per consumable) */
 static int64_t s_logged[CONSUMABLE_COUNT];
 
 static const char *const k_csv_type[CONSUMABLE_COUNT] = {"G7", "infusion_set"};
@@ -142,7 +141,7 @@ esp_err_t consumables_init(void)
     }
 
     /* Marqueurs de l'historique : absents au premier demarrage de cette version -> la date deja enregistree est
-     * consideree comme journalisee (aucune ligne CSV sans confirmation reelle) */
+     * consideree comme journalisee (aucune ligne CSV without actual confirmation) */
     sensor_status_t sensor;
     sensor_session_get((int64_t)time(NULL), &sensor);
     const int64_t current[CONSUMABLE_COUNT] = {sensor.known ? sensor.start_s : 0, s_cath_start_s};
@@ -199,7 +198,7 @@ esp_err_t consumable_start_now(consumable_t c, const char *source)
     ESP_LOGI(TAG, "%s enregistre (%s) : depart %02d/%02d a %02d:%02d", consumable_name(c), source, tm_local.tm_mday,
              tm_local.tm_mon + 1, tm_local.tm_hour, tm_local.tm_min);
     sd_storage_log_event("%s enregistre (%s)", c == CONSUMABLE_SENSOR ? "Nouveau capteur" : "Nouveau catheter", source);
-    /* Stock : une seule unite par changement reellement enregistre (l'heure de depart sert de marqueur) */
+    /* Stock: only one unit per change actually recorded (the time of departure serves as marker) */
     stock_consume(c == CONSUMABLE_SENSOR ? STOCK_SENSOR : STOCK_CATHETER, now);
     return err;
 }
@@ -280,7 +279,7 @@ void catheter_mark_reminder_done(int reminder)
         return;
     }
     xSemaphoreTake(s_mutex, portMAX_DELAY);
-    /* les rappels plus anciens sont aussi consideres comme signales ; NVS ecrite seulement si le masque change */
+    /* older reminders are also considered as reports; NVS ecrite seulement si le masque change */
     uint8_t mask = s_cath_done;
     for (int i = 0; i <= reminder; i++) {
         mask |= (uint8_t)(1u << i);
@@ -389,7 +388,7 @@ esp_err_t consumable_restore(consumable_t c, int64_t start_s, int reminders_mask
         xSemaphoreGive(s_mutex);
     }
     xSemaphoreTake(s_mutex, portMAX_DELAY);
-    s_logged[c] = start_s; /* restauration : jamais de ligne dans l'historique */
+    s_logged[c] = start_s; /* restoration: never line in history */
     persist_logged(c);
     s_revision++;
     xSemaphoreGive(s_mutex);

@@ -1,18 +1,18 @@
 # Loads the ESP-IDF build environment.
-# FR: Charge l'environnement ESP-IDF.
+#
 # Design note: Keep the toolchain separate from released source files.
-# EN: Locate and activate the exact ESP-IDF toolchain needed by this project.
-# FR: Active la chaîne d'outils ESP-IDF utilisée par le projet.
-# Environnement ESP-IDF v5.5.5 pour glycemie_display.
-# A dot-sourcer dans chaque session PowerShell, depuis n'importe ou :
+# Locate and activate the exact ESP-IDF toolchain needed by this project.
+#
+# Environnement ESP-IDF v5.5.5 for glycemie_display.
+# To dot-source in each PowerShell session, from anywhere or:
 #     . <racine du projet>\tools\idf_env.ps1
 #
-# Toutes les variables sont limitees au processus courant : rien n'est ecrit dans les
-# variables d'environnement Windows ni dans le PATH permanent.
+# All variables are limited to the current process: nothing is written in the
+# environment variables Windows nor in the PATH permanent.
 #
 # Deux modes :
 #  1. ESP-IDF installe DANS le projet (tools\esp-idf-v5.5.5 + tools\espressif) : detecte tout seul.
-#  2. ESP-IDF installe ailleurs : definir IDF_PATH avant d'appeler ce script, par exemple
+#  2. ESP-IDF installe ailleurs : definir IDF_PATH before calling this script, for example
 #         $env:IDF_PATH = 'C:\Espressif\frameworks\esp-idf-v5.5.5'
 #     ou utiliser directement le raccourci "ESP-IDF 5.5 PowerShell" fourni par l'installateur.
 
@@ -28,7 +28,7 @@ if (-not $env:IDF_PATH) {
 $LocalTools = Join-Path $ProjectRoot 'tools\espressif'
 if (-not $env:IDF_TOOLS_PATH -and (Test-Path $LocalTools)) { $env:IDF_TOOLS_PATH = $LocalTools }
 
-# Caches rediriges dans le projet : la compilation n'ecrit rien ailleurs.
+# Hides redirect in the project: the compilation does not write anything else.
 $Cache = Join-Path $ProjectRoot 'tools\cache'
 $env:IDF_COMPONENT_CACHE_PATH      = Join-Path $Cache 'components'
 $env:PIP_CACHE_DIR                 = Join-Path $Cache 'pip'

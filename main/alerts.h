@@ -1,15 +1,13 @@
 /* alerts.h: Public controls and types for supplementary alerts.
- * FR: Types et commandes publiques des alertes.
  * Keep this header focused on the contracts used by other modules.
  */
 /*
- * Gestionnaire d'alertes : glycemie tres basse / basse / elevee / tres elevee, absence de donnees,
+ * Alert Manager: very low / low / high / very high, lack of data,
  * rappels du capteur. Anti-repetition : acquittement, rappel differe (snooze), repetitions limitees,
- * volume croissant (RAMP) pour l'alerte critique. Les alertes glycemiques exigent une mesure recente.
+ * volume croissant (RAMP) for critical alert. Glycemic alerts require recent action.
  */
 /* Public interface / Interface publique
- * EN: Public alert types, priorities and acknowledgement controls.
- * FR: Types d'alertes et interfaces d'acquittement.
+ * Public alert types, priorities and acknowledgement controls.
  */
 #pragma once
 
@@ -26,18 +24,18 @@ typedef enum {
     ALERT_HIGH,
     ALERT_SENSOR,
     ALERT_CATHETER,     /* rappel du site de perfusion (consumables.h) */
-    ALERT_TEST,         /* alerte de test (console) : affichee avant ELEVEE, jamais avant BASSE / TRES BASSE */
+    ALERT_TEST,         /* test alert (console): displays before ELEVEEnever before BASSE / TRES BASSE */
     ALERT_COUNT,
 } alert_type_t;
 
 typedef struct {
     alert_type_t type;  /* alerte a presenter (non acquittee, non reportee), ALERT_NONE sinon */
-    int value;          /* mg/dL, minutes sans donnee, ou numero de rappel capteur / catheter */
+    int value;          /* mg/dL, minutes without data, or sensor/catheter recall number */
     char title[48];
     char message[96];
     uint32_t seq;       /* identifiant de la levee de cette alerte : nouvelle valeur a chaque nouvelle levee */
     alert_type_t style; /* apparence (couleur) : type, ou type simule par l'alerte de test */
-    alert_type_t ongoing; /* glycemie basse / tres basse / elevee / tres elevee ou absence de donnees en cours,
+    alert_type_t ongoing; /* low / very low / high / very high or lack of current data,
                              meme acquittee ou reportee (indicateur persistant), ALERT_NONE sinon */
     bool ongoing_test;  /* condition simulee par l'alerte de test (aucune vraie condition en cours) */
 } alert_view_t;
@@ -46,14 +44,14 @@ esp_err_t alerts_start(void);
 void alerts_get_view(alert_view_t *out);
 void alerts_acknowledge(void);
 void alerts_snooze(int minutes);
-const char *alerts_title(alert_type_t type); /* "GLYCÉMIE BASSE"... ("" pour ALERT_NONE) */
+const char *alerts_title(alert_type_t type); /* "GLYCEMIE BASSE"... ("" for ALERT_NONE) */
 
-/* Test (console) : joue le son et la voix de l'alerte sans modifier les etats */
+/* Test (console): plays the sound and voice of the alert without changing the states */
 void alerts_test_sound(alert_type_t type, int value);
 
-/* Alerte de test affichee (OK / RAPPEL DANS 30 MIN) sans toucher aux donnees Dexcom ni aux vraies alertes.
- * as = ALERT_TEST : alerte de test generique ; as = un vrai type : simulation complete de ce type avec la valeur
- * (panneau, indicateur, son, voix), marquee "(test)" dans le message et l'indicateur, jamais journalisee sur la
+/* Alerte de test affichee (OK / RAPPEL DANS 30 MIN) without touching Dexcom data or real alerts.
+ * as = ALERT_TEST : general test alert; as = a true type: complete simulation of this type with the value
+ * (sign, indicator, sound, voice), marks "(test)" in the message and indicator, never logged on the
  * microSD ; la condition simulee reste affichee par l'indicateur jusqu'a alerts_test_stop(). */
 void alerts_test_start(alert_type_t as, int value);
 void alerts_test_stop(void);

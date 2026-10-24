@@ -1,17 +1,15 @@
 /* app_secrets.h: Optional private-build secret integration.
- * FR: Intégration facultative des accès personnels.
  * Public distribution must never embed a user's credentials.
  */
 /*
  * Acces aux identifiants prives.
  *
- * Les valeurs viennent de <racine du projet>/private/device_secrets.h (hors depot,
- * voir main/device_secrets.example.h). Ce fichier ne doit etre inclus que par les
- * modules qui en ont besoin, et aucune de ces valeurs ne doit jamais etre journalisee.
+ * Values come from < project root>/private/device_secrets.h (hors depot,
+ * voir main/device_secrets.example.h). This file should only be included by
+ * modules that need it, and none of these values should ever be logged.
  */
 /* Public interface / Interface publique
- * EN: Private-build compatibility values; never log or distribute real credentials.
- * FR: Compatibilité des identifiants locaux à ne jamais publier.
+ * Private-build compatibility values; never log or distribute real credentials.
  */
 #pragma once
 

@@ -1,12 +1,11 @@
 /*
  * ui_alert.c: On-screen alert panel and acknowledgement controls.
- * FR: Panneau d'alerte et acquittement tactile.
  * Design note: On-screen alerts are supplementary to official notifications.
  */
 
 /*
  * Renders and updates a single priority alert overlay without changing the alert engine.
- * Affiche un panneau d'alerte prioritaire sans modifier les règles d'alerte.
+ * Displays a priority alert sign without changing the alert rules.
  */
 #include "ui_alert.h"
 
@@ -38,7 +37,7 @@ static bool s_panel_visible;
 static int64_t s_panel_since_us;
 static uint32_t s_presented_seq[ALERT_COUNT]; /* derniere levee deja presentee en plein ecran, par type */
 
-/* Contenu affiche : mis a jour seulement s'il change (pas de redessin chaque seconde) */
+/* Display content: updated only if it changes (no redrawing every second) */
 static alert_type_t s_panel_style = ALERT_NONE;
 static char s_panel_title[48];
 static char s_panel_message[96];
@@ -128,7 +127,7 @@ static void refresh_indicator(const alert_view_t *v)
     lv_color_t bg;
     lv_color_t fg;
     alert_colors(style, &bg, &fg);
-    /* non acquittee : pastille pleine ; condition toujours presente apres OK ou RAPPEL : contour seul */
+    /* not acquitted: full tablet; condition still present after OK or RAPPEL : contour seul */
     lv_obj_set_style_bg_color(s_pill, pending ? bg : UI_COL_BAR, 0);
     lv_obj_set_style_border_color(s_pill, bg, 0);
     lv_obj_set_style_text_color(s_pill_label, pending ? fg : bg, 0);
@@ -208,9 +207,9 @@ void ui_alert_create(lv_obj_t *screen)
     lv_obj_add_flag(s_overlay, LV_OBJ_FLAG_HIDDEN);
 }
 
-/* Changement de langue : le panneau d'alerte et son indicateur vivent sur l'ecran, pas dans les
- * pages reconstruites. Les intitules fixes sont reecrits ici, et les caches de texte vides pour que
- * le prochain rafraichissement repose titre et message dans la nouvelle langue. */
+/* Language change: the alert sign and its indicator live on the screen, not in the
+ * Pages rebuilt. Fixed titles are rewritten here, and empty text caches so that
+ * the next refreshment rests title and message in the new language. */
 void ui_alert_relang(void)
 {
     if (s_ok_button != NULL) {

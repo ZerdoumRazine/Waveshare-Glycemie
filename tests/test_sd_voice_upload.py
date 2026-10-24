@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # Tests that voice verification never writes to microSD.
-# FR: Vérifie que le contrôle vocal n'écrit pas sur microSD.
+#
 # These tests use simulations; they do not connect to a patient's device.
-# EN: Test read-only verification and audio transfer using a simulated serial device.
-# FR: Teste la vérification sans écriture et les transferts audio simulés.
+# Test read-only verification and audio transfer using a simulated serial device.
+#
 """Controles de l'outil de copie de la banque vocale (tools/voice/sd_voice_upload.py).
 
 Le plus important : en mode --verify-only, l'outil ne doit JAMAIS ecrire sur la carte, dans aucune des
@@ -25,8 +25,8 @@ sys.modules['serial'].Serial = object
 sys.path.insert(0, os.path.join(ROOT, 'tools', 'voice'))
 sys.path.insert(0, os.path.join(ROOT, 'tools'))
 
-import sd_voice_upload as up  # noqa: E402  (le chemin doit etre ajoute avant l'import)
-ORIGINAL_CONFIGURE = up.configure  # restauration apres les transports simules
+import sd_voice_upload as up  # noqa: E402  (the path must be added before the import)
+ORIGINAL_CONFIGURE = up.configure  # restoration after simulated transport
 
 FICHIERS = ['alert_low.wav', 'glucose_100.wav', 'trend_flat.wav']
 resultats = []
@@ -61,12 +61,12 @@ class CarteSimulee:
     def __init__(self, contenu, dossier_liste=True, sous_dossiers=('en',)):
         self.contenu = {code: dict(fichiers) for code, fichiers in contenu.items()}  # {'racine'|code: {nom: (t, crc)}}
         self.dossier_liste = dossier_liste       # firmware a jour : "VRX LIST dossier=..."
-        self.sous_dossiers = sous_dossiers       # anciens firmwares : listes comme des entrees de taille -1
+        self.sous_dossiers = sous_dossiers       # old firmwares: lists as large entrees -1
         self.courant = 'racine'
         self.ecritures = []                      # noms demandes en ecriture (vrx_put accepte)
         self.octets_recus = 0
         self.dossiers_crees = []
-        self.attendu = 0                         # octets restant a recevoir pour le vrx_put en cours
+        self.attendu = 0                         # bytes remaining to be received for the vrx_put en cours
 
     def commande(self, ligne):
         mots = ligne.split()
@@ -238,7 +238,7 @@ def main():
             check('%s / %s : resultat %s' % (lang, nom_cas, 'CONFORME' if attendu_ok else 'ECHEC'),
                   (code == 0) == attendu_ok, 'code %d' % code)
 
-    # Firmware ancien (pas de "dossier=") : refus explicite pour les autres langues, aucune ecriture
+    # Old Firmware (no folder=): explicit refusal for other languages, no writing
     for lang in ['en', 'pt']:
         carte = CarteSimulee({'racine': conforme, lang: conforme}, dossier_liste=False)
         code, lien, _ = executer(carte, lang, verify_only=True)
@@ -246,7 +246,7 @@ def main():
         check('%s : firmware ancien, aucune ecriture de fichier' % lang,
               not carte.ecritures and carte.octets_recus == 0)
 
-    # Francais sur firmware ancien : les sous-dossiers listes ne doivent pas etre comptes comme des fichiers en trop
+    # English on old firmware: list subfolders should not be counted as too many files
     carte = CarteSimulee({'racine': conforme}, dossier_liste=False, sous_dossiers=('en', 'es'))
     code, lien, _ = executer(carte, 'fr', verify_only=True)
     check('fr : firmware ancien, sous-dossiers ignores dans la liste', code == 0, 'code %d' % code)
@@ -258,8 +258,8 @@ def main():
           ', '.join(carte.ecritures))
     check('fr : la copie normale se termine CONFORME', code == 0, 'code %d' % code)
 
-    # ZIP public : le script doit pouvoir copier directement la structure
-    # glycemie/audio/voice sans le cache ni le compte Google de generation.
+    # ZIP public: the script must be able to copy the structure directly
+    # glycemie/audio/voice without the cache or the Google generation account.
     up.configure = ORIGINAL_CONFIGURE
     old_bank, old_manifest = up.BANK, up.MANIFEST
     with tempfile.TemporaryDirectory(prefix='sd_root_public_') as sd_root:

@@ -1,20 +1,11 @@
 /*
  * sd_storage.c: microSD history, files and storage checks.
- * FR: Historique microSD et opérations de stockage.
  * Design note: Never automatically format the user's card.
  */
 
 /*
- * sd_storage.c: Handles the microSD history files and supporting storage operations.
- * FR: Gère l'historique microSD et les opérations de stockage.
- * Design decision: Never automatically format a card containing user history.
- *
- * Experimental supplementary display; official monitoring remains authoritative.
- */
-
-/*
  * Mounts FAT32 microSD storage and manages append-only glucose history with repair tools.
- * Gère la microSD FAT32, l'historique CSV et les contrôles de cohérence.
+ * Manage microSD FAT32, l'historique CSV and consistency checks.
  */
 #include "sd_storage.h"
 
@@ -30,7 +21,7 @@
 #include <sys/time.h>
 #include <time.h>
 #include <unistd.h>
-#include "ff.h" /* avant diskio_sdmmc.h (type BYTE) */
+#include "ff.h" /* before diskio_sdmmc.h (type BYTE) */
 #include "diskio_sdmmc.h"
 #include "driver/sdmmc_host.h"
 #include "esp_heap_caps.h"
@@ -55,9 +46,9 @@
 static const char *TAG = "microsd";
 
 /* Montage identique au BSP Waveshare (bsp_sdcard_mount) : slot SDMMC 0 en 4 bits, LDO interne n° 4,
- * mais sans formatage automatique et avec une alimentation creee une seule fois. */
+ * but without automatic formatting and with a power supply created only once. */
 #define SD_LDO_CHANNEL    4
-#define SD_CLUSTER_SIZE   (32 * 1024) /* FAT32 : cluster de 32 Ko pour une carte de grande capacite */
+#define SD_CLUSTER_SIZE   (32 * 1024) /* FAT32 : 32 KB cluster for a large capacity map */
 #define EVENT_QUEUE_LEN   16
 #define EVENT_LEN         112
 #define PROBE_PERIOD_S    30          /* presence de la carte (CMD13, commande protegee par le pilote) */
@@ -67,19 +58,19 @@ static const char *TAG = "microsd";
 #define LOGS_DIR          SD_MOUNT_POINT "/glycemie/logs"
 #define CSV_HEADER        "timestamp,glucose,trend,delta\n"
 
-/* Apres un retrait : nouvelles tentatives de plus en plus espacees. Chaque montage reconfigure
- * l'horloge du controleur SDMMC partage avec l'ESP32-C6 : leur nombre est volontairement limite. */
+/* After a withdrawal: new and more spatial attempts. Each mount reconfigures
+ * l'horloge du controleur SDMMC sharing with theESP32-C6 : leur nombre est volontairement limite. */
 static const int32_t k_retry_after_loss_s[] = {30, 60, 120, 300, 600, 1800, 3600};
 #define RETRY_STEPS (int)(sizeof(k_retry_after_loss_s) / sizeof(k_retry_after_loss_s[0]))
 
-/* Traces des composants SD masquees pendant les tentatives automatiques (pas celles du lien ESP32-C6) */
+/* Traces of SD components masked during automatic attempts (not those of the link ESP32-C6) */
 static const char *const k_quiet_tags[] = {"vfs_fat_sdmmc", "sdmmc_common", "sdmmc_init", "sdmmc_sd", "sdmmc_periph"};
 #define QUIET_TAGS (int)(sizeof(k_quiet_tags) / sizeof(k_quiet_tags[0]))
 
 typedef enum {
-    MOUNT_BOOT = 0, /* demarrage : traces completes, nouvel essai dans 1 h si absente */
-    MOUNT_RETRY,    /* reprise automatique : traces masquees, delais croissants */
-    MOUNT_CHECK,    /* apres formatage ou test : traces completes */
+    MOUNT_BOOT = 0, /* start: complete traces, retest in 1 h if absent */
+    MOUNT_RETRY,    /* automatic recovery: masked traces, growing times */
+    MOUNT_CHECK,    /* After formatting or testing: complete traces */
 } mount_reason_t;
 
 typedef struct {
@@ -93,12 +84,12 @@ static sdmmc_card_t *s_card;
 static sd_pwr_ctrl_handle_t s_pwr;
 static volatile bool s_mounted;
 static volatile sd_state_t s_state = SD_STATE_UNKNOWN;
-/* Cycle de vie de la carte (demontage) contre les lectures/ecritures des autres taches (voix, console) ;
- * recursif : la console peut relire un fichier pendant le parcours du dossier de la banque vocale */
+/* Life cycle of the map (mounting) against the lectures/ecritures other stains (voice, console);
+ * recursive: the console can read a file during the path of the voice bank folder */
 static SemaphoreHandle_t s_card_mutex;
 static volatile int s_voice_files = -1;
 
-/* Derniere copie du cache Dexcom reel (jamais de donnees de demonstration) */
+/* Last copy of the Dexcom reel cache (never demonstration data) */
 static glucose_point_t *s_snapshot;
 static glucose_point_t *s_work;
 static int s_snapshot_count;
@@ -157,7 +148,7 @@ static bool parse_iso(const char *s, int64_t *epoch_ms)
     return true;
 }
 
-/* Fichier du jour local de epoch_ms decale de day_offset jours (calcul calendaire, insensible au changement d'heure) */
+/* Local day file of epoch_ms decale de day_offset jours (calcul calendaire, insensible au changement d'heure) */
 static void day_file(const char *dir, const char *ext, int64_t epoch_ms, int day_offset, char *path, size_t size)
 {
     time_t t = (time_t)(epoch_ms / 1000);
@@ -241,7 +232,7 @@ static void quiet_logs(bool quiet, esp_log_level_t saved[QUIET_TAGS])
     }
 }
 
-/* format : formatage FAT32 si le systeme de fichiers n'est pas reconnu (commande explicite uniquement) */
+/* format : formatage FAT32 if the file system is not recognized (explicit command only) */
 static esp_err_t mount_fs(bool format, bool quiet)
 {
     sdmmc_host_t host;
@@ -364,7 +355,7 @@ static void schedule_retry(int32_t delay_s)
     s_next_retry_us = esp_timer_get_time() + (int64_t)delay_s * 1000000;
 }
 
-/* Carte montee : verification, dossiers, reprise de l'historique */
+/* Mounted map: verification, folders, historical recovery */
 static bool on_mounted(mount_reason_t reason)
 {
     s_mounted = true;
@@ -454,8 +445,8 @@ static void lose_card(const char *why)
 /* ------------------------------------------------------------------------- */
 /* Historique CSV */
 
-/* Horodatage de la derniere ligne complete d'un CSV (0 si aucune mesure). Une ligne incomplete
- * (carte retiree ou coupure pendant une ecriture) est supprimee. Retourne false en cas d'erreur d'acces. */
+/* Horodatage de la derniere ligne complete d'un CSV (0 if no measurement). An incomplete line
+ * (card removed or cut during writing) is removed. Returns false in case of access error. */
 static bool last_line_time(const char *path, int64_t *out_ms)
 {
     *out_ms = 0;
@@ -506,7 +497,7 @@ static bool last_line_time(const char *path, int64_t *out_ms)
     return true;
 }
 
-/* Derniere mesure deja ecrite : fichier du jour de la mesure la plus recente, sinon de la veille */
+/* Last measure already written: file of the day of the most recent measure, if not the day before */
 static bool find_last_written(int64_t newest_ms, int64_t *out_ms)
 {
     *out_ms = 0;
@@ -537,8 +528,8 @@ static FILE *open_csv(const char *path)
     return f;
 }
 
-/* Ecrit une seule fois chaque mesure plus recente que la derniere ligne du CSV, de la plus ancienne a la plus
- * recente. Un seul fclose (vidage et mise a jour de la FAT) par lot : environ une ecriture toutes les 5 minutes. */
+/* Writes once each measure more recent than the last line of the CSV, de la plus ancienne a la plus
+ * recente. Un seul fclose (vidage et mise a jour de la FAT) per batch : about one writing every 5 minutes. */
 /* Merge delayed readings with the last stored day and avoid duplicate CSV rows. */
 static void sync_history(void)
 {
@@ -612,7 +603,7 @@ static void sync_history(void)
 static bool write_events(void)
 {
     if (!net_time_is_valid() || uxQueueMessagesWaiting(s_events) == 0) {
-        return true; /* horodatage fiable necessaire : les evenements attendent l'heure SNTP */
+        return true; /* reliable time stamping required: events await the time SNTP */
     }
     FILE *f = NULL;
     sd_event_t ev;
@@ -663,7 +654,7 @@ static void format_card(void)
     ESP_LOGW(TAG, "Formatage termine en %" PRId64 " s : %s, cluster %" PRIu32 " Ko",
              (esp_timer_get_time() - t0) / 1000000, fs_type, cluster_kb);
 
-    /* Demontage puis remontage normal (sans formatage) pour verifier la carte */
+    /* Demounting then normal winding (without formatting) to check the map */
     unmount_card();
     ESP_LOGI(TAG, "Carte demontee apres formatage : remontage de verification");
     vTaskDelay(pdMS_TO_TICKS(500));
@@ -784,9 +775,9 @@ static void check_card(void)
     free(times);
 }
 
-/* Reecrit un CSV sans ses doublons exacts (ligne identique a la derniere ligne gardee, meme seconde).
- * Si une autre ligne devait disparaitre (desordre, ligne invalide ou differente), le fichier reste intact (-2) :
- * aucune mesure unique n'est jamais supprimee. */
+/* Reecrit un CSV without its exact duplicates (line identical to the last guarded line, same second).
+ * If another line disappears (order, invalid or different), the file remains intact (-2):
+ * no single measure is ever removed. */
 static int repair_csv(const char *path, const char *name)
 {
     struct stat st;
@@ -842,7 +833,7 @@ static int repair_csv(const char *path, const char *name)
             line = end != NULL ? end + 1 : line + len;
         }
         if (unsafe) {
-            removed = -2; /* fichier laisse intact */
+            removed = -2; /* file left intact */
         } else if (removed > 0) {
             char tmp[80];
             snprintf(tmp, sizeof(tmp), "%.*s.tmp", (int)(strlen(path) - 4), path);
@@ -985,7 +976,7 @@ static void remount_test(int cycles)
 static void sd_task(void *arg)
 {
     (void)arg;
-    /* Le Wi-Fi heberge doit etre initialise avant la carte (controleur SDMMC partage avec l'ESP32-C6) */
+    /* The Wi-Fi heberge must be initialized before the card (controversy SDMMC sharing with theESP32-C6) */
     const bool wifi_started = wifi_manager_wait_started(pdMS_TO_TICKS(90000));
     vTaskDelay(pdMS_TO_TICKS(3000));
     ESP_LOGI(TAG, "Initialisation de la microSD (Wi-Fi heberge %s)", wifi_started ? "deja demarre" : "non demarre");
@@ -1096,7 +1087,7 @@ void sd_storage_print_log(const char *name)
         printf("SD_LIRE| %s\n", line);
         lines++;
         if ((lines & 15) == 0) {
-            vTaskDelay(pdMS_TO_TICKS(5)); /* console serie : laisser passer les autres traces */
+            vTaskDelay(pdMS_TO_TICKS(5)); /* console series: letting the other tracks pass */
         }
     }
     printf("SD_LIRE fin %s : %d lignes, %u octets\n", name, lines, (unsigned)len);
@@ -1104,13 +1095,13 @@ void sd_storage_print_log(const char *name)
 }
 
 /*
- * sd_dump : relire un fichier de la carte par la console, exactement, sans la modifier.
+ * sd_dump : Reread a card file by the console, exactly, without changing it.
  *
- * Pourquoi : l'appareil n'a pas de lecteur de carte accessible, et sortir la microSD n'est pas
- * toujours possible. Le contenu est envoye en base64 (lignes "SD_DUMP| "), suivi de la taille et
- * d'une empreinte CRC-32 : le PC peut donc verifier que la copie est fidele, octet pour octet.
+ * Why: the device does not have an accessible card reader, and exiting the microSD is not
+ * Always possible. Content is sent to base64 (lines "SD_DUMP| "), suivi de la taille et
+ * of a print CRC-32: The PC can therefore verify that the copy is faithful, byte for byte.
  *
- * Lecture seule : aucun fichier n'est cree, modifie ni efface. Seuls les sous-dossiers de
+ * Play-only: no files are created, modified, or erased. Only subfolders of
  * /glycemie sont accessibles, et ni ".." ni "\" ne sont acceptes.
  */
 void sd_storage_dump_file(const char *rel)
@@ -1158,7 +1149,7 @@ void sd_storage_dump_file(const char *rel)
         crc = esp_rom_crc32_le(crc, brut, (uint32_t)n);  /* CRC-32 IEEE, identique a zlib.crc32 */
         total += n;
         if ((++lignes & 15) == 0) {
-            vTaskDelay(pdMS_TO_TICKS(5)); /* laisser passer les autres traces de la console */
+            vTaskDelay(pdMS_TO_TICKS(5)); /* Let other traces of the console pass */
         }
     }
     const bool erreur = ferror(f) != 0;
@@ -1226,7 +1217,7 @@ esp_err_t sd_storage_write_file(const char *path, const uint8_t *data, size_t le
         if (f != NULL) {
             const bool written = fwrite(data, 1, len, f) == len;
             if (fclose(f) == 0 && written) {
-                unlink(path); /* rename() de FatFs refuse une destination existante */
+                unlink(path); /* rename() FatFs refuses an existing destination */
                 if (rename(tmp, path) == 0) {
                     err = ESP_OK;
                 }
@@ -1298,12 +1289,12 @@ int sd_storage_list_voice(const char *subdir, sd_voice_file_cb_t cb, void *ctx, 
         if (dir != NULL) {
             struct dirent *entry;
             while ((entry = readdir(dir)) != NULL) {
-                char path[sizeof(base) + sizeof(entry->d_name) + 2]; /* jamais tronque : -Werror=format-truncation */
+                char path[sizeof(base) + sizeof(entry->d_name) + 2]; /* Never truncate: -Werror=format-truncation */
                 snprintf(path, sizeof(path), "%s/%s", base, entry->d_name);
                 struct stat st;
                 const bool ok = stat(path, &st) == 0;
                 if (ok && S_ISDIR(st.st_mode)) {
-                    continue; /* sous-dossiers de langue : jamais comptes comme des fichiers de la banque */
+                    continue; /* language subfolders: never accounts like bank files */
                 }
                 const long size = ok ? (long)st.st_size : -1;
                 count++;
@@ -1325,7 +1316,7 @@ int sd_storage_list_voice(const char *subdir, sd_voice_file_cb_t cb, void *ctx, 
 
 void sd_storage_record_readings(const glucose_point_t *cache, int count, int64_t previous_newest_ms)
 {
-    (void)previous_newest_ms; /* reprise sur le cache complet : chaque mesure n'est ecrite qu'une fois */
+    (void)previous_newest_ms; /* cover: each measure is written only once */
     if (s_task == NULL || cache == NULL || count <= 0) {
         return;
     }

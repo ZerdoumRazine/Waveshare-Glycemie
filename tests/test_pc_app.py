@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # Checks the Windows configuration interface without hardware.
-# FR: Vérifie l'application Windows sans matériel.
+#
 # These tests use simulations; they do not connect to a patient's device.
-# EN: Exercise the Windows Tkinter setup interface with simulated serial devices.
-# FR: Teste l'interface Windows avec des ports série simulés.
+# Exercise the Windows Tkinter setup interface with simulated serial devices.
+#
 """Controles de l'application Windows (tools/pc_app/glycemie_connexion.pyw), sans appareil branche.
 
 La fenetre est reellement construite (Tk), puis fermee : ces essais verifient la logique de
@@ -78,7 +78,7 @@ def main():
         del ports_simules[:]
         ports_simules.extend(ports)
         racine = tkinter.Tk()
-        racine.withdraw()                       # jamais affichee pendant les essais
+        racine.withdraw()                       # never displayed during testing
         f = module.Fenetre(racine)
         racine.update()
         return racine, f
@@ -91,7 +91,7 @@ def main():
           'USB' in f.journal.get('1.0', 'end') or 'appareil' in f.journal.get('1.0', 'end').lower())
     f.fermer()
 
-    # plusieurs appareils : aucun n'est choisi a la place de l'utilisateur
+    # several devices: none is chosen in place of the user
     racine, f = fenetre_avec([('COM3', 'Peripherique Bluetooth'), ('COM7', 'Port serie')])
     check('plusieurs appareils : aucun choix arbitraire', f.port.get() == '', f.port.get())
     check('plusieurs appareils : la fenetre explique comment reconnaitre le bon',

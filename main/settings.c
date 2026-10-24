@@ -1,12 +1,11 @@
 /*
  * settings.c: Persistent preferences, thresholds and display options.
- * FR: Préférences, seuils et options persistantes.
  * Design note: Updating one setting must not reset unrelated values.
  */
 
 /*
  * Validates UI options loaded from NVS and batches non-urgent writes.
- * Valide les réglages enregistrés et évite les écritures NVS inutiles.
+ * Validates saved settings and avoids writing NVS inutiles.
  */
 #include "settings.h"
 
@@ -34,7 +33,7 @@ static night_settings_t s_night;
 static voice_cmd_settings_t s_vcmd;
 
 static const voice_cmd_settings_t k_vcmd_defaults = {
-    .enabled = false, /* activation apres mesure de la memoire (RÉGLAGES ou console vcmd_on) */
+    .enabled = false, /* after-memory activation (REGULATIONS or console vcmd_on) */
     .wake_word = false,
     .mic_gain_db = 30,
 };
@@ -133,7 +132,7 @@ static void saver_task(void *arg)
     (void)arg;
     for (;;) {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-        /* regroupe les changements rapides (curseur) : une ecriture NVS au plus toutes les 2 s */
+        /* group rapid changes (cursor): a writing NVS not more than 2 s */
         while (ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(2000)) != 0) {
         }
         settings_t copy;
@@ -295,7 +294,7 @@ void settings_lang_set(lang_t lang)
     s_revision++;
     xSemaphoreGive(s_mutex);
     if (s_saver != NULL) {
-        xTaskNotifyGive(s_saver); /* enregistrement differe, comme les autres reglages */
+        xTaskNotifyGive(s_saver); /* recording different, like other settings */
     }
     ESP_LOGI(TAG, "Langue de l'interface : %s", lang_code(lang));
 }

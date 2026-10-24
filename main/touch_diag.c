@@ -1,12 +1,11 @@
 /*
  * touch_diag.c: Touch-screen diagnostics and calibration support.
- * FR: Diagnostics de l'écran tactile.
  * Design note: Diagnostic labels aid testing but do not change sensor data.
  */
 
 /*
  * Provides controlled touch diagnostics and synthetic tap injection for development.
- * Fournit les diagnostics du tactile et l'injection d'appuis de test.
+ * Provides tactile diagnostics and injection of test supports.
  */
 #include "touch_diag.h"
 
@@ -140,7 +139,7 @@ static void describe(lv_obj_t *obj, bool with_button_text, char *buf, size_t siz
     }
 }
 
-/* Coordonnees brutes du GT911, avant miroir/inversion logiciels d'esp_lcd_touch */
+/* Coordonnees brutes du GT911before miroir/inversion logiciels d'esp_lcd_touch */
 static void raw_hook(esp_lcd_touch_handle_t tp, uint16_t *x, uint16_t *y, uint16_t *strength, uint8_t *point_num,
                      uint8_t max_point_num)
 {
@@ -222,7 +221,7 @@ static bool synthetic_point(int64_t now_us, bool *touched, int32_t *x, int32_t *
     return true;
 }
 
-/* Lecture identique a celle de l'adaptateur, plus le suivi des appuis (tache LVGL) */
+/* Reading the same as the adapter, plus tracking the supports (tache LVGL) */
 static esp_err_t diag_read(esp_lcd_touch_handle_t tp, esp_lcd_touch_point_data_t *points, uint8_t *count,
                            uint8_t max_count, void *user_ctx)
 {
@@ -272,7 +271,7 @@ static esp_err_t diag_read(esp_lcd_touch_handle_t tp, esp_lcd_touch_point_data_t
     int32_t sx = 0;
     int32_t sy = 0;
     if (synthetic_point(now_us, &synthetic_touched, &sx, &sy)) {
-        /* appui synthetique : remplace la trame reelle (le GT911 a ete lu pour vider ses donnees) */
+        /* appui synthetique : remplace la trame reelle (le GT911 was read to empty his data) */
         err = ESP_OK;
         *count = synthetic_touched ? 1 : 0;
         if (synthetic_touched) {

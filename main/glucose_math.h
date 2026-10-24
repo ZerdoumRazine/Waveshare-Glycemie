@@ -1,15 +1,13 @@
 /* glucose_math.h: Pure helpers for numerical glucose calculations.
- * FR: Fonctions pures des calculs glycémiques.
  * The declarations below are shared with other firmware modules.
  */
 /*
- * Calculs sur l'historique de glycemie (fonctions pures, sans etat) :
+ * Calculations on glycemia history (pure functions, without state):
  * age et fraicheur, delta entre mesures consecutives, cadence reelle, prochaine mesure, statistiques.
- * Les tableaux sont tries de la mesure la plus recente a la plus ancienne.
+ * The tables are sorted from the most recent to the oldest measure.
  */
 /* Public interface / Interface publique
- * EN: Pure calculations of freshness and deltas; safe for host tests.
- * FR: Calculs purs de fraîcheur et de variation.
+ * Pure calculations of freshness and deltas; safe for host tests.
  */
 #pragma once
 
@@ -30,7 +28,7 @@ int64_t gm_age_s(const glucose_point_t *pts, int count, int64_t now_ms, bool tim
 
 gm_freshness_t gm_freshness(int64_t age_s);
 
-/* Cadence reelle (mediane des intervalles consecutifs recents), GLY_CADENCE_DEFAULT_S a defaut */
+/* Real Cadence (median of recent consecutive intervals), GLY_CADENCE_DEFAULT_S a defaut */
 int32_t gm_cadence_s(const glucose_point_t *pts, int count);
 
 /* Delta entre deux mesures valides et consecutives (2,5 a 7,5 min d'ecart) */
@@ -42,4 +40,4 @@ bool gm_delta_current(const glucose_point_t *pts, int count, int64_t age_s, int 
 /* Heure estimee de la prochaine mesure (derniere mesure + cadence reelle), 0 si inconnue */
 int64_t gm_next_expected_ms(const glucose_point_t *pts, int count);
 
-/* Statistiques sur les `hours` dernieres heures */
+/* Last Hours Statistics */

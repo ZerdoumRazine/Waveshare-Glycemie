@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # Checks that speech banks and six-language text tables agree.
-# FR: Contrôle la cohérence entre voix et textes des six langues.
+#
 # Tests use simulated data, not a real user's glucose history.
-# EN: Check that all six language catalogs and audio phrase inventories are consistent.
-# FR: Vérifie la cohérence des six catalogues de phrases vocales.
+# Check that all six language catalogs and audio phrase inventories are consistent.
+#
 """Controles de la banque vocale multilingue (tools/voice/langues_voix.py).
 
 Ne genere aucun audio et n'appelle aucun service : ce sont des controles de texte.
@@ -22,7 +22,7 @@ import sys
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(0, os.path.join(ROOT, 'tools', 'voice'))
 
-import langues_voix as lv  # noqa: E402  (le chemin doit etre ajoute avant l'import)
+import langues_voix as lv  # noqa: E402  (the path must be added before the import)
 
 MANIFESTE = os.path.join(ROOT, 'assets', 'banque_vocale_manifeste.csv')
 
@@ -35,7 +35,7 @@ def check(nom, ok, detail=''):
 
 # Detect missing clips or mismatched translated IDs before packaging audio.
 def main():
-    # 1. Le francais doit correspondre exactement au manifeste de la banque installee
+    # 1. The French must correspond exactly to the manifesto of the installed bank
     attendu = {}
     with io.open(MANIFESTE, encoding='utf-8-sig', newline='') as f:
         for row in csv.DictReader(f, delimiter=';'):
@@ -85,17 +85,17 @@ def main():
         faux = ['%d -> %r (attendu %r)' % (n, mot(n), t) for n, t in sorted(cas.items()) if mot(n) != t]
         check('%s : nombres en lettres corrects' % lang, not faux, ' ; '.join(faux))
 
-    # 4. Les 40 a 400 doivent tous etre ecrivables, sans exception
+    # 4. All 40 to 400 must be written, without exception
     for lang in lv.LANGUES:
         try:
             tous = [lv.NOMBRE[lang](n) for n in range(lv.GLUCOSE_MIN, lv.GLUCOSE_MAX + 1)]
             ok = all(t and not t.endswith(' ') for t in tous)
             detail = ''
-        except Exception as err:  # noqa: BLE001 - on veut le nom de l'erreur dans le rapport
+        except Exception as err:  # noqa: BLE001 - we want the name of the error in the report.
             ok, detail = False, '%s : %s' % (type(err).__name__, err)
         check('%s : les 361 valeurs de 40 a 400 s\'ecrivent sans erreur' % lang, ok, detail)
 
-    # 5. Une voix Chirp 3 HD est declaree pour chaque langue
+    # 5. A Chirp 3 HD voice is declared for each language
     for lang in lv.LANGUES:
         code, voix = lv.VOIX[lang]
         check('%s : voix declaree (%s)' % (lang, voix), 'Chirp3-HD' in voix and voix.startswith(code))

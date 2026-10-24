@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # Checks serial microSD recovery against damaged transfers.
-# FR: Vérifie les récupérations microSD incomplètes.
+#
 # These tests use simulations; they do not connect to a patient's device.
-# EN: Validate CRC and interrupted-transfer handling with artificial microSD data.
-# FR: Vérifie CRC et transmissions interrompues sur des données simulées.
+# Validate CRC and interrupted-transfer handling with artificial microSD data.
+#
 """Controles de la recuperation de la microSD par le cable (tools/recuperer_microsd.py).
 
 Ce qui compte ici : une copie n'est declaree bonne que si la taille ET l'empreinte annoncees par
@@ -106,7 +106,7 @@ def main():
     check('fichier binaire : copie exacte, octet pour octet', data == BINAIRE,
           '%d octets' % (len(data) if data else -1))
 
-    # --- 2. Transmission abimee : jamais prise pour une reussite --------------------------------
+    # --- 2. Transmission abime : never taken for a success --------------------------------
     app = ac.Appareil(AppareilSimule(fichiers, tronquer=True))
     data, raison = rm.dump_fichier(app, '/glycemie/history/2026-10-17.csv', attente=10)
     check('transmission tronquee : refusee', data is None and 'taille' in (raison or ''), str(raison))
@@ -131,7 +131,7 @@ def main():
     check('fichier absent : signale, pas de copie vide', data is None and 'introuvable' in (raison or ''),
           str(raison))
 
-    # --- 5. Comparaison des banques vocales (aucun transfert) -----------------------------------
+    # --- 5. Comparison of voice banks (no transfer) -----------------------------------
     import tempfile
     dossier = tempfile.mkdtemp(prefix='banque-')
     contenu = {'alert_low.wav': b'RIFF....petit son', 'glucose_100.wav': b'RIFF....autre son'}

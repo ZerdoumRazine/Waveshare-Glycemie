@@ -1,21 +1,19 @@
 /* Exercises credential persistence and simulated NVS failures.
- * FR: Teste les accès et les erreurs NVS simulées.
  * Host tests use simulated dependencies, never personal readings.
  */
 /*
  * Controles du module d'identifiants (main/credentials.c), compile tel quel sur le PC.
  *
- * Ce que ces essais garantissent, sans materiel :
- *   - l'utilisateur peut saisir, relire, modifier et effacer ses acces sans recompiler ;
- *   - les saisies invalides (trop longues, region inconnue) sont refusees sans rien abimer ;
- *   - les identifiants survivent a un redemarrage (NVS simulee) ;
- *   - aucun mot de passe n'apparait en clair dans ce qui serait ecrit en flash ;
- *   - aucun mot de passe n'apparait dans les textes affiches ou journalises (masques).
+ * What these tests guarantee, without material:
+ *   - the user can enter, reread, modify and delete accesses without recompiling;
+ *   - invalid seizures (too long, unknown region) are refused without any damage;
+ *   - IDs survive a reboot (NVS simulee) ;
+ *   - there is no clear password in what would be written in flash;
+ *   - no password appears in text posters or newspapers (masks).
  *
- * Les valeurs utilisees ici sont fictives.
+ * The values used here are fictional.
  */
-/* EN: Exercise credential validation, persistence, erasure and failed-write recovery.
- * FR: Teste les accès, leur sauvegarde, leur effacement et les pannes NVS.
+/* Exercise credential validation, persistence, erasure and failed-write recovery.
  */
 #include <stdio.h>
 #include <string.h>
@@ -29,7 +27,7 @@
 #define USER_TEST   "antoine.dupont@exemple.fr"
 #define MDP_DEXCOM  "MonMotDePasseDexcom!42"
 
-/* Recherche d'une suite d'octets (le mot de passe) dans un bloc binaire. */
+/* Search for a suite of bytes (the password) in a binary block. */
 static int contient(const void *bloc, size_t taille, const char *motif)
 {
     const char *p = (const char *)bloc;
@@ -45,7 +43,7 @@ static int contient(const void *bloc, size_t taille, const char *motif)
     return 0;
 }
 
-/* Chaine de (CRED_PASS_MAX - 1) caracteres : la plus longue acceptee ; +1 doit etre refusee. */
+/* Chaine de (CRED_PASS_MAX 1) characters: the longest accepted; +1 must be refused. */
 static void remplir(char *buf, size_t len, char c)
 {
     memset(buf, c, len);
@@ -229,8 +227,8 @@ int main(void)
     CHECK_EQ_I(credentials_clear(), ESP_OK, "effacement");
     CHECK(!credentials_has_wifi() && !credentials_has_dexcom(), "plus rien en memoire vive");
     CHECK(!credentials_configured(), "l'assistant s'ouvrira au prochain demarrage");
-    /* Une configuration NVS explicitement vide empeche la reprise d'anciens
-     * identifiants qui seraient integres dans un firmware personnel. */
+    /* A configuration NVS explicitly empty prevents the recovery of old
+     * identifiers that would be embedded in a personal firmware. */
     brut = fake_nvs_blob("ident", "v1", &taille);
     CHECK(brut != NULL && taille == sizeof(credentials_t),
           "un bloc NVS vide est conserve comme marqueur, meme apres effacement");
@@ -258,8 +256,8 @@ int main(void)
     CHECK_EQ_I(credentials_init(), ESP_OK, "redemarrage apres echec NVS");
     CHECK(credentials_configured(), "acces permanents conserves apres l'echec");
 
-    /* Une erreur dans l'espace auxiliaire dexcom ne doit pas masquer le fait
-     * que les secrets ont bien ete retires de NVS ident. */
+    /* An error in the dexcom auxiliary space should not hide the fact
+     * that the secrets have been removed from NVS ident. */
     fake_nvs_fail_next_open("dexcom");
     CHECK_EQ_I(credentials_clear(), ESP_OK, "identifiants effaces meme si nettoyage du verrou refuse");
     CHECK(!credentials_configured(), "aucun compte en memoire");

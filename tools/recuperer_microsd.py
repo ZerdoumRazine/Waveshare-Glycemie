@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # Reads historical microSD data through the device's serial interface.
-# FR: Relit les données microSD par le port série.
+#
 # Design note: Validate transferred data before accepting it as a backup.
-# EN: Retrieves recoverable microSD data over a read-only serial protocol.
-# FR: Récupère les données microSD par une liaison série en lecture seule.
+# Retrieves recoverable microSD data over a read-only serial protocol.
+#
 r"""Recuperer par le cable USB ce que le programme INSTALLE accepte de relire sur la microSD.
 
 Aucun lecteur de carte n'est necessaire : tout passe par la console serie de l'appareil, en
