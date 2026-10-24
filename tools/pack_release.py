@@ -27,38 +27,26 @@ BINARIES = {
     "bootloader/bootloader.bin": "bootloader.bin",
     "partition_table/partition-table.bin": "partition-table.bin",
 }
-INSTRUCTIONS = """# WaveShare Glycémie — installation / setup (v0.2.0)
+INSTRUCTIONS = """# WaveShare Glycémie — firmware installation (v0.2.0)
 
-Français
---------
-Carte : Waveshare ESP32-P4-WIFI6-Touch-LCD-7B, révision ESP32-P4 v1.3
-(pré-v3), flash 32 Mo. Autres révisions : non validées.
-1. Lisez docs/TUTORIEL_DEBUTANT_FR.md depuis le dépôt GitHub.
-2. Décompressez intégralement cette archive dans un dossier Windows.
-3. Branchez le câble USB-C **UART / CH343** et fermez tout moniteur série.
-4. Installez Python 3 et esptool : py -3 -m pip install esptool
-5. Ouvrez PowerShell dans ce dossier :
-     powershell -ExecutionPolicy Bypass -File .\\installer.ps1
-6. Le script vérifie les empreintes, la puce et demande votre accord.
-7. Après le redémarrage, configurez Wi-Fi et Dexcom sur l'écran, ou
-   utilisez GlycemieConnexion.exe téléchargé séparément.
-
-English
--------
-Board: Waveshare ESP32-P4-WIFI6-Touch-LCD-7B, ESP32-P4 rev1.3
+Hardware: Waveshare ESP32-P4-WIFI6-Touch-LCD-7B, ESP32-P4 rev 1.3
 (pre-v3), 32 MB flash. Other revisions have not been validated.
-1. See docs/BEGINNER_TUTORIAL_EN.md in the GitHub repository.
-2. Extract this whole archive on Windows.
-3. Connect to the UART/CH343 USB-C port; close serial monitors.
-4. Install Python 3 and esptool: py -3 -m pip install esptool
-5. Run: powershell -ExecutionPolicy Bypass -File .\\installer.ps1
-6. The installer checks file hashes, hardware and asks for approval.
-7. Set up Wi-Fi and Dexcom using the touchscreen wizard or the
-   separately downloaded Windows application.
 
-IMPORTANT : supplementary experimental display, not certified for medical
-use. Never rely on it for therapy decisions or primary glucose alarms.
-No private credentials are included in the distributed firmware.
+1. Read docs/BEGINNER_TUTORIAL_EN.md in the GitHub repository.
+2. Extract this entire archive to a Windows folder.
+3. Connect a USB-C data cable to the board's UART/CH343 port.
+4. Close any serial monitors. Install Python 3 and esptool:
+    py -3 -m pip install esptool
+5. Open PowerShell in the extracted folder and run:
+    powershell -ExecutionPolicy Bypass -File .\\installer.ps1
+6. The installer checks file hashes and the chip revision and asks for
+   explicit approval before flashing. Do not bypass its checks.
+7. After restart, enter your own Wi-Fi and Dexcom Share credentials on the
+   touchscreen or using the separately downloaded GlycemieConnexion.exe.
+
+The firmware contains no personal credentials. It is an EXPERIMENTAL
+supplementary display, not a certified medical device or a primary
+glucose alert system. Never rely on it for treatment decisions.
 """
 
 
