@@ -21,7 +21,7 @@ $ProjectRoot = Split-Path -Parent $PSScriptRoot
 $LocalIdf = Join-Path $ProjectRoot 'tools\esp-idf-v5.5.5'
 if (-not $env:IDF_PATH -and (Test-Path $LocalIdf)) { $env:IDF_PATH = $LocalIdf }
 if (-not $env:IDF_PATH) {
-    Write-Error "IDF_PATH n'est pas defini et aucun ESP-IDF n'a ete trouve dans $LocalIdf. Voir docs\INSTALLATION_FR.md."
+    Write-Error "IDF_PATH n'est pas defini et aucun ESP-IDF n'a ete trouve dans $LocalIdf. Voir docs\INSTALLATION_EN.md."
     return
 }
 

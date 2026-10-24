@@ -239,7 +239,7 @@ def main():
         return 1
     print('Sauvegarde complete et verifiee : %s' % dossier)
     print("Elle reste privee (dossier private\\, jamais publie). Gardez-en une copie ailleurs.")
-    print('Pour revenir en arriere, voir docs\\RETOUR_ARRIERE_FR.md.')
+    print('Pour revenir en arriere, voir docs\\ROLLBACK_EN.md.')
     return 0
 
 

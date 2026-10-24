@@ -81,7 +81,7 @@ $secrets = Join-Path $Work 'private\device_secrets.h'
 if (-not (Test-Path $secrets)) {
     Write-Warning "private\device_secrets.h est absent."
     Write-Warning "Le firmware compilera, mais il n'aura ni Wi-Fi ni compte Dexcom :"
-    Write-Warning "seul le mode demonstration fonctionnera. Voir docs\INSTALLATION_FR.md."
+    Write-Warning "seul le mode demonstration fonctionnera. Voir docs\INSTALLATION_EN.md."
     Write-Warning "Ctrl+C pour arreter, ou patientez 10 s pour compiler quand meme."
     Start-Sleep -Seconds 10
 }
@@ -92,7 +92,7 @@ if (-not $env:IDF_PATH) {
     if (Test-Path $local) { $env:IDF_PATH = $local }
 }
 if (-not $env:IDF_PATH) {
-    throw "IDF_PATH n'est pas defini. Ouvrez la fenetre 'ESP-IDF 5.5 PowerShell', ou definissez `$env:IDF_PATH. Voir docs\INSTALLATION_FR.md."
+    throw "IDF_PATH n'est pas defini. Ouvrez la fenetre 'ESP-IDF 5.5 PowerShell', ou definissez `$env:IDF_PATH. Voir docs\INSTALLATION_EN.md."
 }
 if (-not $env:IDF_TOOLS_PATH) {
     # Installation "in the project": the tools are ratedESP-IDF (tools\espressif).

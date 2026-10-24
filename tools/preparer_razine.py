@@ -130,7 +130,7 @@ def main():
     print('   1. regarder les images de screenshots\\ une par une (le controle lit les fichiers,')
     print('      pas les images) ;')
     print('   2. preparer les fichiers a telecharger : tools\\publier_firmware.ps1 ;')
-    print('   3. consulter docs\\PUBLICATION_GITHUB_FR.md pour entretenir le depot prive.')
+    print('   3. consulter docs\\PUBLICATION_GITHUB_EN.md pour entretenir le depot prive.')
     return 0
 
 

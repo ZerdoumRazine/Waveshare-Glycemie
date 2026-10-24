@@ -215,17 +215,23 @@ def main():
            chr(10).join(provenance) + chr(10))
 
     # --- 5. tutoriels --------------------------------------------------------------------------
-    for nom in ('TUTORIEL_DEBUTANT_FR.md', 'BEGINNER_TUTORIAL_EN.md', 'TUTORIEL_VOIX_FR.md',
-                'VOICE_TUTORIAL_EN.md', 'RETOUR_ARRIERE_FR.md', 'LIMITATIONS_FR.md',
-                'HARDWARE_FR.md', 'DEPANNAGE_FR.md', 'LICENCES_TIERCES_FR.md',
-                'CONFIGURATION_DEXCOM_FR.md', 'UTILISATION_FR.md'):
+    # Ship exactly the maintained English manuals; never add obsolete French pages.
+    for nom in ('BEGINNER_TUTORIAL_EN.md', 'VOICE_TUTORIAL_EN.md',
+                'ROLLBACK_EN.md', 'RECOVERY_EN.md', 'LIMITATIONS_EN.md',
+                'HARDWARE_EN.md', 'TROUBLESHOOTING_EN.md',
+                'THIRD_PARTY_LICENSES_EN.md', 'DEXCOM_SETUP_EN.md',
+                'USER_GUIDE_EN.md', 'DEVELOPER_WALKTHROUGH.md',
+                'CODE_GUIDE_EN.md', 'ARCHITECTURE_EN.md',
+                'INSTALLATION_EN.md', 'PUBLICATION_GITHUB_EN.md',
+                'VERSION_HISTORY_EN.md', 'K22_TECHNICAL_REPORT_EN.md',
+                'RELEASE_NOTES_0_2_0.md'):
         source = os.path.join(SOURCES, 'docs', nom)
         if os.path.exists(source):
             copier(source, os.path.join(cible, 'tutoriels', 'docs', nom))
     captures = os.path.join(SOURCES, 'screenshots')
     if os.path.isdir(captures):
         shutil.copytree(captures, os.path.join(cible, 'tutoriels', 'screenshots'))
-    for nom in ('LICENSE', 'CREDITS.md', 'README.md', 'README_FR.md'):
+    for nom in ('LICENSE', 'CREDITS.md', 'README.md'):
         source = os.path.join(SOURCES, nom)
         if os.path.exists(source):
             copier(source, os.path.join(cible, nom))

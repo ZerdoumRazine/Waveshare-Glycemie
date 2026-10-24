@@ -64,7 +64,7 @@ def main():
 
     # 1. Structure attendue
     for chemin in ('CMakeLists.txt', 'partitions.csv', 'sdkconfig.defaults', 'dependencies.lock',
-                   '.gitignore', 'LICENSE', 'README.md', 'README_FR.md',
+                   '.gitignore', 'LICENSE', 'README.md',
                    'config/esp32p4_rev1_3.defaults', 'main/CMakeLists.txt',
                    'main/device_secrets.example.h', 'private/.gitignore'):
         check(f'present : {chemin}', os.path.exists(os.path.join(ROOT, chemin)))
@@ -142,8 +142,8 @@ def main():
     check('tous les .c declares existent', not (declares - sur_disque), str(sorted(declares - sur_disque)))
     check('aucun .c oublie dans la compilation', not (sur_disque - declares), str(sorted(sur_disque - declares)))
     embed = re.findall(r'"((?:fonts|voice)/[^"]+)"', cm)
-    # voice/voice_fr.pcm est FACULTATIF : CMakeLists ne l'embarque que s'il existe (droits Microsoft non
-    # etablis, voir docs/LICENCES_TIERCES_FR.md). All other embedded files must be present.
+    # Legacy voice/voice_fr.pcm is optional because redistribution rights were
+    # not established. Every other embedded file must be present.
     obligatoires = [f for f in embed if f != 'voice/voice_fr.pcm']
     manquants = [f for f in obligatoires if not os.path.exists(os.path.join(ROOT, 'main', f))]
     check('les fichiers embarques obligatoires (polices) sont presents', not manquants, str(manquants))

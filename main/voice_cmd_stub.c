@@ -10,7 +10,7 @@
  * French were approached with English phones, which gave scores barely above the
  * "New sensor" recognized in an English sentence of the
  * television). No Spanish, German, Italian or Portuguese model exists: the promise "six langues"
- * could not be held properly without paid remote service. See docs/LIMITATIONS_FR.md.
+ * could not be held properly without paid remote service. See docs/LIMITATIONS_EN.md.
  *
  * The ANNONCES PARLEES (microSD voice bank, six languages) and ALERTES SONORES ne sont pas concernees :
  * they continue to work. All actions are accessible to the touch.

@@ -45,12 +45,12 @@ INTERDITS = [
     (r'\.csv\.perso$', 'donnees personnelles'),
     (r'(^|/)sauvegardes?/', 'sauvegarde de l\'appareil personnel'),
 ]
-ATTENDUS = ['README.md', 'README_FR.md', 'LICENSE', 'CREDITS.md', 'CMakeLists.txt',
+ATTENDUS = ['README.md', 'LICENSE', 'CREDITS.md', 'CMakeLists.txt',
             'main/app_main.c', 'main/credentials.c', 'main/ui_setup.c',
             'tools/assistant_config.py', 'tools/pc_app/glycemie_connexion.pyw',
             'tools/pc_app/construire_exe.ps1',
-            'docs/TUTORIEL_VOIX_FR.md', 'docs/VOICE_TUTORIAL_EN.md',
-            'docs/RETOUR_ARRIERE_FR.md', 'screenshots/01_accueil.png']
+            'docs/VOICE_TUTORIAL_EN.md', 'docs/BEGINNER_TUTORIAL_EN.md',
+            'docs/ROLLBACK_EN.md', 'screenshots/01_accueil.png']
 MINIMUM_FICHIERS = 100   # a complete deposit; below, the archive is suspicious
 
 

@@ -3,11 +3,13 @@
 All developer documentation and comments are in English.
 User-interface and audio languages remain unchanged.
 Third-party licensed source and font licences were not edited.
-Legacy documentation links point to English guides.
-This migration must pass automated regressions and ESP-IDF compilation.
+The 21 obsolete *_FR.md pages were deleted, not preserved as redirects.
+Release resources and six-language UI/audio content remain unchanged.
+The final repository must pass host tests and ESP-IDF compilation.
+One-off translation scripts and workflow were removed after use.
 
 - commented_code_files: 118
-- compatibility_links: 22
+- compatibility_links_initially_created: 22 (since deleted)
 - duplicate_headers_removed: 8
 - english_full_guides: 16
 - removed_FR_duplicate_lines: 204
